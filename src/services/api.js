@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:9000/api/admin';
+// const API_BASE_URL = 'http://localhost:9000/api/admin';
+const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -122,7 +123,7 @@ api.interceptors.response.use(
       
       try {
         // Call refresh token API
-        const response = await axios.post(`${API_BASE_URL}/refresh-token`, {
+        const response = await axios.post(`${API_BASE_URL}/api/admin/refresh-token`, {
           refresh_token: refreshToken
         }, {
           headers: {
@@ -203,7 +204,7 @@ export const authAPI = {
         throw { message: `Cannot reach backend at ${API_BASE_URL}. Check if server is running and accessible.` };
       });
       
-      const response = await api.post('/login', {
+      const response = await api.post('/api/admin/login', {
         email: email.trim(),
         password: password,
       });
@@ -271,7 +272,7 @@ export const authAPI = {
       }
       
       console.log('Refreshing token...');
-      const response = await axios.post(`${API_BASE_URL}/refresh-token`, {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/refresh-token`, {
         refresh_token: refreshToken
       }, {
         headers: {
@@ -329,7 +330,7 @@ export const authAPI = {
       
       console.log('Forgot password request data:', JSON.stringify(requestData, null, 2));
       
-      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password/send`, requestData, {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/send`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -366,7 +367,7 @@ export const authAPI = {
       
       console.log('OTP verification request data:', JSON.stringify(requestData, null, 2));
       
-      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password/verify`, requestData, {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/verify`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -404,7 +405,7 @@ export const authAPI = {
       
       console.log('Request data:', JSON.stringify(requestData, null, 2));
       
-      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password/reset`, requestData, {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/reset`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -433,7 +434,7 @@ export const authAPI = {
     try {
       console.log('Changing password...');
       
-      const response = await api.put('/auth/change-password', {
+      const response = await api.put('/api/admin/auth/change-password', {
         old_password: oldPassword,
         new_password: newPassword
       });
@@ -476,7 +477,7 @@ export const authAPI = {
       console.log('Fetching users from:', `${API_BASE_URL}/users`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}, Search: ${searchTerm}, Filters:`, filters);
       console.log('Request params:', params);
       
-      const response = await api.get('/users', { params });
+      const response = await api.get('/api/admin/users', { params });
       
       console.log('Users API response:', response.data);
       return response.data;
@@ -489,7 +490,7 @@ export const authAPI = {
   getUserById: async (userId) => {
     try {
       console.log('Fetching user details for ID:', userId);
-      const response = await api.get(`/user/${userId}`);
+      const response = await api.get(`/api/admin/user/${userId}`);
       
       console.log('User details API response:', response.data);
       return response.data;
@@ -502,7 +503,7 @@ export const authAPI = {
   createUser: async (userData) => {
     try {
       console.log('Creating new user:', userData);
-      const response = await api.post('/register-user', userData);
+      const response = await api.post('/api/admin/register-user', userData);
       
       console.log('Create user API response:', response.data);
       return response.data;
@@ -515,7 +516,7 @@ export const authAPI = {
   deleteUser: async (userId) => {
     try {
       console.log('Deleting user with ID:', userId);
-      const response = await api.delete(`/user/${userId}`);
+      const response = await api.delete(`/api/admin/user/${userId}`);
       
       console.log('Delete user API response:', response.data);
       return response.data;
@@ -545,7 +546,7 @@ export const authAPI = {
       });
       
       // Use the exact endpoint with multipart/form-data
-      const response = await api.put(`/update-user/${userId}`, formData, {
+      const response = await api.put(`/api/admin/update-user/${userId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -573,7 +574,7 @@ export const authAPI = {
       if (authToken) {
         // Make logout request with refresh token if available
         const logoutData = refreshToken ? { refresh_token: refreshToken } : {};
-        const response = await api.post('/logout', logoutData);
+        const response = await api.post('/api/admin/logout', logoutData);
         
         console.log('Logout API response:', response.data);
       }
@@ -608,7 +609,7 @@ export const authAPI = {
       
       console.log(`Fetching workouts - Page: ${validPage}, Size: ${validPageSize}, Skip: ${skip}`);
       
-      const response = await api.get('/workouts', {
+      const response = await api.get('/api/admin/workouts', {
         params: {
           skip: skip,
           limit: validPageSize
@@ -651,7 +652,7 @@ export const authAPI = {
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await apiInstance.post('/workouts', workoutData);
+      const response = await apiInstance.post('/api/admin/workouts', workoutData);
       
       console.log('Create workout API response:', response.data);
       return response.data;
@@ -683,7 +684,7 @@ export const authAPI = {
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await apiInstance.put(`/update-workout/${workoutId}`, workoutData);
+      const response = await apiInstance.put(`/api/admin/update-workout/${workoutId}`, workoutData);
       
       console.log('Update workout API response:', response.data);
       return response.data;
@@ -697,7 +698,7 @@ export const authAPI = {
     try {
       console.log('Deleting workout with ID:', workoutId);
       
-      const response = await api.delete(`/workout/${workoutId}`);
+      const response = await api.delete(`/api/admin/workout/${workoutId}`);
       
       console.log('Delete workout API response:', response.data);
       return response.data;
@@ -714,7 +715,7 @@ export const authAPI = {
       const skip = (page - 1) * pageSize;
       
       console.log('Fetching meals from:', `${API_BASE_URL}/meals`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}`);
-      const response = await api.get('/meals', {
+      const response = await api.get('/api/admin/meals', {
         params: {
           skip: skip,
           limit: pageSize
@@ -761,7 +762,7 @@ export const authAPI = {
   createMeal: async (mealData) => {
     try {
       console.log('Creating meal with data:', mealData);
-      const response = await api.post('/meals', mealData);
+      const response = await api.post('/api/admin/meals', mealData);
       
       console.log('Create meal API response status:', response.status);
       console.log('Create meal API response data:', response.data);
@@ -782,7 +783,7 @@ export const authAPI = {
       console.log('Updating meal with ID:', mealId, 'Data:', mealData);
       console.log('Request payload:', JSON.stringify(mealData, null, 2));
       
-      const response = await api.put(`/update-meal/${mealId}`, mealData);
+      const response = await api.put(`/api/admin/update-meal/${mealId}`, mealData);
       
       console.log('Raw API response:', response);
       console.log('Response status:', response.status);
@@ -814,7 +815,7 @@ export const authAPI = {
   deleteMeal: async (mealId) => {
     try {
       console.log('Deleting meal with ID:', mealId);
-      const response = await api.delete(`/meal/${mealId}`);
+      const response = await api.delete(`/api/admin/meal/${mealId}`);
       console.log('Delete API response status:', response.status);
       console.log('Delete API response data:', response.data);
       
@@ -831,7 +832,7 @@ export const authAPI = {
   getPlans: async () => {
     try {
       console.log('Fetching subscription plans from:', `${API_BASE_URL}/plans`);
-      const response = await api.get('/plans');
+      const response = await api.get('/api/admin/plans');
       
       console.log('Plans API response:', response.data);
       return response.data;
@@ -844,7 +845,7 @@ export const authAPI = {
   createPlan: async (planData) => {
     try {
       console.log('Creating subscription plan with data:', planData);
-      const response = await api.post('/plans', planData);
+      const response = await api.post('/api/admin/plans', planData);
       
       console.log('Create plan API response:', response.data);
       return response.data;
@@ -857,7 +858,7 @@ export const authAPI = {
   updatePlan: async (planId, planData) => {
     try {
       console.log('Updating subscription plan with ID:', planId, 'Data:', planData);
-      const response = await api.put(`/update-plan/${planId}`, planData);
+      const response = await api.put(`/api/admin/update-plan/${planId}`, planData);
       
       console.log('Update plan API response:', response.data);
       return response.data;
@@ -870,7 +871,7 @@ export const authAPI = {
   deletePlan: async (planId) => {
     try {
       console.log('Deleting subscription plan with ID:', planId);
-      const response = await api.delete(`/delete-plan/${planId}`);
+      const response = await api.delete(`/api/admin/delete-plan/${planId}`);
       
       console.log('Delete plan API response:', response.data);
       return response.data;
@@ -884,7 +885,7 @@ export const authAPI = {
   getBmiClassifications: async (skip = 0, limit = 10) => {
     try {
       console.log('Fetching BMI classifications from:', `${API_BASE_URL}/bmi-classifications?skip=${skip}&limit=${limit}`);
-      const response = await api.get('/bmi-classifications', {
+      const response = await api.get('/api/admin/bmi-classifications', {
         params: {
           skip: skip,
           limit: limit
@@ -902,7 +903,7 @@ export const authAPI = {
   createBmiClassification: async (bmiData) => {
     try {
       console.log('Creating BMI classification with data:', bmiData);
-      const response = await api.post('/bmi-classifications', bmiData);
+      const response = await api.post('/api/admin/bmi-classifications', bmiData);
       
       console.log('Create BMI classification API response:', response.data);
       return response.data;
@@ -915,7 +916,7 @@ export const authAPI = {
   updateBmiClassification: async (bmiId, bmiData) => {
     try {
       console.log('Updating BMI classification with ID:', bmiId, 'Data:', bmiData);
-      const response = await api.put(`/update-bmi-classification/${bmiId}`, bmiData);
+      const response = await api.put(`/api/admin/update-bmi-classification/${bmiId}`, bmiData);
       
       console.log('Update BMI classification API response:', response.data);
       return response.data;
@@ -928,7 +929,7 @@ export const authAPI = {
   deleteBmiClassification: async (bmiId) => {
     try {
       console.log('Deleting BMI classification with ID:', bmiId);
-      const response = await api.delete(`/bmi-classification/${bmiId}`);
+      const response = await api.delete(`/api/admin/bmi-classification/${bmiId}`);
       
       console.log('Delete BMI classification API response:', response.data);
       return response.data;
@@ -942,7 +943,7 @@ export const authAPI = {
   getDashboardOverview: async () => {
     try {
       console.log('Fetching dashboard overview from:', `${API_BASE_URL}/dashboard/overview`);
-      const response = await api.get('/dashboard/overview');
+      const response = await api.get('/api/admin/dashboard/overview');
       
       console.log('Dashboard overview API response:', response.data);
       return response.data;
@@ -955,7 +956,7 @@ export const authAPI = {
   getDashboardUsers: async () => {
     try {
       console.log('Fetching dashboard users from:', `${API_BASE_URL}/dashboard/users`);
-      const response = await api.get('/dashboard/users');
+      const response = await api.get('/api/admin/dashboard/users');
       
       console.log('Dashboard users API response:', response.data);
       return response.data;
