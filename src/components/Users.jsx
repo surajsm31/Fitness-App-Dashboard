@@ -98,6 +98,10 @@ const UsersPage = () => {
             setLoading(true);
             setError(null);
             
+            // Clear cache first to ensure fresh data
+            setAllUsers([]);
+            setUsers([]);
+            
             // Fetch all users (use a large limit to get everything)
             const data = await authAPI.getUsers(1, 1000); // Fetch up to 1000 users
             
@@ -464,17 +468,12 @@ const UsersPage = () => {
             
             console.log('Update response from backend:', updateResponse);
             
-            // Update user in local state with BMI and new profile image from backend
-            setUsers(users.map(u => u.id === currentUser.id ? { 
-                ...u, 
-                ...updateData,
-                bmi: calculatedBMI,
-                // Use profile image from backend response if available, otherwise use our data
-                profile_image: updateResponse?.user?.profile_image || updateResponse?.profile_image || profileImageUrl || updateData.profile_image
-            } : u));
-            
+            // Close modal and clear current user
             setIsEditModalOpen(false);
             setCurrentUser(null);
+            
+            // Clear cache and refresh users list from API
+            await fetchAllUsers();
             
             alert('User updated successfully');
         } catch (error) {
@@ -495,8 +494,8 @@ const UsersPage = () => {
             setCreateUser({ username: '', email: '', password: '' });
             setIsCreateModalOpen(false);
             
-            // Refresh users list
-            await fetchUsers();
+            // Clear cache and refresh users list from API
+            await fetchAllUsers();
         } catch (error) {
             console.error('Failed to create user:', error);
             alert(error.message || 'Failed to create user');
@@ -511,11 +510,11 @@ const UsersPage = () => {
                 setLoading(true);
                 await authAPI.deleteUser(user.id);
                 
-                // Remove user from local state
-                setUsers(users.filter(u => u.id !== user.id));
-                
                 // Close dropdown
                 setIsDropdownOpen(null);
+                
+                // Clear cache and refresh users list from API
+                await fetchAllUsers();
                 
                 alert('User deleted successfully');
             } catch (error) {

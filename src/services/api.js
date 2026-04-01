@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:9000/api/admin';
+// const API_BASE_URL = 'http://localhost:9000';
 const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
@@ -55,7 +55,7 @@ const clearAllTokens = () => {
 // Create axios instance with default configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // Increased timeout to 30 seconds
+  timeout: 120000, // Increased timeout to 2 minutes (120 seconds) for video uploads
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -638,7 +638,7 @@ export const authAPI = {
       // and let the browser set it automatically to multipart/form-data with boundary
       const apiInstance = axios.create({
         baseURL: API_BASE_URL,
-        timeout: 30000,
+        timeout: 120000,
         headers: {
           'Accept': 'application/json',
         },
@@ -670,7 +670,7 @@ export const authAPI = {
       // and let the browser set it automatically to multipart/form-data with boundary
       const apiInstance = axios.create({
         baseURL: API_BASE_URL,
-        timeout: 30000,
+        timeout: 120000,
         headers: {
           'Accept': 'application/json',
         },

@@ -384,9 +384,28 @@ const Workouts = () => {
         if (window.confirm('Are you sure you want to delete this workout?')) {
             try {
                 await authAPI.deleteWorkout(id);
-                // Refresh workouts list after successful deletion - use current page with standard page size
-                const currentPage = Math.max(1, parseInt(pagination.currentPage) || 1);
-                await fetchWorkouts(currentPage, 10);
+                console.log('Workout deleted successfully');
+                
+                // Determine which page to load after deletion
+                let targetPage = Math.max(1, parseInt(pagination.currentPage) || 1);
+                
+                // If we're in filtered mode, handle differently
+                if (isFilteredMode) {
+                    // In filtered mode, check if current page will be empty after deletion
+                    if (workouts.length === 1 && pagination.currentPage > 1) {
+                        targetPage = pagination.currentPage - 1;
+                    }
+                    // Re-apply filter to get updated results
+                    await handleFilterChange(filter);
+                } else {
+                    // In normal mode, check if we're on the last page and it has only one item
+                    if (workouts.length === 1 && pagination.currentPage > 1) {
+                        targetPage = pagination.currentPage - 1;
+                    }
+                    // Refresh workouts list with the determined page
+                    await fetchWorkouts(targetPage, 10);
+                }
+                
             } catch (error) {
                 console.error('Error deleting workout:', error);
                 setError(error.message || 'Failed to delete workout');

@@ -13,9 +13,6 @@ const Login = ({ onLogin, loginError }) => {
 
     // Check for session expired message on component mount
     useEffect(() => {
-        // Additional safety: clear any existing tokens when login page loads
-        authAPI.logout();
-        
         const sessionExpiredMessage = localStorage.getItem('sessionExpired');
         
         if (sessionExpiredMessage) {
