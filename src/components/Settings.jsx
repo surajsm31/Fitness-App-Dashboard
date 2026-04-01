@@ -17,6 +17,16 @@ const Settings = () => {
         avatar: null
     });
 
+    // Function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        const names = name.trim().split(' ');
+        if (names.length === 1) {
+            return names[0].charAt(0).toUpperCase();
+        }
+        return names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase();
+    };
+
     const [notifications, setNotifications] = useState({
         email: true,
         push: true,
@@ -152,7 +162,14 @@ const Settings = () => {
                                         {profile.avatar ? (
                                             <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
-                                            <User className="w-10 h-10 text-gray-400" />
+                                            <div className="relative">
+                                                <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-500 to-yellow-500 dark:from-yellow-400 dark:to-red-400 drop-shadow-lg transform perspective-500 relative z-10">
+                                                    {getInitials(profile.name)}
+                                                </span>
+                                                <span className="absolute inset-0 text-3xl font-black text-black/40 dark:text-black/60 transform translate-x-px translate-y-px z-0">
+                                                    {getInitials(profile.name)}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
                                     <label className="absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full cursor-pointer hover:bg-indigo-700 transition-colors shadow-md">

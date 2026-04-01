@@ -7,5 +7,20 @@ export default defineConfig({
   server: {
     port: 3000, // Change to your preferred port
     host: true  // Expose to network
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries
+          vendor: ['react', 'react-dom'],
+          // Split chart library separately
+          charts: ['recharts'],
+          // Split icons and utilities
+          ui: ['lucide-react', 'clsx']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 600 // Reduce warning threshold
   }
 })
