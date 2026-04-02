@@ -23,6 +23,7 @@ const Nutrition = () => {
     // BMI State
     const [bmiInputs, setBmiInputs] = useState({ height: '', weight: '' });
     const [bmiResult, setBmiResult] = useState(null);
+    const [bmiCalculating, setBmiCalculating] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     // Fetch meals from API with pagination
@@ -266,11 +267,13 @@ const Nutrition = () => {
         { label: 'Snack', icon: Utensils },
     ];
 
-    const calculateBMI = () => {
+    const calculateBMI = async () => {
         const h = parseFloat(bmiInputs.height) / 100; // cm to m
         const w = parseFloat(bmiInputs.weight);
 
         if (h > 0 && w > 0) {
+            setBmiCalculating(true);
+            
             const bmi = (w / (h * h)).toFixed(1);
             let category = '';
             if (bmi < 18.5) category = 'Underweight';
@@ -279,7 +282,65 @@ const Nutrition = () => {
             else category = 'Obese';
 
             setBmiResult({ bmi, category });
+            
+            // Use the same logic as handleFilterChange to load meals for the calculated category
             setSelectedCategory(category);
+            
+            if (category === 'All') {
+                // Reset to normal pagination
+                fetchMeals(1, pagination.pageSize);
+            } else {
+                // Show loading state during filtering
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    // Get filtered pagination info and load first page with filtered data
+                    const filteredPagination = await getFilteredPagination(category);
+                    
+                    if (filteredPagination.filteredPages.length > 0) {
+                        // Load first page with filtered data
+                        const firstFilteredPage = filteredPagination.filteredPages[0].pageNumber;
+                        
+                        // Load the actual meals for that page
+                        const response = await authAPI.getMeals(firstFilteredPage, pagination.pageSize);
+                        const categoryIds = {
+                            'Underweight': [1, 2, 3],
+                            'Normal': [4],
+                            'Overweight': [5],
+                            'Obese': [6, 7, 8]
+                        };
+                        const filteredMeals = response.meals.filter(meal => 
+                            categoryIds[category].includes(meal.bmiCategory)
+                        );
+                        
+                        setMeals(filteredMeals);
+                        setPagination({
+                            ...filteredPagination,
+                            currentPage: 1
+                        });
+                        setError(null);
+                    } else {
+                        // No meals found for this category
+                        setMeals([]);
+                        setPagination({
+                            currentPage: 1,
+                            totalPages: 0,
+                            totalItems: 0,
+                            hasNext: false,
+                            hasPrev: false,
+                            pageSize: pagination.pageSize
+                        });
+                        setError('No meal plans found for this category');
+                    }
+                } catch (error) {
+                    console.error('Error filtering meals by BMI category:', error);
+                    setError('Failed to load meals. Please try again.');
+                } finally {
+                    setLoading(false);
+                    setBmiCalculating(false);
+                }
+            }
         }
     };
 
@@ -657,9 +718,17 @@ const Nutrition = () => {
                             <div className="flex items-end">
                                 <button
                                     onClick={calculateBMI}
-                                    className="bg-white text-indigo-600 px-4 sm:px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors w-full sm:w-auto"
+                                    disabled={bmiCalculating}
+                                    className="bg-white text-indigo-600 px-4 sm:px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    Calculate
+                                    {bmiCalculating ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Calculating...
+                                        </>
+                                    ) : (
+                                        'Calculate'
+                                    )}
                                 </button>
                             </div>
                         </div>

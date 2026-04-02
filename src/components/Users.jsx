@@ -448,12 +448,11 @@ const UsersPage = () => {
             if (currentUser.activity_level) updateData.activity_level = currentUser.activity_level;
             if (calculatedBMI) updateData.bmi = parseFloat(calculatedBMI);
             
-            // Handle profile image separately for file upload
+            // Handle profile image - only include if a new file is selected
             if (profileImageFile) {
-                updateData.profile_image = profileImageFile; // Send actual file
-            } else if (profileImageUrl) {
-                updateData.profile_image = profileImageUrl; // Send URL string
+                updateData.profile_image = profileImageFile; // Send actual file only when new image is uploaded
             }
+            // Don't include profile_image field at all when keeping the existing image
             
             console.log('Sending update data:', updateData);
             console.log('Current user data:', currentUser);
@@ -637,14 +636,13 @@ const UsersPage = () => {
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">BMI</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity Level</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {users.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center py-8 text-gray-500">
+                                            <td colSpan="5" className="text-center py-8 text-gray-500">
                                                 {searchTerm || (filters.gender !== 'All' || filters.activityLevel !== 'All') 
                                                     ? 'No users found matching your search or filters.' 
                                                     : 'No users found.'}
@@ -684,9 +682,6 @@ const UsersPage = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <ActivityLevelBadge activityLevel={user.activity_level} />
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
-                                                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex justify-end gap-2">
