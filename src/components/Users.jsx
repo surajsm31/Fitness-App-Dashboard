@@ -65,6 +65,27 @@ const ActivityLevelBadge = ({ activityLevel }) => {
     );
 };
 
+const StatusBadge = ({ status }) => {
+    if (!status) {
+        return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                Unknown
+            </span>
+        );
+    }
+    
+    let colorClass = "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
+    if (status.toLowerCase() === 'expired') colorClass = "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
+    if (status.toLowerCase() === 'cancelled') colorClass = "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300";
+    if (status.toLowerCase() === 'pending') colorClass = "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300";
+
+    return (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+        </span>
+    );
+};
+
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Cache for all users
@@ -91,6 +112,23 @@ const UsersPage = () => {
         email: '',
         password: ''
     });
+
+    // Subscribed users state
+    const [subscriptions, setSubscriptions] = useState([]);
+    const [subscriptionsLoading, setSubscriptionsLoading] = useState(false);
+    const [subscriptionsPagination, setSubscriptionsPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        hasNext: false,
+        hasPrev: false,
+        pageSize: 10
+    });
+    const [subscriptionsError, setSubscriptionsError] = useState(null);
+
+    // Subscription edit modal state
+    const [isSubscriptionEditModalOpen, setIsSubscriptionEditModalOpen] = useState(false);
+    const [currentSubscription, setCurrentSubscription] = useState(null);
 
     // Fetch all users and cache them
     const fetchAllUsers = async () => {
@@ -173,9 +211,37 @@ const UsersPage = () => {
         }
     };
 
+    // Fetch user subscriptions
+    const fetchSubscriptions = async (page = 1) => {
+        try {
+            setSubscriptionsLoading(true);
+            setSubscriptionsError(null);
+            
+            const data = await authAPI.getUserSubscriptions(page, subscriptionsPagination.pageSize);
+            
+            // Update subscriptions and pagination
+            setSubscriptions(data.subscriptions || []);
+            setSubscriptionsPagination({
+                currentPage: data.pagination?.current_page || page,
+                totalPages: data.pagination?.total_pages || 1,
+                totalItems: data.pagination?.total_items || 0,
+                hasNext: data.pagination?.has_next || false,
+                hasPrev: data.pagination?.has_prev || false,
+                pageSize: subscriptionsPagination.pageSize
+            });
+            
+        } catch (err) {
+            console.error('Failed to fetch subscriptions:', err);
+            setSubscriptionsError(err.message || 'Failed to load subscriptions');
+        } finally {
+            setSubscriptionsLoading(false);
+        }
+    };
+
     // Load users on component mount
     useEffect(() => {
         fetchAllUsers();
+        fetchSubscriptions();
     }, []); // Only run once on mount
 
     // Re-apply filters when allUsers are loaded (for initial display)
@@ -292,6 +358,26 @@ const UsersPage = () => {
         }
     };
 
+    // Subscription pagination handlers
+    const handleSubscriptionPageChange = (newPage) => {
+        console.log('Changing subscriptions to page:', newPage);
+        fetchSubscriptions(newPage);
+    };
+
+    const handleSubscriptionPrevPage = () => {
+        console.log('Subscription previous button clicked. Current page:', subscriptionsPagination.currentPage, 'HasPrev:', subscriptionsPagination.hasPrev);
+        if (subscriptionsPagination.hasPrev) {
+            handleSubscriptionPageChange(subscriptionsPagination.currentPage - 1);
+        }
+    };
+
+    const handleSubscriptionNextPage = () => {
+        console.log('Subscription next button clicked. Current page:', subscriptionsPagination.currentPage, 'HasNext:', subscriptionsPagination.hasNext);
+        if (subscriptionsPagination.hasNext) {
+            handleSubscriptionPageChange(subscriptionsPagination.currentPage + 1);
+        }
+    };
+
     // Calculate dropdown position based on available space
     const calculateDropdownPosition = (buttonElement) => {
         if (!buttonElement) return { top: 'auto', bottom: 'auto' };
@@ -403,6 +489,12 @@ const UsersPage = () => {
         } finally {
             setProfileLoading(false);
         }
+    };
+
+    const handleEditSubscription = (subscription) => {
+        console.log('Editing subscription:', subscription);
+        setCurrentSubscription(subscription);
+        setIsSubscriptionEditModalOpen(true);
     };
 
     // Calculate BMI based on weight (kg) and height (cm)
@@ -634,6 +726,7 @@ const UsersPage = () => {
                                     <tr>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">BMI</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity Level</th>
                                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
@@ -642,7 +735,7 @@ const UsersPage = () => {
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {users.length === 0 ? (
                                         <tr>
-                                            <td colSpan="5" className="text-center py-8 text-gray-500">
+                                            <td colSpan="6" className="text-center py-8 text-gray-500">
                                                 {searchTerm || (filters.gender !== 'All' || filters.activityLevel !== 'All') 
                                                     ? 'No users found matching your search or filters.' 
                                                     : 'No users found.'}
@@ -676,6 +769,9 @@ const UsersPage = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <GenderBadge gender={user.gender} />
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                                    {user.age || 'N/A'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <BMIBadge bmi={user.bmi} />
@@ -789,6 +885,157 @@ const UsersPage = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    {/* Subscribed Users Table */}
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subscribed Users</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Users with subscription plans</p>
+                        </div>
+                        
+                        {/* Loading State */}
+                        {subscriptionsLoading && (
+                            <div className="flex justify-center items-center py-8">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            </div>
+                        )}
+
+                        {/* Error State */}
+                        {subscriptionsError && (
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 m-4">
+                                <p className="text-red-600 dark:text-red-400">{subscriptionsError}</p>
+                                <button
+                                    onClick={() => fetchSubscriptions()}
+                                    className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        )}
+
+                        {!subscriptionsLoading && !subscriptionsError && (
+                            <>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                            <tr>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sr No</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Username</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Date</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">End Date</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {subscriptions.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan="7" className="text-center py-8 text-gray-500">
+                                                        No subscribed users found.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                subscriptions.map((subscription, index) => (
+                                                    <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                                            {(subscriptionsPagination.currentPage - 1) * subscriptionsPagination.pageSize + index + 1}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300">
+                                                                    {subscription.username?.charAt(0)?.toUpperCase() || 'U'}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-medium text-gray-900 dark:text-white">{subscription.username || 'N/A'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                                                {subscription.plan_name || 'N/A'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                                            {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : 'N/A'}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
+                                                            {subscription.end_date ? new Date(subscription.end_date).toLocaleDateString() : 'N/A'}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <StatusBadge status={subscription.status} />
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button
+                                                                onClick={() => handleEditSubscription(subscription)}
+                                                                className="p-1 text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+                                                                title="Edit Subscription"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                {/* Pagination */}
+                                <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                            {subscriptionsPagination.totalItems > 0 ? (
+                                                <span>
+                                                    Showing {((subscriptionsPagination.currentPage - 1) * subscriptionsPagination.pageSize) + 1} to {Math.min(subscriptionsPagination.currentPage * subscriptionsPagination.pageSize, subscriptionsPagination.totalItems)} of {subscriptionsPagination.totalItems} subscriptions
+                                                </span>
+                                            ) : (
+                                                <span>No subscriptions found</span>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={handleSubscriptionPrevPage}
+                                                disabled={!subscriptionsPagination.hasPrev || subscriptionsLoading}
+                                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                                Previous
+                                            </button>
+                                            
+                                            <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
+                                                Page {subscriptionsPagination.currentPage} of {subscriptionsPagination.totalPages}
+                                            </span>
+                                            
+                                            <button 
+                                                onClick={handleSubscriptionNextPage}
+                                                disabled={!subscriptionsPagination.hasNext || subscriptionsLoading}
+                                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            >
+                                                Next
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Loading indicator for pagination */}
+                                    {subscriptionsLoading && (
+                                        <div className="flex justify-center items-center py-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                                            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Loading...</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </>
             )}
@@ -1143,6 +1390,141 @@ const UsersPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Subscription Edit Modal */}
+            {isSubscriptionEditModalOpen && currentSubscription && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit Subscription</h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Subscription Information</p>
+                            </div>
+                            <button onClick={() => setIsSubscriptionEditModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                                    <input
+                                        type="text"
+                                        value={currentSubscription.username || ''}
+                                        readOnly
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                        placeholder="Username"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Username cannot be edited</p>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Plan Name</label>
+                                    <input
+                                        type="text"
+                                        value={currentSubscription.plan_name || ''}
+                                        readOnly
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                        placeholder="Plan name"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Plan name cannot be edited</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                        <input
+                                            type="text"
+                                            value={currentSubscription.start_date ? new Date(currentSubscription.start_date).toLocaleDateString() : ''}
+                                            readOnly
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                            placeholder="Start date"
+                                        />
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Start date cannot be edited</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                        <input
+                                            type="text"
+                                            value={currentSubscription.end_date ? new Date(currentSubscription.end_date).toLocaleDateString() : ''}
+                                            readOnly
+                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                            placeholder="End date"
+                                        />
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">End date cannot be edited</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                                    <select
+                                        value={currentSubscription.status || ''}
+                                        onChange={e => setCurrentSubscription({ ...currentSubscription, status: e.target.value })}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                    >
+                                        <option value="">Select Status</option>
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Created At</label>
+                                    <input
+                                        type="text"
+                                        value={currentSubscription.created_at ? new Date(currentSubscription.created_at).toLocaleString() : 'N/A'}
+                                        readOnly
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                        placeholder="Created at"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Creation timestamp (read-only)</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSubscriptionEditModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            if (!currentSubscription.id || !currentSubscription.status) {
+                                                alert('Please select a status');
+                                                return;
+                                            }
+                                            
+                                            console.log('Updating subscription:', currentSubscription.id, 'Status:', currentSubscription.status);
+                                            
+                                            await authAPI.updateUserSubscription(currentSubscription.id, currentSubscription.status);
+                                            
+                                            // Refresh subscriptions list
+                                            await fetchSubscriptions(subscriptionsPagination.currentPage);
+                                            
+                                            setIsSubscriptionEditModalOpen(false);
+                                            setCurrentSubscription(null);
+                                            
+                                            alert('Subscription updated successfully');
+                                        } catch (error) {
+                                            console.error('Failed to update subscription:', error);
+                                            alert(error.message || 'Failed to update subscription');
+                                        }
+                                    }}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

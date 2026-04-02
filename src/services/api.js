@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:9000';
-const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+const API_BASE_URL = 'http://localhost:9000';
+// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -878,6 +878,45 @@ export const authAPI = {
     } catch (error) {
       console.error('Error deleting subscription plan:', error);
       throw error.response?.data || { message: 'Failed to delete subscription plan' };
+    }
+  },
+
+  // User Subscriptions API functions
+  getUserSubscriptions: async (page = 1, pageSize = 10) => {
+    try {
+      // Convert page-based to skip/limit format
+      const skip = (page - 1) * pageSize;
+      
+      console.log('Fetching user subscriptions from:', `${API_BASE_URL}/user-subscriptions`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}`);
+      
+      const response = await api.get('/api/admin/user-subscriptions', {
+        params: {
+          skip: skip,
+          limit: pageSize
+        }
+      });
+      
+      console.log('User subscriptions API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user subscriptions:', error);
+      throw error.response?.data || { message: 'Failed to fetch user subscriptions' };
+    }
+  },
+
+  updateUserSubscription: async (subscriptionId, status) => {
+    try {
+      console.log('Updating subscription with ID:', subscriptionId, 'Status:', status);
+      
+      const response = await api.put(`/api/admin/update-user-subscription/${subscriptionId}`, {
+        status: status
+      });
+      
+      console.log('Update subscription API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      throw error.response?.data || { message: 'Failed to update subscription' };
     }
   },
 
