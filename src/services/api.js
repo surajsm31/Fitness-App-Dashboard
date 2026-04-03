@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:9000';
+// const API_BASE_URL = 'http://localhost:8000';
 const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
@@ -1002,6 +1002,55 @@ export const authAPI = {
     } catch (error) {
       console.error('Error fetching dashboard users:', error);
       throw error.response?.data || { message: 'Failed to fetch dashboard users' };
+    }
+  },
+
+  // Profile API functions
+  getProfile: async () => {
+    try {
+      console.log('Fetching admin profile from:', `${API_BASE_URL}/api/admin/profile`);
+      const response = await api.get('/api/admin/profile');
+      
+      console.log('Profile API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      throw error.response?.data || { message: 'Failed to fetch profile' };
+    }
+  },
+
+  updateProfile: async (profileData) => {
+    try {
+      console.log('Updating admin profile with data:', profileData);
+      
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      
+      // Add all fields to FormData according to AdminProfileUpdateSchema
+      if (profileData.name !== undefined && profileData.name !== null) {
+        formData.append('name', profileData.name);
+      }
+      if (profileData.email !== undefined && profileData.email !== null) {
+        formData.append('email', profileData.email);
+      }
+      if (profileData.bio !== undefined && profileData.bio !== null) {
+        formData.append('bio', profileData.bio);
+      }
+      if (profileData.profile_image !== undefined && profileData.profile_image !== null) {
+        formData.append('profile_image', profileData.profile_image);
+      }
+      
+      const response = await api.put('/api/admin/profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      console.log('Update profile API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error.response?.data || { message: 'Failed to update profile' };
     }
   }
 };

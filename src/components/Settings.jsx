@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Bell, Shield, Moon, Sun, Save, Camera, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { authAPI } from '../services/api';
+import { useProfile } from '../context/ProfileContext';
 import ForgotPassword from './ForgotPassword';
 
 const Settings = () => {
     const { theme, toggleTheme } = useTheme();
+    const { profile, loading: profileLoading, error: profileError, success: profileSuccess, updateProfile } = useProfile();
     const [activeTab, setActiveTab] = useState('account');
     const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-    // Mock States
-    const [profile, setProfile] = useState({
-        name: 'Suraj More',
-        email: 'ssmtest31@gmail.com',
-        bio: 'Fitness enthusiast and dashboard administrator.',
-        avatar: null
-    });
+    const [avatarFile, setAvatarFile] = useState(null);
+    
+    // Local state for form handling
+    const [localProfile, setLocalProfile] = useState({});
 
     // Function to get initials from name
     const getInitials = (name) => {
@@ -25,6 +22,49 @@ const Settings = () => {
             return names[0].charAt(0).toUpperCase();
         }
         return names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase();
+    };
+
+    // Initialize local profile when context profile changes
+    useEffect(() => {
+        setLocalProfile(profile);
+    }, [profile]);
+
+    const handleProfileChange = (e) => {
+        setLocalProfile({ ...localProfile, [e.target.name]: e.target.value });
+    };
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setAvatarFile(file);
+            // Create a temporary preview URL
+            setLocalProfile({ 
+                ...localProfile, 
+                profile_image: URL.createObjectURL(file) 
+            });
+        }
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const profileData = {
+                name: localProfile.name,
+                bio: localProfile.bio
+            };
+
+            if (avatarFile) {
+                profileData.profile_image = avatarFile;
+            }
+
+            console.log('Submitting profile data:', profileData);
+            await updateProfile(profileData);
+            setAvatarFile(null);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            // Error is handled by the context
+        }
     };
 
     const [notifications, setNotifications] = useState({
@@ -49,16 +89,9 @@ const Settings = () => {
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
 
-    const handleProfileChange = (e) => {
-        setProfile({ ...profile, [e.target.name]: e.target.value });
-    };
-
-    const handleAvatarChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setProfile({ ...profile, avatar: URL.createObjectURL(file) });
-        }
-    };
+    // Display error from props or local state
+    const displayError = passwordError || profileError;
+    const displaySuccess = passwordSuccess || profileSuccess;
 
     const handlePasswordChange = (e) => {
         setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
@@ -111,9 +144,6 @@ const Settings = () => {
         { id: 'appearance', label: 'Appearance', icon: theme === 'dark' ? Moon : Sun },
     ];
 
-    // Display error from props or local state
-    const displayError = passwordError;
-
     // Show ForgotPassword component if requested
     if (showForgotPassword) {
         return (
@@ -150,24 +180,39 @@ const Settings = () => {
 
                     {/* ACCOUNT SETTINGS */}
                     {activeTab === 'account' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <form id="profile-form" onSubmit={handleProfileSubmit} className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <div>
                                 <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Public Profile</h2>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Manage your profile information.</p>
                             </div>
 
+                            {/* Profile Success/Error Messages */}
+                            {profileError && (
+                                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                    <p className="text-sm text-red-600 dark:text-red-400">{profileError}</p>
+                                </div>
+                            )}
+
+                            {profileSuccess && (
+                                <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                    <p className="text-sm text-green-600 dark:text-green-400">{profileSuccess}</p>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-6">
                                 <div className="relative">
                                     <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-800 shadow-sm">
-                                        {profile.avatar ? (
-                                            <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                        {localProfile.profile_image ? (
+                                            <img src={localProfile.profile_image} alt="Profile" className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="relative">
                                                 <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-red-500 to-yellow-500 dark:from-yellow-400 dark:to-red-400 drop-shadow-lg transform perspective-500 relative z-10">
-                                                    {getInitials(profile.name)}
+                                                    {getInitials(localProfile.name)}
                                                 </span>
                                                 <span className="absolute inset-0 text-3xl font-black text-black/40 dark:text-black/60 transform translate-x-px translate-y-px z-0">
-                                                    {getInitials(profile.name)}
+                                                    {getInitials(localProfile.name)}
                                                 </span>
                                             </div>
                                         )}
@@ -191,9 +236,10 @@ const Settings = () => {
                                     <input
                                         type="text"
                                         name="name"
-                                        value={profile.name}
+                                        value={localProfile.name || ''}
                                         onChange={handleProfileChange}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                        disabled={profileLoading}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
                                     />
                                 </div>
                                 <div>
@@ -201,23 +247,27 @@ const Settings = () => {
                                     <input
                                         type="email"
                                         name="email"
-                                        value={profile.email}
-                                        onChange={handleProfileChange}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                        value={localProfile.email || ''}
+                                        disabled
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                        title="Email address cannot be edited"
                                     />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email address cannot be edited</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
                                     <textarea
                                         name="bio"
-                                        value={profile.bio}
+                                        value={localProfile.bio || ''}
                                         onChange={handleProfileChange}
+                                        disabled={profileLoading}
                                         rows={4}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                                        placeholder="Tell us about yourself..."
                                     />
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     )}
 
                     {/* NOTIFICATIONS SETTINGS */}
@@ -420,7 +470,30 @@ const Settings = () => {
                     )}
 
                     {/* Save Button for Forms */}
-                    {activeTab !== 'appearance' && (
+                    {activeTab === 'account' && (
+                        <div className="mt-8 flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <button 
+                                type="submit"
+                                form="profile-form"
+                                disabled={profileLoading}
+                                className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-all hover:shadow md"
+                            >
+                                {profileLoading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-4 h-4" />
+                                        Save Changes
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+                    
+                    {activeTab !== 'account' && activeTab !== 'appearance' && (
                         <div className="mt-8 flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
                             <button className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-all hover:shadow md">
                                 <Save className="w-4 h-4" />

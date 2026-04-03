@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2 } from 'lucide-react';
 import { authAPI } from '../services/api';
@@ -25,6 +25,112 @@ const Nutrition = () => {
     const [bmiResult, setBmiResult] = useState(null);
     const [bmiCalculating, setBmiCalculating] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [nutritionData, setNutritionData] = useState([
+        { name: 'Protein', value: 30, color: '#3B82F6' },     // Blue
+        { name: 'Carbs', value: 40, color: '#10B981' },      // Green
+        { name: 'Fats', value: 30, color: '#F59E0B' },       // Amber
+    ]);
+
+    // Nutrition data configuration based on BMI categories
+    const nutritionRatios = {
+        underweight: { protein: 25, carbs: 50, fats: 25 },
+        normal: { protein: 30, carbs: 40, fats: 30 },
+        overweight: { protein: 35, carbs: 35, fats: 30 },
+        obese: { protein: 40, carbs: 30, fats: 30 }
+    };
+
+    // Function to update nutrition chart based on BMI category
+    const updateNutritionChart = (bmiCategory) => {
+        const ratios = nutritionRatios[bmiCategory] || nutritionRatios.normal;
+        
+        const newNutritionData = [
+            { name: 'Protein', value: ratios.protein, color: '#3B82F6' },     // Blue
+            { name: 'Carbs', value: ratios.carbs, color: '#10B981' },         // Green
+            { name: 'Fats', value: ratios.fats, color: '#F59E0B' },           // Amber
+        ];
+        
+        setNutritionData(newNutritionData);
+        console.log(`Updated nutrition chart for ${bmiCategory}:`, newNutritionData);
+    };
+
+    // Reusable Nutrition Chart Component
+    const NutritionChart = memo(({ data, bmiCategory }) => {
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    Nutrition Distribution 
+                    {bmiCategory && (
+                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                            ({bmiCategory})
+                        </span>
+                    )}
+                </h3>
+                <div className="h-[200px] sm:h-[250px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart key={bmiCategory || 'default-chart'}>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={60}
+                                paddingAngle={5}
+                                dataKey="value"
+                                animationBegin={0}
+                                animationDuration={0}
+                                isAnimationActive={false}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <Tooltip 
+                                contentStyle={{ 
+                                    borderRadius: '8px', 
+                                    border: 'none', 
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    backdropFilter: 'blur(10px)'
+                                }}
+                                formatter={(value, name) => {
+                                    const calories = 2000;
+                                    const multiplier = name === 'Protein' ? 4 : name === 'Carbs' ? 4 : 9;
+                                    const grams = Math.round((value / 100) * calories / multiplier);
+                                    return [
+                                        `${value}% (~${grams}g)`, 
+                                        name
+                                    ];
+                                }}
+                                labelFormatter={() => 'Macronutrient Ratio (2000 kcal diet)'}
+                            />
+                            <Legend 
+                                verticalAlign="bottom" 
+                                height={36}
+                                formatter={(value, entry) => (
+                                    <span style={{ color: entry.color }}>
+                                        {value}: {entry.payload.value}%
+                                    </span>
+                                )}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+                <div className="text-center mt-4">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        {bmiCategory 
+                            ? `Optimized for ${bmiCategory} BMI category` 
+                            : 'Enter height and weight, then click Calculate to see personalized nutrition ratios'
+                        }
+                    </p>
+                    {bmiCategory && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            Based on 2000 calorie daily intake
+                        </p>
+                    )}
+                </div>
+            </div>
+        );
+    });
 
     // Fetch meals from API with pagination
     const fetchMeals = async (page = 1, pageSize = 10, isPagination = false, category = null) => {
@@ -254,12 +360,6 @@ const Nutrition = () => {
         }
     };
 
-    const macroData = [
-        { name: 'Protein', value: 120, color: '#4F46E5' }, // Indigo
-        { name: 'Carbs', value: 250, color: '#10B981' },   // Emerald
-        { name: 'Fats', value: 65, color: '#F59E0B' },     // Amber
-    ];
-
     const iconOptions = [
         { label: 'Breakfast', icon: Coffee },
         { label: 'Lunch', icon: Sun },
@@ -282,6 +382,9 @@ const Nutrition = () => {
             else category = 'Obese';
 
             setBmiResult({ bmi, category });
+            
+            // Update nutrition chart based on BMI category
+            updateNutritionChart(category.toLowerCase());
             
             // Use the same logic as handleFilterChange to load meals for the calculated category
             setSelectedCategory(category);
@@ -749,33 +852,11 @@ const Nutrition = () => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
                 {/* Macro Chart */}
                 <div className="xl:col-span-1">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Focus Distribution</h3>
-                        <div className="h-[200px] sm:h-[250px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={macroData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={40}
-                                        outerRadius={60}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {macroData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                                    <Legend verticalAlign="bottom" height={36} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                        <div className="text-center mt-4">
-                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Most users prefer Low Carb</p>
-                        </div>
-                    </div>
+                    <NutritionChart 
+                        key={bmiResult?.category || 'default'} 
+                        data={nutritionData} 
+                        bmiCategory={bmiResult?.category} 
+                    />
                 </div>
 
                 {/* Meals List */}

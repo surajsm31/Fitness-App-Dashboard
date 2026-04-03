@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useProfile } from '../context/ProfileContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ onMenuClick, onLogout, onNavigate }) => {
     const { theme, toggleTheme } = useTheme();
+    const { profile, loading: profileLoading } = useProfile();
     const [showNotifications, setShowNotifications] = useState(false);
 
     // Mock Notification Data
@@ -17,6 +19,16 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
     ]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
+
+    // Function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        const names = name.trim().split(' ');
+        if (names.length === 1) {
+            return names[0].charAt(0).toUpperCase();
+        }
+        return names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase();
+    };
 
     const handleMarkRead = (id) => {
         setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
@@ -97,11 +109,19 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
                             className="flex items-center relative group cursor-pointer"
                         >
                             <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-purple-500 blur opacity-0 group-hover:opacity-75 transition duration-200"></span>
-                            <img
-                                className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-50 object-cover border-2 border-white dark:border-gray-800 shadow-md"
-                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                alt=""
-                            />
+                            {profile.profile_image ? (
+                                <img
+                                    className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-50 object-cover border-2 border-white dark:border-gray-800 shadow-md"
+                                    src={profile.profile_image}
+                                    alt={profile.name || 'Admin'}
+                                />
+                            ) : (
+                                <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md">
+                                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                        {getInitials(profile.name)}
+                                    </span>
+                                </div>
+                            )}
                         </span>
                         <button
                             onClick={onLogout}

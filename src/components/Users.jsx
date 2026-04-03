@@ -169,12 +169,8 @@ const UsersPage = () => {
                         try {
                             const userDetails = await authAPI.getUserById(user.id);
                             
-                            let profileImage = userDetails.user?.profile_image || userDetails.profile_image || user.profile_image;
-                            
-                            // Fix Cloudinary URL typo if present
-                            if (profileImage && profileImage.includes('fitness-/users')) {
-                                profileImage = profileImage.replace('fitness-/users', 'fitness-app/users');
-                            }
+                            // Backend now returns complete Cloudinary URL directly
+                            const profileImage = userDetails.user?.profile_image || userDetails.profile_image || user.profile_image;
                             
                             return {
                                 ...user,

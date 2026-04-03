@@ -12,6 +12,7 @@ import Settings from './components/Settings';
 import Login from './components/Login';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeProvider } from './context/ThemeContext';
+import { ProfileProvider } from './context/ProfileContext';
 import { authAPI } from './services/api';
 
 /* Simple Analytics component inline or imported */
@@ -71,21 +72,23 @@ function App() {
 
     return (
         <ThemeProvider>
-            <DashboardLayout
-                currentView={currentView}
-                onNavigate={handleNavigate}
-                onLogout={handleLogout}
-            >
-                {currentView === 'Dashboard' && <Dashboard />}
-                {currentView === 'Users' && <UsersPage />}
-                {currentView === 'Subscriptions' && <Subscriptions />}
-                {currentView === 'Workouts' && <Workouts />}
-                {currentView === 'Nutrition' && <Nutrition />}
-                {currentView === 'BMI Class' && <BmiClass />}
-                {currentView === 'Analytics' && <Progress />} {/* Reusing Progress as Analytics for now */}
-                {currentView === 'Profile' && <Profile />}
-                {currentView === 'Settings' && <Settings />}
-            </DashboardLayout>
+            <ProfileProvider>
+                <DashboardLayout
+                    currentView={currentView}
+                    onNavigate={handleNavigate}
+                    onLogout={handleLogout}
+                >
+                    {currentView === 'Dashboard' && <Dashboard />}
+                    {currentView === 'Users' && <UsersPage />}
+                    {currentView === 'Subscriptions' && <Subscriptions />}
+                    {currentView === 'Workouts' && <Workouts />}
+                    {currentView === 'Nutrition' && <Nutrition />}
+                    {currentView === 'BMI Class' && <BmiClass />}
+                    {currentView === 'Analytics' && <Progress />} {/* Reusing Progress as Analytics for now */}
+                    {currentView === 'Profile' && <Profile />}
+                    {currentView === 'Settings' && <Settings />}
+                </DashboardLayout>
+            </ProfileProvider>
         </ThemeProvider>
     );
 }

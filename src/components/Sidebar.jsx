@@ -2,6 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activity, CreditCard } from 'lucide-react';
 import clsx from 'clsx';
 import { useTheme } from '../context/ThemeContext';
+import { useProfile } from '../context/ProfileContext';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +17,17 @@ const NAV_ITEMS = [
 
 const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
     const { theme } = useTheme();
+    const { profile, loading: profileLoading } = useProfile();
+
+    // Function to get initials from name
+    const getInitials = (name) => {
+        if (!name) return 'U';
+        const names = name.trim().split(' ');
+        if (names.length === 1) {
+            return names[0].charAt(0).toUpperCase();
+        }
+        return names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase();
+    };
 
     return (
         <>
@@ -76,14 +88,26 @@ const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
                         className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group"
                     >
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white dark:ring-gray-800">
-                                ℳ𝒮
-                            </div>
+                            {profile.profile_image ? (
+                                <img
+                                    src={profile.profile_image}
+                                    alt={profile.name || 'Admin'}
+                                    className="w-10 h-10 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-gray-800"
+                                />
+                            ) : (
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white dark:ring-gray-800">
+                                    {getInitials(profile.name)}
+                                </div>
+                            )}
                             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-0 group-hover:opacity-75 transition duration-200 blur-sm"></div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">Suraj More</p>
-                            <p className="text-xs text-primary dark:text-indigo-400 font-medium truncate">Pro Member</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {profileLoading ? 'Loading...' : (profile.name || 'Admin')}
+                            </p>
+                            <p className="text-xs text-primary dark:text-indigo-400 font-medium truncate">
+                                {profileLoading ? 'Loading...' : 'Administrator'}
+                            </p>
                         </div>
                     </div>
                 </div>
