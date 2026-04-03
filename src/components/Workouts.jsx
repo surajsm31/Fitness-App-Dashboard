@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Clock, Flame, Dumbbell } from 'lucide-react';
+import { Play, Clock, Flame, Dumbbell, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
 import { authAPI } from '../services/api';
 
@@ -19,6 +19,7 @@ const Workouts = () => {
     const [filteredPages, setFilteredPages] = useState([]); // Store filtered pages for pagination
     const [isFilteredMode, setIsFilteredMode] = useState(false); // Track if we're in filtered mode
     const [allPaginatedResults, setAllPaginatedResults] = useState([]); // Store all paginated filtered results
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For mobile dropdown
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -86,6 +87,18 @@ const Workouts = () => {
     useEffect(() => {
         fetchWorkouts(1, 10);
     }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isDropdownOpen]);
 
     const categories = ['All', 'loose', 'maintain', 'gain'];
 
@@ -490,15 +503,17 @@ const Workouts = () => {
 
     return (
         <div className="space-y-6 relative">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Workouts</h1>
-                <div className="flex gap-2">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Workouts</h1>
+                
+                {/* Desktop: Category buttons + Add button */}
+                <div className="hidden lg:flex items-center gap-2 flex-wrap">
                     {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => handleFilterChange(cat)}
                             className={clsx(
-                                "px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
+                                "px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
                                 filter === cat
                                     ? "bg-primary text-white"
                                     : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -522,7 +537,65 @@ const Workouts = () => {
     });
                             setIsEditModalOpen(true);
                         }}
-                        className="ml-4 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700"
+                        className="ml-4 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
+                    >
+                        + Add Workout
+                    </button>
+                </div>
+
+                {/* Mobile: Dropdown + Add button */}
+                <div className="lg:hidden flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {/* Dropdown for categories */}
+                    <div className="relative dropdown-container">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full sm:w-auto flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        >
+                            <span>{filter}</span>
+                            <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {/* Dropdown menu */}
+                        {isDropdownOpen && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => {
+                                            handleFilterChange(cat);
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className={clsx(
+                                            "w-full px-4 py-2 text-left text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg",
+                                            filter === cat
+                                                ? "bg-primary text-white"
+                                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        )}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Add Workout button for mobile */}
+                    <button
+                        onClick={() => {
+                            setCurrentWorkout({ 
+        id: Date.now(), 
+        title: '', 
+        description: '',
+        duration: '', 
+        calories_burned: '',
+        difficulty_level: 'beginner',
+        category: 'Loose',
+        workout_image_url: '',
+        workout_video_url: ''
+    });
+                            setIsEditModalOpen(true);
+                        }}
+                        className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
                     >
                         + Add Workout
                     </button>

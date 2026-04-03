@@ -1,14 +1,97 @@
 import React, { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2 } from 'lucide-react';
+import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown } from 'lucide-react';
 import { authAPI } from '../services/api';
 
 const Nutrition = () => {
     const [meals, setMeals] = useState([]);
+    const [allMeals, setAllMeals] = useState([]); // Cache for all meals
     const [loading, setLoading] = useState(true);
     const [paginationLoading, setPaginationLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Client-side filtering and pagination (similar to Users.jsx)
+    const applyFiltersAndPagination = (category = 'All', page = 1) => {
+        let filteredMeals = [...allMeals];
+        
+        // Apply category filter
+        if (category !== 'All') {
+            const categoryIds = {
+                'Underweight': [1, 2, 3],
+                'Normal': [4],
+                'Overweight': [5],
+                'Obese': [6, 7, 8]
+            };
+            
+            const targetIds = categoryIds[category] || [];
+            filteredMeals = filteredMeals.filter(meal => targetIds.includes(meal.bmiCategory));
+        }
+        
+        // Apply pagination
+        const totalItems = filteredMeals.length;
+        const totalPages = Math.ceil(totalItems / pagination.pageSize);
+        const startIndex = (page - 1) * pagination.pageSize;
+        const endIndex = startIndex + pagination.pageSize;
+        const paginatedMeals = filteredMeals.slice(startIndex, endIndex);
+        
+        // Update display meals and pagination
+        setMeals(paginatedMeals);
+        setPagination({
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+            pageSize: pagination.pageSize
+        });
+    };
+
+    // Fetch all meals and cache them (similar to Users.jsx)
+    const fetchAllMeals = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            // Clear cache first to ensure fresh data
+            setAllMeals([]);
+            setMeals([]);
+            
+            // Fetch all meals (use a large limit to get everything)
+            let currentPage = 1;
+            let totalPages = 1;
+            let allFetchedMeals = [];
+            
+            // Fetch all pages to get complete dataset
+            while (currentPage <= totalPages) {
+                const response = await authAPI.getMeals(currentPage, 50);
+                totalPages = response.pagination?.total_pages || 1;
+                
+                // Map API response to frontend format - convert food_item to name
+                const mappedMeals = response.meals.map(meal => ({
+                    ...meal,
+                    name: meal.food_item || meal.name || 'Untitled Meal',
+                    type: meal.meal_type ? meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1) : meal.type,
+                    bmiCategory: meal.bmi_category_id || meal.bmiCategory
+                }));
+                
+                allFetchedMeals = [...allFetchedMeals, ...mappedMeals];
+                currentPage++;
+            }
+            
+            // Cache all meals
+            setAllMeals(allFetchedMeals);
+            
+            // Apply current filter and pagination after cache refresh
+            applyFiltersAndPagination(selectedCategory, pagination.currentPage);
+            
+        } catch (err) {
+            console.error('Failed to fetch meals:', err);
+            setError(err.message || 'Failed to load meals');
+        } finally {
+            setLoading(false);
+        }
+    };
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -25,6 +108,7 @@ const Nutrition = () => {
     const [bmiResult, setBmiResult] = useState(null);
     const [bmiCalculating, setBmiCalculating] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For mobile dropdown
     const [nutritionData, setNutritionData] = useState([
         { name: 'Protein', value: 30, color: '#3B82F6' },     // Blue
         { name: 'Carbs', value: 40, color: '#10B981' },      // Green
@@ -132,231 +216,57 @@ const Nutrition = () => {
         );
     });
 
-    // Fetch meals from API with pagination
-    const fetchMeals = async (page = 1, pageSize = 10, isPagination = false, category = null) => {
-        try {
-            if (isPagination) {
-                setPaginationLoading(true);
-            } else {
-                setLoading(true);
-            }
-            setError(null);
-            
-            console.log('Fetching meals with page:', page, 'pageSize:', pageSize, 'isPagination:', isPagination, 'category:', category);
-            const response = await authAPI.getMeals(page, pageSize);
-            console.log('API response received:', response);
-            setMeals(response.meals);
-            
-            // Map API pagination fields to our state format
-            const mappedPagination = {
-                currentPage: response.pagination.current_page || 1,
-                totalPages: response.pagination.total_pages || 1,
-                totalItems: response.pagination.total_items || 0,
-                hasNext: response.pagination.has_next || false,
-                hasPrev: response.pagination.has_prev || false,
-                pageSize: response.pagination.page_size || 10
-            };
-            
-            // Preserve current category and page during refresh
-            if (category) {
-                setSelectedCategory(category);
-            }
-            
-            setPagination(mappedPagination);
-            console.log('Pagination state set to:', mappedPagination);
-            setError(null);
-        } catch (err) {
-            console.error('Failed to fetch meals:', err);
-            setError('Failed to load meals. Please try again.');
-        } finally {
-            setLoading(false);
-            setPaginationLoading(false);
-        }
-    };
 
-    // Initial fetch
+    // Load meals on component mount
     useEffect(() => {
-        fetchMeals(1, pagination.pageSize);
+        fetchAllMeals();
     }, []); // Only run once on mount
 
-    // Smart filtering - find all pages containing filtered meals and build filtered pagination
-    const getFilteredPagination = async (category) => {
-        const pageSize = pagination.pageSize;
-        const filteredPages = [];
-        
-        // Define category ID mappings
-        const categoryIds = {
-            'Underweight': [1, 2, 3],
-            'Normal': [4],
-            'Overweight': [5],
-            'Obese': [6, 7, 8]
-        };
-        
-        const targetIds = categoryIds[category] || [];
-        
-        // Search through all pages to find which ones contain target category
-        let currentPage = 1;
-        let totalPages = 1;
-        let totalFilteredItems = 0;
-        
-        while (currentPage <= totalPages) {
-            try {
-                console.log(`Checking page ${currentPage} for ${category} meals`);
-                const response = await authAPI.getMeals(currentPage, pageSize);
-                
-                totalPages = response.pagination.total_pages || 1;
-                
-                // Count meals with target category on this page
-                const filteredMealsOnPage = response.meals.filter(meal => targetIds.includes(meal.bmiCategory));
-                
-                if (filteredMealsOnPage.length > 0) {
-                    filteredPages.push({
-                        pageNumber: currentPage,
-                        meals: filteredMealsOnPage,
-                        totalMeals: filteredMealsOnPage.length
-                    });
-                    totalFilteredItems += filteredMealsOnPage.length;
-                }
-                
-                currentPage++;
-                
-            } catch (error) {
-                console.error(`Error checking page ${currentPage}:`, error);
-                break;
-            }
+    // Re-apply filters when allMeals are loaded (for initial display)
+    useEffect(() => {
+        if (allMeals.length > 0) {
+            applyFiltersAndPagination(selectedCategory, pagination.currentPage);
         }
-        
-        // Build filtered pagination info
-        const filteredPagination = {
-            currentPage: 1, // Start at first page with filtered data
-            totalPages: filteredPages.length,
-            totalItems: totalFilteredItems,
-            hasNext: filteredPages.length > 1,
-            hasPrev: false,
-            pageSize: pageSize,
-            filteredPages: filteredPages // Store which original pages have data
-        };
-        
-        return filteredPagination;
-    };
+    }, [allMeals]); // Re-run when cache is populated
 
-    // Handle filter change with context-aware pagination
-    const handleFilterChange = async (category) => {
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isDropdownOpen]);
+
+
+    // Handle filter change using cached data (similar to Users.jsx)
+    const handleFilterChange = (category) => {
         setSelectedCategory(category);
         
-        if (category === 'All') {
-            // Reset to normal pagination
-            fetchMeals(1, pagination.pageSize);
-        } else {
-            // Show loading state during filtering
-            setLoading(true);
-            setError(null);
-            
-            try {
-                // Get filtered pagination info and load first page with filtered data
-                const filteredPagination = await getFilteredPagination(category);
-                
-                if (filteredPagination.filteredPages.length > 0) {
-                    // Load first page with filtered data
-                    const firstFilteredPage = filteredPagination.filteredPages[0].pageNumber;
-                    
-                    // Load the actual meals for that page
-                    const response = await authAPI.getMeals(firstFilteredPage, pagination.pageSize);
-                    const categoryIds = {
-                        'Underweight': [1, 2, 3],
-                        'Normal': [4],
-                        'Overweight': [5],
-                        'Obese': [6, 7, 8]
-                    };
-                    const filteredMeals = response.meals.filter(meal => 
-                        categoryIds[category].includes(meal.bmiCategory)
-                    );
-                    
-                    setMeals(filteredMeals);
-                    setPagination(filteredPagination);
-                    setError(null);
-                } else {
-                    // No meals found for this category
-                    setMeals([]);
-                    setPagination({
-                        currentPage: 1,
-                        totalPages: 0,
-                        totalItems: 0,
-                        hasNext: false,
-                        hasPrev: false,
-                        pageSize: pagination.pageSize
-                    });
-                    setError('No meal plans found for this category');
-                }
-            } catch (error) {
-                console.error('Error filtering meals:', error);
-                setError('Failed to load meals. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        }
+        // Apply filters immediately using cached data
+        applyFiltersAndPagination(category, 1);
     };
 
-    // Pagination handlers
-    const handlePageChange = async (newFilteredPage) => {
-        if (selectedCategory === 'All') {
-            // Normal pagination for "All" category
-            fetchMeals(newFilteredPage, pagination.pageSize, true);
-        } else {
-            // Filtered pagination - map filtered page number to actual page number
-            const categoryIds = {
-                'Underweight': [1, 2, 3],
-                'Normal': [4],
-                'Overweight': [5],
-                'Obese': [6, 7, 8]
-            };
-            
-            if (pagination.filteredPages && pagination.filteredPages[newFilteredPage - 1]) {
-                const actualPageNumber = pagination.filteredPages[newFilteredPage - 1].pageNumber;
-                console.log(`Changing to filtered page ${newFilteredPage} (actual page ${actualPageNumber})`);
-                
-                // Show loading state during page change
-                setPaginationLoading(true);
-                
-                try {
-                    const response = await authAPI.getMeals(actualPageNumber, pagination.pageSize);
-                    const filteredMeals = response.meals.filter(meal => 
-                        categoryIds[selectedCategory].includes(meal.bmiCategory)
-                    );
-                    
-                    setMeals(filteredMeals);
-                    setPagination(prev => ({
-                        ...prev,
-                        currentPage: newFilteredPage,
-                        hasNext: newFilteredPage < prev.totalPages,
-                        hasPrev: newFilteredPage > 1
-                    }));
-                    setError(null);
-                } catch (error) {
-                    console.error('Error loading filtered page:', error);
-                    setError('Failed to load meals. Please try again.');
-                } finally {
-                    setPaginationLoading(false);
-                }
-            }
-        }
+    // Pagination handlers using cached data (similar to Users.jsx)
+    const handlePageChange = (newPage) => {
+        console.log('Changing to page:', newPage);
+        applyFiltersAndPagination(selectedCategory, newPage);
     };
 
     const handlePrevPage = () => {
         console.log('Previous button clicked. Current page:', pagination.currentPage, 'HasPrev:', pagination.hasPrev);
-        if (pagination.hasPrev && !paginationLoading) {
+        if (pagination.hasPrev) {
             handlePageChange(pagination.currentPage - 1);
-        } else {
-            console.log('Previous page not available or loading');
         }
     };
 
     const handleNextPage = () => {
         console.log('Next button clicked. Current page:', pagination.currentPage, 'HasNext:', pagination.hasNext);
-        if (pagination.hasNext && !paginationLoading) {
+        if (pagination.hasNext) {
             handlePageChange(pagination.currentPage + 1);
-        } else {
-            console.log('Next page not available or loading');
         }
     };
 
@@ -389,75 +299,11 @@ const Nutrition = () => {
             // Use the same logic as handleFilterChange to load meals for the calculated category
             setSelectedCategory(category);
             
-            if (category === 'All') {
-                // Reset to normal pagination
-                fetchMeals(1, pagination.pageSize);
-            } else {
-                // Show loading state during filtering
-                setLoading(true);
-                setError(null);
-                
-                try {
-                    // Get filtered pagination info and load first page with filtered data
-                    const filteredPagination = await getFilteredPagination(category);
-                    
-                    if (filteredPagination.filteredPages.length > 0) {
-                        // Load first page with filtered data
-                        const firstFilteredPage = filteredPagination.filteredPages[0].pageNumber;
-                        
-                        // Load the actual meals for that page
-                        const response = await authAPI.getMeals(firstFilteredPage, pagination.pageSize);
-                        const categoryIds = {
-                            'Underweight': [1, 2, 3],
-                            'Normal': [4],
-                            'Overweight': [5],
-                            'Obese': [6, 7, 8]
-                        };
-                        const filteredMeals = response.meals.filter(meal => 
-                            categoryIds[category].includes(meal.bmiCategory)
-                        );
-                        
-                        setMeals(filteredMeals);
-                        setPagination({
-                            ...filteredPagination,
-                            currentPage: 1
-                        });
-                        setError(null);
-                    } else {
-                        // No meals found for this category
-                        setMeals([]);
-                        setPagination({
-                            currentPage: 1,
-                            totalPages: 0,
-                            totalItems: 0,
-                            hasNext: false,
-                            hasPrev: false,
-                            pageSize: pagination.pageSize
-                        });
-                        setError('No meal plans found for this category');
-                    }
-                } catch (error) {
-                    console.error('Error filtering meals by BMI category:', error);
-                    setError('Failed to load meals. Please try again.');
-                } finally {
-                    setLoading(false);
-                    setBmiCalculating(false);
-                }
-            }
+            // Apply filters immediately using cached data
+            applyFiltersAndPagination(category, 1);
         }
     };
 
-    const filteredMeals = selectedCategory === 'All'
-        ? meals
-        : selectedCategory === 'Underweight'
-            ? meals.filter(m => [1, 2, 3].includes(m.bmiCategory))
-            : selectedCategory === 'Normal'
-                ? meals.filter(m => m.bmiCategory === 4)
-                : selectedCategory === 'Overweight'
-                    ? meals.filter(m => m.bmiCategory === 5)
-                    : selectedCategory === 'Obese'
-                        ? meals.filter(m => [6, 7, 8].includes(m.bmiCategory))
-                        : meals;
 
     const handleEdit = (meal) => {
         setCurrentMeal(meal);
@@ -473,16 +319,16 @@ const Nutrition = () => {
             setSubmitLoading(true);
             setError(null);
             
-            // Prepare meal data for API - use correct field names as per Postman
+            // Prepare meal data for API - use correct field names as per API schema
             const mealData = {
-                food_item: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal', // Use 'food_item' field (not 'name')
-                calories: parseInt(currentMeal.calories) || 0, // Ensure calories is a number
+                name: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal', // Use 'name' field for API
+                calories: parseInt(currentMeal.calories) || 0,
                 meal_type: currentMeal.type ? currentMeal.type.toLowerCase() : 'breakfast',
-                bmi_category_id: parseInt(currentMeal.bmiCategory) || 4 // Ensure bmi_category_id is a number
+                bmi_category_id: parseInt(currentMeal.bmiCategory) || 4
             };
             
             // Validate required fields before sending
-            if (!mealData.food_item || mealData.food_item.trim() === '') {
+            if (!mealData.name || mealData.name.trim() === '') {
                 setError('Meal name is required');
                 setSubmitLoading(false);
                 setLoading(false);
@@ -522,7 +368,7 @@ const Nutrition = () => {
                 // Check if update was successful - backend returns data without status field
                 if (responseData && responseData.id) {
                     // Update the meal in local state with the new data from backend response
-                    // Backend returns food_item field, so map it to name for frontend display
+                    // API response has food_item field, so map it to name for frontend display
                     const updatedMeal = {
                         ...responseData,
                         name: responseData.food_item || responseData.name || currentMeal.name,
@@ -550,98 +396,14 @@ const Nutrition = () => {
                     // Check if category changed
                     const categoryChanged = currentMeal.bmiCategory !== updatedMeal.bmiCategory;
                     
-                    
-                    setMeals(prevMeals => {
-                        const updatedMeals = prevMeals.map(meal => 
-                            meal.id === currentMeal.id ? updatedMeal : meal
-                        );
-                        
-                        // If we're in a specific category filter and category changed, remove the meal from current view
-                        if (selectedCategory !== 'All' && categoryChanged) {
-                            const categoryIds = {
-                                'Underweight': [1, 2, 3],
-                                'Normal': [4],
-                                'Overweight': [5],
-                                'Obese': [6, 7, 8]
-                            };
-                            const targetIds = categoryIds[selectedCategory] || [];
-                            
-                            // If the updated meal doesn't belong to current category, remove it from view
-                            if (!targetIds.includes(updatedMeal.bmiCategory)) {
-                                console.log('Meal changed category, removing from current view');
-                                return updatedMeals.filter(meal => meal.id !== currentMeal.id);
-                            }
-                        }
-                        
-                        return updatedMeals;
-                    });
-                    
-                    
-                    // If we're in a specific category filter, recall the category filter API to show first page
-                    if (selectedCategory !== 'All') {
-                        console.log('Reloading category filter from page 1:', selectedCategory);
-                        console.log('Category changed:', categoryChanged);
-                        
-                        // Use the same logic as handleFilterChange to reload the category from page 1
-                        try {
-                            setLoading(true);
-                            setError(null);
-                            
-                            // Get filtered pagination info and load first page with filtered data
-                            const filteredPagination = await getFilteredPagination(selectedCategory);
-                            
-                            if (filteredPagination.filteredPages.length > 0) {
-                                // Load first page with filtered data
-                                const firstFilteredPage = filteredPagination.filteredPages[0].pageNumber;
-                                
-                                // Load the actual meals for that page
-                                const response = await authAPI.getMeals(firstFilteredPage, pagination.pageSize);
-                                const categoryIds = {
-                                    'Underweight': [1, 2, 3],
-                                    'Normal': [4],
-                                    'Overweight': [5],
-                                    'Obese': [6, 7, 8]
-                                };
-                                const filteredMeals = response.meals.filter(meal => 
-                                    categoryIds[selectedCategory].includes(meal.bmiCategory)
-                                );
-                                
-                                console.log('Reloaded category filter:', selectedCategory);
-                                console.log('Filtered meals found:', filteredMeals.length);
-                                console.log('Setting pagination to page 1');
-                                
-                                setMeals(filteredMeals);
-                                setPagination({
-                                    ...filteredPagination,
-                                    currentPage: 1 // Reset to page 1
-                                });
-                                setError(null);
-                            } else {
-                                // No meals found for this category
-                                console.log('No meals found for category:', selectedCategory);
-                                setMeals([]);
-                                setPagination({
-                                    currentPage: 1,
-                                    totalPages: 0,
-                                    totalItems: 0,
-                                    hasNext: false,
-                                    hasPrev: false,
-                                    pageSize: pagination.pageSize
-                                });
-                                setError('No meal plans found for this category');
-                            }
-                        } catch (error) {
-                            console.error('Error reloading category filter:', error);
-                            setError('Failed to load meals. Please try again.');
-                        } finally {
-                            setLoading(false);
-                        }
-                    }
-                    
-                    // Show success message and close modal
-                    setError(null);
+                    // Close modal and clear current meal
                     setIsModalOpen(false);
                     setCurrentMeal(null);
+                    
+                    // Clear cache and refresh meals list from API
+                    await fetchAllMeals();
+                    
+                    alert('Meal updated successfully');
                     
                 } else {
                     console.error('Update failed - Response:', responseData);
@@ -671,13 +433,39 @@ const Nutrition = () => {
                 
                 if (responseData && responseData.id) {
                     // Add new meal to local state immediately
-                    setMeals(prevMeals => [...prevMeals, { ...currentMeal, id: responseData.id || Date.now() }]);
-                    console.log('Added new meal to local state successfully');
+                    const newMeal = {
+                        ...currentMeal,
+                        ...responseData,
+                        name: responseData.food_item || responseData.name || currentMeal.name,
+                        type: responseData.meal_type ? responseData.meal_type.charAt(0).toUpperCase() + responseData.meal_type.slice(1) : currentMeal.type,
+                        bmiCategory: responseData.bmi_category_id || currentMeal.bmiCategory
+                    };
                     
-                    // Show success message and close modal
-                    setError(null);
+                    // Ensure icon is properly mapped for the meal type
+                    const getIconForMealType = (mealType) => {
+                        const iconMap = {
+                            'breakfast': Coffee,
+                            'Breakfast': Coffee,
+                            'lunch': Sun,
+                            'Lunch': Sun,
+                            'dinner': Moon,
+                            'Dinner': Moon,
+                            'snack': Utensils,
+                            'Snack': Utensils
+                        };
+                        return iconMap[mealType] || Utensils;
+                    };
+                    
+                    newMeal.icon = getIconForMealType(newMeal.type);
+                    
+                    // Close modal and clear current meal
                     setIsModalOpen(false);
                     setCurrentMeal(null);
+                    
+                    // Clear cache and refresh meals list from API
+                    await fetchAllMeals();
+                    
+                    alert('Meal created successfully');
                 } else {
                     console.error('Create failed - Response:', responseData);
                     setError('Failed to create meal. Please try again.');
@@ -714,59 +502,20 @@ const Nutrition = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Delete this meal plan?')) {
+    const handleDelete = async (mealId) => {
+        if (window.confirm('Are you sure you want to delete this meal plan?')) {
             try {
                 setLoading(true);
                 setError(null);
                 
-                await authAPI.deleteMeal(id);
+                console.log('Deleting meal with ID:', mealId);
+                await authAPI.deleteMeal(mealId);
+                console.log('Meal deleted successfully');
                 
-                // Remove meal from local state
-                setMeals(meals.filter(m => m.id !== id));
+                // Clear cache and refresh meals list from API
+                await fetchAllMeals();
                 
-                // If we're in a specific category filter, reload the category
-                if (selectedCategory !== 'All') {
-                    // Use the same logic as handleFilterChange to reload category from page 1
-                    const filteredPagination = await getFilteredPagination(selectedCategory);
-                    
-                    if (filteredPagination.filteredPages.length > 0) {
-                        // Load first page with filtered data
-                        const firstFilteredPage = filteredPagination.filteredPages[0].pageNumber;
-                        
-                        // Load actual meals for that page
-                        const response = await authAPI.getMeals(firstFilteredPage, pagination.pageSize);
-                        const categoryIds = {
-                            'Underweight': [1, 2, 3],
-                            'Normal': [4],
-                            'Overweight': [5],
-                            'Obese': [6, 7, 8]
-                        };
-                        const filteredMeals = response.meals.filter(meal => 
-                            categoryIds[selectedCategory].includes(meal.bmiCategory)
-                        );
-                        
-                        setMeals(filteredMeals);
-                        setPagination({
-                            ...filteredPagination,
-                            currentPage: 1 // Reset to page 1
-                        });
-                    } else {
-                        // No meals found for this category
-                        setMeals([]);
-                        setPagination({
-                            currentPage: 1,
-                            totalPages: 0,
-                            totalItems: 0,
-                            hasNext: false,
-                            hasPrev: false,
-                            pageSize: pagination.pageSize
-                        });
-                        setError('No meal plans found for this category');
-                    }
-                }
-                
-                setError(null);
+                alert('Meal deleted successfully');
             } catch (error) {
                 console.error('Failed to delete meal:', error);
                 setError('Failed to delete meal. Please try again.');
@@ -865,16 +614,47 @@ const Nutrition = () => {
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                             {selectedCategory === 'All' ? 'All Plans' : `Plans for ${selectedCategory}`}
                         </h3>
-                        <div className="flex flex-wrap gap-1 sm:gap-2">
+                        
+                        {/* Desktop: Category buttons */}
+                        <div className="hidden lg:flex flex-wrap gap-1 sm:gap-2">
                             {['All', 'Underweight', 'Normal', 'Overweight', 'Obese'].map(cat => (
                                 <button
                                     key={cat}
                                     onClick={() => handleFilterChange(cat)}
-                                    className={`px-2 sm:px-3 py-1 text-xs rounded-full transition-colors ${selectedCategory === cat ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-bold' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                    className={`px-2 sm:px-3 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${selectedCategory === cat ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-bold' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                                 >
                                     {cat}
                                 </button>
                             ))}
+                        </div>
+
+                        {/* Mobile: Dropdown */}
+                        <div className="lg:hidden relative dropdown-container">
+                            <button
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-[120px]"
+                            >
+                                <span>{selectedCategory}</span>
+                                <ChevronDown className={`ml-2 h-3 w-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            {/* Dropdown menu */}
+                            {isDropdownOpen && (
+                                <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[120px]">
+                                    {['All', 'Underweight', 'Normal', 'Overweight', 'Obese'].map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => {
+                                                handleFilterChange(cat);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`w-full px-3 py-1.5 text-left text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${selectedCategory === cat ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -887,13 +667,13 @@ const Nutrition = () => {
                         <div className="text-center py-8 sm:py-10 text-red-500">
                             {error}
                         </div>
-                    ) : filteredMeals.length === 0 ? (
+                    ) : meals.length === 0 ? (
                         <div className="text-center py-8 sm:py-10 text-gray-500 dark:text-gray-400">
                             No meal plans found for this category.
                         </div>
                     ) : (
                         <div className="space-y-3 sm:space-y-4">
-                            {filteredMeals.map((meal) => (
+                            {meals.map((meal) => (
                                 <div key={meal.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">

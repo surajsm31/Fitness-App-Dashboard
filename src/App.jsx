@@ -33,6 +33,8 @@ function App() {
         if (authAPI.isAuthenticated()) {
             setIsAuthenticated(true);
         }
+        // Scroll to top on initial app load
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     }, []);
 
     const handleLogin = async (email, password) => {
@@ -64,6 +66,8 @@ function App() {
 
     const handleNavigate = (view) => {
         setCurrentView(view);
+        // Scroll to top when navigating to a new page
+        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     };
 
     if (!isAuthenticated) {
