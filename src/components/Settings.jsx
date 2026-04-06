@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Shield, Moon, Sun, Save, Camera, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Bell, Shield, Moon, Sun, Save, Camera, Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import ForgotPassword from './ForgotPassword';
@@ -88,15 +88,89 @@ const Settings = () => {
     const [passwordLoading, setPasswordLoading] = useState(false);
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
+    
+    // Password visibility states
+    const [showOldPassword, setShowOldPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    // Password validation states
+    const [passwordValidation, setPasswordValidation] = useState({
+        isValid: false,
+        message: '',
+        isMatching: false,
+        newPasswordValid: false,
+        newPasswordErrors: []
+    });
 
     // Display error from props or local state
     const displayError = passwordError || profileError;
     const displaySuccess = passwordSuccess || profileSuccess;
 
+    // Password validation function
+    const validatePassword = (password) => {
+        const errors = [];
+        
+        if (password.length < 8) {
+            errors.push('Password must be at least 8 characters');
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            errors.push('Password must contain at least 1 capital letter');
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            errors.push('Password must contain at least 1 number');
+        }
+        
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            errors.push('Password must contain at least 1 special character');
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors: errors
+        };
+    };
+
     const handlePasswordChange = (e) => {
-        setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        const updatedPasswordData = { ...passwordData, [name]: value };
+        setPasswordData(updatedPasswordData);
         setPasswordError('');
         setPasswordSuccess('');
+        
+        // Real-time validation for new password and confirm password
+        if (name === 'new_password' || name === 'confirm_password') {
+            const newPassword = updatedPasswordData.new_password;
+            const confirmPassword = updatedPasswordData.confirm_password;
+            
+            // Validate new password
+            const newPasswordValidation = validatePassword(newPassword);
+            
+            // Check if passwords match
+            let isMatching = false;
+            let matchMessage = '';
+            
+            if (confirmPassword && newPassword) {
+                if (newPassword === confirmPassword) {
+                    isMatching = true;
+                    matchMessage = 'Passwords match!';
+                } else {
+                    isMatching = false;
+                    matchMessage = 'Passwords do not match';
+                }
+            }
+            
+            // Update validation state
+            setPasswordValidation({
+                isValid: newPasswordValidation.isValid && isMatching && confirmPassword.length > 0,
+                message: matchMessage,
+                isMatching: isMatching,
+                newPasswordValid: newPasswordValidation.isValid,
+                newPasswordErrors: newPasswordValidation.errors
+            });
+        }
     };
 
     const handlePasswordSubmit = async (e) => {
@@ -327,14 +401,25 @@ const Settings = () => {
                                                 <Lock className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
-                                                type="password"
+                                                type={showOldPassword ? "text" : "password"}
                                                 name="old_password"
                                                 value={passwordData.old_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                                                 placeholder="Enter current password"
                                                 required
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowOldPassword(!showOldPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                            >
+                                                {showOldPassword ? (
+                                                    <EyeOff className="h-5 w-5" />
+                                                ) : (
+                                                    <Eye className="h-5 w-5" />
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
                                     <div>
@@ -346,16 +431,85 @@ const Settings = () => {
                                                 <Lock className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
-                                                type="password"
+                                                type={showNewPassword ? "text" : "password"}
                                                 name="new_password"
                                                 value={passwordData.new_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                                                 placeholder="Enter new password"
                                                 required
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewPassword(!showNewPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                            >
+                                                {showNewPassword ? (
+                                                    <EyeOff className="h-5 w-5" />
+                                                ) : (
+                                                    <Eye className="h-5 w-5" />
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
+                                    
+                                    {/* Password Requirements */}
+                                    {passwordData.new_password && (
+                                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password Requirements:</p>
+                                            <div className="space-y-1">
+                                                <div className={`flex items-center gap-2 text-xs ${
+                                                    passwordData.new_password.length >= 8 
+                                                        ? 'text-green-600 dark:text-green-400' 
+                                                        : 'text-gray-500 dark:text-gray-400'
+                                                }`}>
+                                                    {passwordData.new_password.length >= 8 ? (
+                                                        <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                    )}
+                                                    At least 8 characters
+                                                </div>
+                                                <div className={`flex items-center gap-2 text-xs ${
+                                                    /[A-Z]/.test(passwordData.new_password) 
+                                                        ? 'text-green-600 dark:text-green-400' 
+                                                        : 'text-gray-500 dark:text-gray-400'
+                                                }`}>
+                                                    {/[A-Z]/.test(passwordData.new_password) ? (
+                                                        <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                    )}
+                                                    At least 1 capital letter
+                                                </div>
+                                                <div className={`flex items-center gap-2 text-xs ${
+                                                    /[0-9]/.test(passwordData.new_password) 
+                                                        ? 'text-green-600 dark:text-green-400' 
+                                                        : 'text-gray-500 dark:text-gray-400'
+                                                }`}>
+                                                    {/[0-9]/.test(passwordData.new_password) ? (
+                                                        <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                    )}
+                                                    At least 1 number
+                                                </div>
+                                                <div className={`flex items-center gap-2 text-xs ${
+                                                    /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.new_password) 
+                                                        ? 'text-green-600 dark:text-green-400' 
+                                                        : 'text-gray-500 dark:text-gray-400'
+                                                }`}>
+                                                    {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(passwordData.new_password) ? (
+                                                        <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                    )}
+                                                    At least 1 special character
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Confirm New Password
@@ -365,16 +519,49 @@ const Settings = () => {
                                                 <Lock className="h-5 w-5 text-gray-400" />
                                             </div>
                                             <input
-                                                type="password"
+                                                type={showConfirmPassword ? "text" : "password"}
                                                 name="confirm_password"
                                                 value={passwordData.confirm_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
                                                 placeholder="Confirm new password"
                                                 required
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                            >
+                                                {showConfirmPassword ? (
+                                                    <EyeOff className="h-5 w-5" />
+                                                ) : (
+                                                    <Eye className="h-5 w-5" />
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
+
+                                    {/* Password Validation Message */}
+                                    {passwordValidation.message && passwordData.confirm_password && (
+                                        <div className={`flex items-center gap-2 p-3 rounded-lg ${
+                                            passwordValidation.isValid 
+                                                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                                                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                                        }`}>
+                                            {passwordValidation.isValid ? (
+                                                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                                            ) : (
+                                                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+                                            )}
+                                            <p className={`text-sm ${
+                                                passwordValidation.isValid 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-red-600 dark:text-red-400'
+                                            }`}>
+                                                {passwordValidation.message}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Error and Success Messages */}
                                     {passwordError && (
@@ -393,7 +580,7 @@ const Settings = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={passwordLoading}
+                                        disabled={passwordLoading || (passwordData.confirm_password && !passwordValidation.isMatching)}
                                         className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         {passwordLoading ? (

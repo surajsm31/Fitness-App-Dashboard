@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Mail, Lock, ArrowRight, Loader, AlertCircle } from 'lucide-react';
+import { Activity, Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
 import { authAPI } from '../services/api';
 
@@ -9,6 +9,7 @@ const Login = ({ onLogin, loginError }) => {
     const [error, setError] = useState('');
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [isSessionExpired, setIsSessionExpired] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const sessionTimerRef = useRef(null);
 
     // Check for session expired message on component mount
@@ -131,13 +132,24 @@ const Login = ({ onLogin, loginError }) => {
                                 <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                             </div>
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 required
                                 value={credentials.password}
                                 onChange={e => setCredentials({ ...credentials, password: e.target.value })}
-                                className="block w-full pl-10 pr-3 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                                className="block w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                                 placeholder="••••••••"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="h-5 w-5" />
+                                ) : (
+                                    <Eye className="h-5 w-5" />
+                                )}
+                            </button>
                         </div>
                     </div>
 

@@ -4,6 +4,7 @@ import { ActivityChart } from './Charts';
 import { Users, DollarSign, Activity, AlertCircle } from 'lucide-react';
 import { SkeletonStatsCard, SkeletonChart } from './Skeletons';
 import { authAPI } from '../services/api';
+import RecentActivities from './RecentActivities';
 
 const Dashboard = () => {
     const [loading, setLoading] = useState(true);
@@ -153,32 +154,14 @@ const Dashboard = () => {
 
                 {/* Recent Activity Feed */}
                 <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-                    {loading ? (
-                        <div className="space-y-4">
-                            {[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />)}
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 sm:hidden">Refresh</span>
+                            <RecentActivities.RefreshButton />
                         </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {[
-                                { user: 'Alice', action: 'signed up', time: '2 mins ago' },
-                                { user: 'Bob', action: 'purchased Pro', time: '15 mins ago' },
-                                { user: 'Charlie', action: 'updated profile', time: '1 hour ago' },
-                                { user: 'David', action: 'logged a workout', time: '2 hours ago' },
-                                { user: 'Eve', action: 'submitted ticket', time: '4 hours ago' },
-                            ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-900 dark:text-white">
-                                            <span className="font-medium">{item.user}</span> {item.action}
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{item.time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    </div>
+                    <RecentActivities />
                 </div>
             </div>
         </div>

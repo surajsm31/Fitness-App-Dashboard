@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ArrowLeft, Loader, CheckCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, ArrowLeft, Loader, CheckCircle, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { authAPI } from '../services/api';
 
 const ForgotPassword = ({ onBackToLogin }) => {
@@ -14,6 +14,82 @@ const ForgotPassword = ({ onBackToLogin }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
+    
+    // Password validation states
+    const [passwordValidation, setPasswordValidation] = useState({
+        isValid: false,
+        message: '',
+        isMatching: false,
+        newPasswordValid: false,
+        newPasswordErrors: []
+    });
+
+    // Password validation function
+    const validatePassword = (password) => {
+        const errors = [];
+        
+        if (password.length < 8) {
+            errors.push('Password must be at least 8 characters');
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            errors.push('Password must contain at least 1 capital letter');
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            errors.push('Password must contain at least 1 number');
+        }
+        
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            errors.push('Password must contain at least 1 special character');
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors: errors
+        };
+    };
+
+    // Handle password input changes with validation
+    const handlePasswordChange = (field, value) => {
+        setError('');
+        
+        if (field === 'newPassword') {
+            setNewPassword(value);
+        } else if (field === 'confirmPassword') {
+            setConfirmPassword(value);
+        }
+        
+        // Real-time validation for new password and confirm password
+        const currentNewPassword = field === 'newPassword' ? value : newPassword;
+        const currentConfirmPassword = field === 'confirmPassword' ? value : confirmPassword;
+        
+        // Validate new password
+        const newPasswordValidation = validatePassword(currentNewPassword);
+        
+        // Check if passwords match
+        let isMatching = false;
+        let matchMessage = '';
+        
+        if (currentConfirmPassword && currentNewPassword) {
+            if (currentNewPassword === currentConfirmPassword) {
+                isMatching = true;
+                matchMessage = 'Passwords match!';
+            } else {
+                isMatching = false;
+                matchMessage = 'Passwords do not match';
+            }
+        }
+        
+        // Update validation state
+        setPasswordValidation({
+            isValid: newPasswordValidation.isValid && isMatching && currentConfirmPassword.length > 0,
+            message: matchMessage,
+            isMatching: isMatching,
+            newPasswordValid: newPasswordValidation.isValid,
+            newPasswordErrors: newPasswordValidation.errors
+        });
+    };
 
     // Handle email submission
     const handleEmailSubmit = async (e) => {
@@ -85,14 +161,9 @@ const ForgotPassword = ({ onBackToLogin }) => {
         setIsLoading(true);
         setError('');
         
-        if (newPassword.length < 6) {
-            setError('Password must be at least 6 characters long');
-            setIsLoading(false);
-            return;
-        }
-        
-        if (newPassword !== confirmPassword) {
-            setError('Passwords do not match');
+        // Use validation state instead of manual checks
+        if (!passwordValidation.isValid) {
+            setError('Please ensure all password requirements are met and passwords match');
             setIsLoading(false);
             return;
         }
@@ -117,6 +188,13 @@ const ForgotPassword = ({ onBackToLogin }) => {
         setError('');
         setSuccess(false);
         setOtpSent(false);
+        setPasswordValidation({
+            isValid: false,
+            message: '',
+            isMatching: false,
+            newPasswordValid: false,
+            newPasswordErrors: []
+        });
     };
 
     return (
@@ -328,8 +406,8 @@ const ForgotPassword = ({ onBackToLogin }) => {
                                             type={showPassword ? "text" : "password"}
                                             required
                                             value={newPassword}
-                                            onChange={e => setNewPassword(e.target.value)}
-                                            className="block w-full pl-10 pr-10 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                                            onChange={e => handlePasswordChange('newPassword', e.target.value)}
+                                            className="block w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                                             placeholder="Enter new password"
                                         />
                                         <button
@@ -345,6 +423,63 @@ const ForgotPassword = ({ onBackToLogin }) => {
                                         </button>
                                     </div>
                                 </div>
+                                
+                                {/* Password Requirements - Below New Password */}
+                                {newPassword && (
+                                    <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
+                                        <p className="text-sm font-medium text-gray-300 mb-2">Password Requirements:</p>
+                                        <div className="space-y-1">
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                newPassword.length >= 8 
+                                                    ? 'text-green-400' 
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {newPassword.length >= 8 ? (
+                                                    <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 8 characters
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[A-Z]/.test(newPassword) 
+                                                    ? 'text-green-400' 
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {/[A-Z]/.test(newPassword) ? (
+                                                    <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 capital letter
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[0-9]/.test(newPassword) 
+                                                    ? 'text-green-400' 
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {/[0-9]/.test(newPassword) ? (
+                                                    <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 number
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) 
+                                                    ? 'text-green-400' 
+                                                    : 'text-gray-500'
+                                            }`}>
+                                                {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword) ? (
+                                                    <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 special character
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-gray-300">Confirm Password</label>
@@ -356,8 +491,8 @@ const ForgotPassword = ({ onBackToLogin }) => {
                                             type={showConfirmPassword ? "text" : "password"}
                                             required
                                             value={confirmPassword}
-                                            onChange={e => setConfirmPassword(e.target.value)}
-                                            className="block w-full pl-10 pr-10 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
+                                            onChange={e => handlePasswordChange('confirmPassword', e.target.value)}
+                                            className="block w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
                                             placeholder="Confirm new password"
                                         />
                                         <button
@@ -373,10 +508,32 @@ const ForgotPassword = ({ onBackToLogin }) => {
                                         </button>
                                     </div>
                                 </div>
+                                
+                                {/* Password Matching Validation - Below Confirm Password */}
+                                {passwordValidation.message && confirmPassword && (
+                                    <div className={`flex items-center gap-2 p-3 rounded-lg ${
+                                        passwordValidation.isValid 
+                                            ? 'bg-green-500/10 border border-green-500/20' 
+                                            : 'bg-red-500/10 border border-red-500/20'
+                                    }`}>
+                                        {passwordValidation.isValid ? (
+                                            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                        ) : (
+                                            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                                        )}
+                                        <p className={`text-sm ${
+                                            passwordValidation.isValid 
+                                                ? 'text-green-400' 
+                                                : 'text-red-400'
+                                        }`}>
+                                            {passwordValidation.message}
+                                        </p>
+                                    </div>
+                                )}
 
                                 <button
                                     type="submit"
-                                    disabled={isLoading}
+                                    disabled={isLoading || !passwordValidation.isValid}
                                     className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-600 hover:to-primary text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98]"
                                 >
                                     {isLoading ? (

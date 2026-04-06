@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:8000';
-const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -1002,6 +1002,19 @@ export const authAPI = {
     } catch (error) {
       console.error('Error fetching dashboard users:', error);
       throw error.response?.data || { message: 'Failed to fetch dashboard users' };
+    }
+  },
+
+  getRecentActivities: async () => {
+    try {
+      console.log('Fetching recent activities from:', `${API_BASE_URL}/api/admin/recent-activities`);
+      const response = await api.get('/api/admin/recent-activities');
+      
+      console.log('Recent activities API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching recent activities:', error);
+      throw error.response?.data || { message: 'Failed to fetch recent activities' };
     }
   },
 
