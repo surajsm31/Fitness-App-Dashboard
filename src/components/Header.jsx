@@ -1,24 +1,26 @@
 import React, { useState } from 'react';
-import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
+import { Bell, Menu, Moon, Sun, Search, Wifi, WifiOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
+import { useNotifications } from '../context/NotificationContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ onMenuClick, onLogout, onNavigate }) => {
     const { theme, toggleTheme } = useTheme();
     const { profile, loading: profileLoading } = useProfile();
     const [showNotifications, setShowNotifications] = useState(false);
-
-    // Mock Notification Data
-    const [notifications, setNotifications] = useState([
-        { id: 1, title: 'New User Signup', message: 'Sarah Connor joined as a Pro member.', time: '2 min ago', type: 'success', read: false },
-        { id: 2, title: 'Payment Received', message: 'Received ₹1499 from John Doe.', time: '1 hour ago', type: 'success', read: false },
-        { id: 3, title: 'System Update', message: 'Dashboard v2.0 is now live with enhanced UI.', time: '5 hours ago', type: 'info', read: false },
-        { id: 4, title: 'Subscription Cancelled', message: 'User Mike Ross cancelled their subscription.', time: '1 day ago', type: 'warning', read: true },
-        { id: 5, title: 'Server Load High', message: 'CPU usage exceeded 80% for 5 mins.', time: '2 days ago', type: 'error', read: true },
-    ]);
-
-    const unreadCount = notifications.filter(n => !n.read).length;
+    
+    // Use real notification system
+    const {
+        notifications,
+        unreadCount,
+        isConnected,
+        isLoading,
+        error,
+        markAsRead,
+        markAllAsRead,
+        clearAllNotifications,
+    } = useNotifications();
 
     // Function to get initials from name
     const getInitials = (name) => {
@@ -30,13 +32,24 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
         return names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase();
     };
 
-    const handleMarkRead = (id) => {
-        setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    const handleMarkRead = async (id) => {
+        await markAsRead(id);
     };
 
-    const handleClearAll = () => {
-        setNotifications([]);
+    const handleMarkAllAsRead = async () => {
+        await markAllAsRead();
         setShowNotifications(false);
+    };
+
+    const handleClearAll = async () => {
+        await clearAllNotifications();
+        setShowNotifications(false);
+    };
+
+    // Handle notification bell click
+    const handleNotificationBellClick = () => {
+        setShowNotifications(!showNotifications);
+        // Don't automatically mark as read - let user manually mark them
     };
 
     return (
@@ -76,26 +89,65 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
                         )}
                     </button>
 
+                    {/* Connection Status Indicator */}
+                    <div className="hidden sm:flex items-center">
+                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                            isConnected 
+                                ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' 
+                                : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+                        }`}>
+                            {isConnected ? (
+                                <>
+                                    <Wifi className="w-3 h-3" />
+                                    <span>Live</span>
+                                </>
+                            ) : (
+                                <>
+                                    <WifiOff className="w-3 h-3" />
+                                    <span>Offline</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="relative flex items-center">
                         <button
                             type="button"
-                            onClick={() => setShowNotifications(!showNotifications)}
-                            className="flex items-center justify-center p-1.5 sm:p-2.5 text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors bg-gray-50/50 dark:bg-gray-800/50 rounded-full hover:bg-white dark:hover:bg-gray-700 shadow-sm relative group"
+                            onClick={handleNotificationBellClick}
+                            className={`flex items-center justify-center p-1 xs:p-1 sm:p-1.5 lg:p-2.5 transition-colors rounded-full shadow-sm relative group ${
+                                isLoading 
+                                    ? 'text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 cursor-not-allowed'
+                                    : 'text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary bg-gray-50/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-700'
+                            }`}
+                            disabled={isLoading}
+                            title={isLoading ? 'Loading notifications...' : 'View notifications'}
                         >
                             <span className="sr-only">View notifications</span>
-                            <Bell className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${unreadCount > 0 ? 'group-hover:animate-swing' : ''}`} aria-hidden="true" />
+                            <Bell className={`h-3.5 w-3.5 xs:h-3.5 xs:w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 flex-shrink-0 transition-transform ${
+                                unreadCount > 0 ? 'group-hover:animate-swing' : ''
+                            } ${isLoading ? 'animate-pulse' : ''}`} aria-hidden="true" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900 animate-pulse" />
+                                <span className="absolute top-0.5 xs:top-0.5 sm:top-1 right-0.5 xs:right-0.5 sm:right-1.5 lg:right-2.5 block h-1.5 w-1.5 xs:h-1.5 xs:w-1.5 rounded-full bg-red-500 ring-1 ring-white dark:ring-gray-900 animate-pulse" />
+                            )}
+                            {isLoading && (
+                                <span className="absolute top-0.5 xs:top-0.5 sm:top-1 right-0.5 xs:right-0.5 sm:right-1.5 lg:right-2.5 block h-1.5 w-1.5 xs:h-1.5 xs:w-1.5 rounded-full bg-gray-400 ring-1 ring-white dark:ring-gray-900 animate-ping" />
                             )}
                         </button>
 
                         {showNotifications && (
-                            <NotificationDropdown
-                                notifications={notifications}
-                                onMarkRead={handleMarkRead}
-                                onClearAll={handleClearAll}
-                                onClose={() => setShowNotifications(false)}
-                            />
+                            <>
+                                {/* Mobile overlay backdrop */}
+                                <div 
+                                    className="fixed inset-0 bg-black/20 z-40 sm:hidden"
+                                    onClick={() => setShowNotifications(false)}
+                                />
+                                <NotificationDropdown
+                                    notifications={notifications}
+                                    onMarkRead={handleMarkRead}
+                                    onClearAll={handleClearAll}
+                                    onClose={() => setShowNotifications(false)}
+                                />
+                            </>
                         )}
                     </div>
 
