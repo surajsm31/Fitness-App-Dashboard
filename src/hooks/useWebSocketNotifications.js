@@ -141,6 +141,24 @@ export const useWebSocketNotifications = () => {
       });
       
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Emit WebSocket event for real-time sync
+      console.log('Attempting to emit NOTIFICATION_READ event for ID:', notificationId);
+      console.log('WebSocket state:', wsManager.ws?.readyState);
+      console.log('WebSocket OPEN state:', WebSocket.OPEN);
+      
+      if (wsManager.ws && wsManager.ws.readyState === WebSocket.OPEN) {
+        const event = {
+          type: 'NOTIFICATION_READ',
+          notification_id: notificationId,
+          timestamp: new Date().toISOString()
+        };
+        console.log('Sending WebSocket event:', event);
+        wsManager.ws.send(JSON.stringify(event));
+        console.log('WebSocket event sent successfully');
+      } else {
+        console.warn('WebSocket not connected, cannot emit event');
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
       // Still update UI optimistically
@@ -149,6 +167,15 @@ export const useWebSocketNotifications = () => {
         return [...updated];
       });
       setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      // Still emit WebSocket event for real-time sync
+      if (wsManager.ws && wsManager.ws.readyState === WebSocket.OPEN) {
+        wsManager.ws.send(JSON.stringify({
+          type: 'NOTIFICATION_READ',
+          notification_id: notificationId,
+          timestamp: new Date().toISOString()
+        }));
+      }
     }
   }, []);
 
@@ -158,11 +185,35 @@ export const useWebSocketNotifications = () => {
       await notificationService.markAllAsRead();
       setNotifications([]); // Clear all notifications
       setUnreadCount(0);
+      
+      // Emit WebSocket event for real-time sync
+      console.log('Attempting to emit ALL_NOTIFICATIONS_READ event');
+      console.log('WebSocket state:', wsManager.ws?.readyState);
+      
+      if (wsManager.ws && wsManager.ws.readyState === WebSocket.OPEN) {
+        const event = {
+          type: 'ALL_NOTIFICATIONS_READ',
+          timestamp: new Date().toISOString()
+        };
+        console.log('Sending ALL_NOTIFICATIONS_READ WebSocket event:', event);
+        wsManager.ws.send(JSON.stringify(event));
+        console.log('ALL_NOTIFICATIONS_READ event sent successfully');
+      } else {
+        console.warn('WebSocket not connected, cannot emit ALL_NOTIFICATIONS_READ event');
+      }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
       // Still update UI optimistically
       setNotifications([]); // Clear all notifications
       setUnreadCount(0);
+      
+      // Still emit WebSocket event for real-time sync
+      if (wsManager.ws && wsManager.ws.readyState === WebSocket.OPEN) {
+        wsManager.ws.send(JSON.stringify({
+          type: 'ALL_NOTIFICATIONS_READ',
+          timestamp: new Date().toISOString()
+        }));
+      }
     }
   }, []);
 
@@ -240,9 +291,11 @@ export const useWebSocketNotifications = () => {
       
       if (notificationsArray.length > 0) {
         const processedNotifications = notificationsArray.map(processNotification);
-        setNotifications(processedNotifications);
+        // Only show unread notifications since we remove read ones
+        const unreadNotifications = processedNotifications.filter(n => !n.is_read);
+        setNotifications(unreadNotifications);
         
-        const unread = processedNotifications.filter(n => !n.is_read).length;
+        const unread = unreadNotifications.length;
         setUnreadCount(unread);
       } else {
         setNotifications([]);
@@ -260,28 +313,86 @@ export const useWebSocketNotifications = () => {
 
   // WebSocket message handler
   const handleWebSocketMessage = useCallback((data) => {
+    console.log("WS Event received:", data);
+    console.log("Event type:", data?.event);
+    
     // Handle different message formats
     if (data && typeof data === 'object') {
       // Check if it's a direct notification object
       if (data.id && (data.username || data.description)) {
+        console.log('Processing direct notification object');
         addNotification(data);
       }
       // Check if it's wrapped in notification property
       else if (data.notification && data.notification.id) {
+        console.log('Processing wrapped notification object');
         addNotification(data.notification);
       }
       // Check if it's a typed message
-      else if (data.type === 'notification' && data.data) {
+      else if (data.event === 'notification' && data.data) {
+        console.log('Processing typed notification message');
         addNotification(data.data);
       }
+      // Handle notification marked as read event (REAL-TIME SYNC)
+      else if (data.event === 'NOTIFICATION_READ') {
+        console.log('Processing NOTIFICATION_READ sync event');
+        console.log('Notification data:', data.data);
+        const notificationId = data.data?.notification_id || data.data?.id;
+        console.log('Notification ID to remove (marked as read):', notificationId);
+        
+        if (notificationId) {
+          setNotifications(prev => {
+            console.log('Current notifications before sync:', prev);
+            const updated = prev.filter(n => n.id !== notificationId);
+            console.log('Notifications after sync (removed):', updated);
+            return updated;
+          });
+          setUnreadCount(prev => {
+            const newCount = Math.max(0, prev - 1);
+            console.log('Unread count after sync:', prev, '->', newCount);
+            return newCount;
+          });
+        } else {
+          console.warn('No notification ID found in NOTIFICATION_READ event');
+        }
+      }
+      // Handle all notifications marked as read event (REAL-TIME SYNC)
+      else if (data.event === 'ALL_NOTIFICATIONS_READ') {
+        console.log('Processing ALL_NOTIFICATIONS_READ sync event');
+        setNotifications(prev => {
+          console.log('Marking all notifications as read via sync');
+          return prev.map(n => ({ ...n, is_read: true }));
+        });
+        setUnreadCount(0);
+        console.log('Unread count reset to 0 via sync');
+      }
+      // Handle notification removed event
+      else if (data.event === 'NOTIFICATION_REMOVED') {
+        console.log('Processing NOTIFICATION_REMOVED sync event');
+        const notificationId = data.data?.notification_id || data.data?.id;
+        if (notificationId) {
+          setNotifications(prev => {
+            console.log('Removing notification via sync:', notificationId);
+            return prev.filter(n => n.id !== notificationId);
+          });
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+      }
       // Check for notifications update
-      else if (data.type === 'notifications_update') {
+      else if (data.event === 'notifications_update') {
+        console.log('Processing notifications_update event');
         fetchNotifications();
       }
       // Check if it's an array of notifications
       else if (Array.isArray(data)) {
+        console.log('Processing array of notifications:', data.length);
         data.forEach(notification => addNotification(notification));
       }
+      else {
+        console.warn('Unknown WebSocket event type:', data);
+      }
+    } else {
+      console.warn('Invalid WebSocket data format:', data);
     }
   }, [addNotification, fetchNotifications]);
 

@@ -144,7 +144,7 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
                                 <NotificationDropdown
                                     notifications={notifications}
                                     onMarkRead={handleMarkRead}
-                                    onClearAll={handleClearAll}
+                                    onMarkAllAsRead={handleMarkAllAsRead}
                                     onClose={() => setShowNotifications(false)}
                                 />
                             </>

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Bell, Check, X, Info, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 
-const NotificationDropdown = ({ notifications, onMarkRead, onClearAll, onClose }) => {
+const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onClose }) => {
     const dropdownRef = useRef(null);
 
     // Close on click outside
@@ -120,7 +120,7 @@ const NotificationDropdown = ({ notifications, onMarkRead, onClearAll, onClose }
             {notifications.length > 0 && (
                 <div className="p-2 xs:p-2 sm:p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                     <button
-                        onClick={() => notifications.forEach(n => !n.is_read && onMarkRead(n.id))}
+                        onClick={onMarkAllAsRead}
                         className="w-full py-1.5 xs:py-2 sm:py-3 text-xs xs:text-xs sm:text-xs font-medium text-primary hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors touch-manipulation"
                     >
                         Mark all as read

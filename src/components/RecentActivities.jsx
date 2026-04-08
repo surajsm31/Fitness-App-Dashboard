@@ -107,7 +107,7 @@ const RecentActivities = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-[400px] overflow-y-auto pr-2">
       {/* Activities list */}
       {activities.map((activity, index) => (
         <div 
