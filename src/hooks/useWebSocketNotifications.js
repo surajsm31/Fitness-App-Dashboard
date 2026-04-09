@@ -361,20 +361,18 @@ export const useWebSocketNotifications = () => {
         }
       }
       // Handle all notifications marked as read event (REAL-TIME SYNC)
-      else if (data.event === 'ALL_NOTIFICATIONS_READ') {
-        console.log('Processing ALL_NOTIFICATIONS_READ sync event');
+      else if (data.event === 'ALL_NOTIFICATIONS_READ' || data.type === 'ALL_NOTIFICATIONS_READ') {
+        console.log('🔄 Processing ALL_NOTIFICATIONS_READ sync event');
         setNotifications(prev => {
-          console.log('Marking all notifications as read via sync');
-          return prev.map(n => ({ ...n, is_read: true }));
+          console.log('Removing all notifications via sync (like single mark as read)');
+          console.log('Current notifications before removal:', prev.length, 'items');
+          const updated = []; // Clear all notifications
+          console.log('Notifications after removal:', updated.length, 'items');
+          return updated;
         });
         setUnreadCount(0);
-        console.log('Unread count reset to 0 via sync');
+        console.log('🔢 Unread count reset to 0 via sync');
       }
-      // Handle connection established
-      else if (data.event === 'connection_established') {
-        console.log('WebSocket connection established successfully');
-      }
-      // Handle echo events
       else if (data.event === 'echo') {
         console.log('Echo event received:', data.data);
       }
