@@ -301,6 +301,9 @@ const Nutrition = () => {
             
             // Apply filters immediately using cached data
             applyFiltersAndPagination(category, 1);
+            
+            // Reset loading state
+            setBmiCalculating(false);
         }
     };
 
