@@ -291,11 +291,9 @@ export const useWebSocketNotifications = () => {
       
       if (notificationsArray.length > 0) {
         const processedNotifications = notificationsArray.map(processNotification);
-        // Only show unread notifications since we remove read ones
-        const unreadNotifications = processedNotifications.filter(n => !n.is_read);
-        setNotifications(unreadNotifications);
+        setNotifications(processedNotifications);
         
-        const unread = unreadNotifications.length;
+        const unread = processedNotifications.filter(n => !n.is_read).length;
         setUnreadCount(unread);
       } else {
         setNotifications([]);
@@ -329,15 +327,21 @@ export const useWebSocketNotifications = () => {
         addNotification(data.notification);
       }
       // Check if it's a typed message
-      else if (data.event === 'notification' && data.data) {
+      else if (data.type === 'notification' && data.data) {
         console.log('Processing typed notification message');
+        addNotification(data.data);
+      }
+      // Handle NEW_NOTIFICATION event
+      else if (data.event === 'NEW_NOTIFICATION' && data.data) {
+        console.log('Processing NEW_NOTIFICATION event');
+        console.log('New notification data:', data.data);
         addNotification(data.data);
       }
       // Handle notification marked as read event (REAL-TIME SYNC)
       else if (data.event === 'NOTIFICATION_READ') {
         console.log('Processing NOTIFICATION_READ sync event');
         console.log('Notification data:', data.data);
-        const notificationId = data.data?.notification_id || data.data?.id;
+        const notificationId = data.data?.id;
         console.log('Notification ID to remove (marked as read):', notificationId);
         
         if (notificationId) {
@@ -366,20 +370,16 @@ export const useWebSocketNotifications = () => {
         setUnreadCount(0);
         console.log('Unread count reset to 0 via sync');
       }
-      // Handle notification removed event
-      else if (data.event === 'NOTIFICATION_REMOVED') {
-        console.log('Processing NOTIFICATION_REMOVED sync event');
-        const notificationId = data.data?.notification_id || data.data?.id;
-        if (notificationId) {
-          setNotifications(prev => {
-            console.log('Removing notification via sync:', notificationId);
-            return prev.filter(n => n.id !== notificationId);
-          });
-          setUnreadCount(prev => Math.max(0, prev - 1));
-        }
+      // Handle connection established
+      else if (data.event === 'connection_established') {
+        console.log('WebSocket connection established successfully');
+      }
+      // Handle echo events
+      else if (data.event === 'echo') {
+        console.log('Echo event received:', data.data);
       }
       // Check for notifications update
-      else if (data.event === 'notifications_update') {
+      else if (data.type === 'notifications_update') {
         console.log('Processing notifications_update event');
         fetchNotifications();
       }

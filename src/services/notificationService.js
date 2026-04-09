@@ -3,8 +3,8 @@ import { api } from './api.js';
 // Get WebSocket URL based on current API base URL
 const getWebSocketUrl = () => {
   // const API_BASE_URL = 'http://localhost:8000';
-  // const API_BASE_URL = 'http://192.168.1.6:8000';
-  const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+  const API_BASE_URL = 'http://192.168.0.108:8000';
+  // const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
   
   // Convert HTTP to WebSocket protocol
   const wsUrl = API_BASE_URL.replace(/^http/, 'ws');
@@ -148,12 +148,26 @@ export class WebSocketManager {
       };
 
       this.ws.onmessage = (event) => {
+        console.log('=== WEBSOCKET SERVICE MESSAGE ===');
+        console.log('Raw event data:', event.data);
+        console.log('Raw data type:', typeof event.data);
+        
         try {
           const data = JSON.parse(event.data);
+          console.log('Parsed WebSocket data:', data);
+          console.log('Parsed data type:', typeof data);
+          console.log('Data keys:', data ? Object.keys(data) : 'null');
+          console.log('Emitting message to listeners...');
+          
           this.emit('message', data);
+          
+          console.log('Message emitted successfully');
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
+          console.error('Raw message that failed to parse:', event.data);
         }
+        
+        console.log('=== WEBSOCKET SERVICE MESSAGE COMPLETE ===');
       };
 
       this.ws.onclose = (event) => {
