@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Menu, Moon, Sun, Search, Wifi, WifiOff } from 'lucide-react';
+import { Bell, LogOut, Menu, Moon, Sun, Search, Wifi, WifiOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import { useNotifications } from '../context/NotificationContext';
@@ -177,9 +177,10 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
                         </span>
                         <button
                             onClick={onLogout}
-                            className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors whitespace-nowrap"
+                            className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            title="Logout"
                         >
-                            Logout
+                            <LogOut className="h-5 w-5 stroke-2" />
                         </button>
                     </div>
                 </div>

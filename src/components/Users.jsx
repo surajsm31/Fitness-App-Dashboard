@@ -86,6 +86,13 @@ const StatusBadge = ({ status }) => {
     );
 };
 
+// Utility function to truncate long text
+const truncateText = (text, maxLength = 20) => {
+    if (!text) return 'N/A';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+};
+
 const UsersPage = () => {
     const [users, setUsers] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Cache for all users
@@ -716,7 +723,8 @@ const UsersPage = () => {
                     )}
 
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <div className="overflow-x-auto">
+                        {/* Desktop Table View */}
+                        <div className="hidden lg:block overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                                     <tr>
@@ -832,6 +840,116 @@ const UsersPage = () => {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Mobile Card View */}
+                        <div className="lg:hidden p-4 space-y-4">
+                            {users.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    {searchTerm || (filters.gender !== 'All' || filters.activityLevel !== 'All') 
+                                        ? 'No users found matching your search or filters.' 
+                                        : 'No users found.'}
+                                </div>
+                            ) : (
+                                users.map((user) => (
+                                    <div key={user.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                        {/* User Header */}
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                                    {user.profile_image ? (
+                                                        <img 
+                                                            src={user.profile_image} 
+                                                            alt={user.username} 
+                                                            className="w-full h-full rounded-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 text-xs">
+                                                            {user.username?.charAt(0)?.toUpperCase() || 'U'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">{user.username || 'N/A'}</h3>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={user.email || 'N/A'}>
+                                                        {truncateText(user.email, 25)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-1 flex-shrink-0 ml-2">
+                                                <button
+                                                    onClick={() => handleHistory(user)}
+                                                    disabled={profileLoading}
+                                                    className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary transition-colors disabled:opacity-50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    title="View Profile"
+                                                >
+                                                    {profileLoading ? (
+                                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                                                    ) : (
+                                                        <User className="h-5 w-5" />
+                                                    )}
+                                                </button>
+                                                <div className="relative dropdown-menu">
+                                                    <button
+                                                        onClick={(e) => handleDropdownToggle(user.id, e)}
+                                                        className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    >
+                                                        <MoreVertical className="h-5 w-5" />
+                                                    </button>
+                                                    
+                                                    {isDropdownOpen === user.id && (
+                                                        <div 
+                                                            className="absolute right-0 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20"
+                                                            style={{
+                                                                top: dropdownPosition.top,
+                                                                bottom: dropdownPosition.bottom
+                                                            }}
+                                                        >
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleEdit(user);
+                                                                    setIsDropdownOpen(null);
+                                                                }}
+                                                                className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleDeleteUser(user);
+                                                                }}
+                                                                className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* User Details Grid */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Gender</span>
+                                                <GenderBadge gender={user.gender} />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Age</span>
+                                                <span className="text-sm text-gray-900 dark:text-white font-medium">{user.age || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">BMI</span>
+                                                <BMIBadge bmi={user.bmi} />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Activity Level</span>
+                                                <ActivityLevelBadge activityLevel={user.activity_level} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                         <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
                             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -912,7 +1030,8 @@ const UsersPage = () => {
 
                         {!subscriptionsLoading && !subscriptionsError && (
                             <>
-                                <div className="overflow-x-auto">
+                                {/* Desktop Table View */}
+                                <div className="hidden lg:block overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                                             <tr>
@@ -978,6 +1097,71 @@ const UsersPage = () => {
                                             )}
                                         </tbody>
                                     </table>
+                                </div>
+
+                                {/* Mobile Card View */}
+                                <div className="lg:hidden p-4 space-y-4">
+                                    {subscriptions.length === 0 ? (
+                                        <div className="text-center py-8 text-gray-500">
+                                            No subscribed users found.
+                                        </div>
+                                    ) : (
+                                        subscriptions.map((subscription, index) => (
+                                            <div key={subscription.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                                {/* Subscription Header */}
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center font-bold text-purple-600 dark:text-purple-300 flex-shrink-0 text-xs">
+                                                            {subscription.username?.charAt(0)?.toUpperCase() || 'U'}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">{subscription.username || 'N/A'}</h3>
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                                                {truncateText(subscription.plan_name, 20)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-1 flex-shrink-0 ml-2">
+                                                        <button
+                                                            onClick={() => handleEditSubscription(subscription)}
+                                                            className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            title="Edit Subscription"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Subscription Details Grid */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Sr No</span>
+                                                        <span className="text-sm text-gray-900 dark:text-white font-medium">
+                                                            {(subscriptionsPagination.currentPage - 1) * subscriptionsPagination.pageSize + index + 1}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Status</span>
+                                                        <StatusBadge status={subscription.status} />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Start Date</span>
+                                                        <span className="text-sm text-gray-900 dark:text-white font-medium">
+                                                            {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">End Date</span>
+                                                        <span className="text-sm text-gray-900 dark:text-white font-medium">
+                                                            {subscription.end_date ? new Date(subscription.end_date).toLocaleDateString() : 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                                 
                                 {/* Pagination */}
@@ -1084,20 +1268,6 @@ const UsersPage = () => {
                                     <label className="text-xs font-medium text-gray-500">Activity Level</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.activity_level || 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Verified</label>
-                                    <p className="text-sm text-gray-900 dark:text-white">{currentUser.is_verified ? 'Yes' : 'No'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Blocked</label>
-                                    <p className="text-sm text-gray-900 dark:text-white">{currentUser.is_blocked ? 'Yes' : 'No'}</p>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-xs font-medium text-gray-500">Joined Date</label>
-                                <p className="text-sm text-gray-900 dark:text-white">
-                                    {currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'N/A'}
-                                </p>
                             </div>
                         </div>
                         <div className="mt-6 flex justify-end">
@@ -1261,50 +1431,52 @@ const UsersPage = () => {
                                     
                                     {/* Show existing or preview image */}
                                     {currentUser.profile_image ? (
-                                        <div className="mt-3">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                        <div className="mt-3 flex flex-col items-center">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">
                                                 {currentUser.profile_image_changed ? 'New image preview:' : 'Current profile image:'}
                                             </p>
-                                            <img 
-                                                src={currentUser.profile_image} 
-                                                alt="Profile preview" 
-                                                className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
-                                                onLoad={() => console.log('Image loaded successfully:', currentUser.profile_image)}
-                                                onError={(e) => {
-                                                    console.log('Image failed to load:', currentUser.profile_image);
-                                                    // If image fails to load, show placeholder
-                                                    e.target.style.display = 'none';
-                                                    e.target.nextSibling.style.display = 'flex';
-                                                }}
-                                                crossOrigin="anonymous"
-                                            />
-                                            <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center" style={{display: 'none'}}>
-                                                <User className="w-8 h-8 text-gray-400" />
+                                            <div className="relative">
+                                                <img 
+                                                    src={currentUser.profile_image} 
+                                                    alt="Profile preview" 
+                                                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                                    onLoad={() => console.log('Image loaded successfully:', currentUser.profile_image)}
+                                                    onError={(e) => {
+                                                        console.log('Image failed to load:', currentUser.profile_image);
+                                                        // If image fails to load, show placeholder
+                                                        e.target.style.display = 'none';
+                                                        e.target.nextSibling.style.display = 'flex';
+                                                    }}
+                                                    crossOrigin="anonymous"
+                                                />
+                                                <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center absolute top-0 left-0" style={{display: 'none'}}>
+                                                    <User className="w-8 h-8 text-gray-400" />
+                                                </div>
                                             </div>
                                             {currentUser.profile_image_changed && (
-                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Click Save to upload new image</p>
+                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 text-center">Click Save to upload new image</p>
                                             )}
                                             
                                             {/* Debug info */}
-                                            <p className="text-xs text-gray-400 mt-2 truncate" title={currentUser.profile_image}>
+                                            <p className="text-xs text-gray-400 mt-2 truncate text-center" title={currentUser.profile_image}>
                                                 URL: {currentUser.profile_image}
                                             </p>
                                         </div>
                                     ) : (
-                                        <div className="mt-3">
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">No profile image</p>
+                                        <div className="mt-3 flex flex-col items-center">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">No profile image</p>
                                             <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
                                                 <User className="w-8 h-8 text-gray-400" />
                                             </div>
-                                            <p className="text-xs text-gray-400 mt-2">
+                                            {/* <p className="text-xs text-gray-400 mt-2 text-center">
                                                 Debug: profile_image = {String(currentUser.profile_image)}
-                                            </p>
+                                            </p> */}
                                         </div>
                                     )}
                                 </div>
                             </div>
                             
-                            <div className="flex justify-end gap-3 mt-6">
+                            <div className="flex justify-center gap-3 mt-6">
                                 <button
                                     type="button"
                                     onClick={() => setIsEditModalOpen(false)}

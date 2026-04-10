@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StatsCard from './StatsCard';
 import { ActivityChart } from './Charts';
-import { Users, DollarSign, Activity, AlertCircle } from 'lucide-react';
+import { Users, IndianRupee, Dumbbell, Activity, AlertCircle } from 'lucide-react';
 import { SkeletonStatsCard, SkeletonChart } from './Skeletons';
 import { authAPI } from '../services/api';
 import RecentActivities from './RecentActivities';
@@ -53,7 +53,7 @@ const Dashboard = () => {
         {
             title: 'Total Workouts',
             value: dashboardData.total_workouts?.toString() || '0',
-            icon: 'Footprints',
+            icon: 'Dumbbell',
             color: 'green'
         },
         {
@@ -65,7 +65,7 @@ const Dashboard = () => {
         {
             title: 'Subscribed Users',
             value: dashboardData.active_subscriptions?.toString() || '0',
-            icon: 'DollarSign',
+            icon: 'IndianRupee',
             color: 'orange'
         }
     ] : [];

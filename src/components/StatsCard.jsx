@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUp, ArrowDown, Footprints, Flame, Timer, Droplets, Users, DollarSign, Activity, AlertCircle } from 'lucide-react';
+import { ArrowUp, ArrowDown, Footprints, Flame, Timer, Droplets, Users, IndianRupee, Dumbbell, Activity, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 const iconMap = {
@@ -8,7 +8,8 @@ const iconMap = {
     Timer: Timer,
     Droplets: Droplets,
     Users: Users,
-    DollarSign: DollarSign,
+    IndianRupee: IndianRupee,
+    Dumbbell: Dumbbell,
     Activity: Activity,
     AlertCircle: AlertCircle
 };
