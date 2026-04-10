@@ -3,8 +3,8 @@ import { api } from './api.js';
 // Get WebSocket URL based on current API base URL
 const getWebSocketUrl = () => {
   // const API_BASE_URL = 'http://localhost:8000';
-  const API_BASE_URL = 'http://192.168.0.103:8000';
-  // const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+  // const API_BASE_URL = 'http://192.168.0.103:8000';
+  const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
   
   // Convert HTTP to WebSocket protocol
   const wsUrl = API_BASE_URL.replace(/^http/, 'ws');

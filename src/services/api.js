@@ -2,8 +2,8 @@ import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
 // const API_BASE_URL = 'http://localhost:8000';
-const API_BASE_URL = 'http://192.168.0.103:8000';
-// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+// const API_BASE_URL = 'http://192.168.0.103:8000';
+const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
