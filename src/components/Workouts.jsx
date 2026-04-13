@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Play, Clock, Flame, Dumbbell, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
 import { authAPI } from '../services/api';
+import AlertContainer from './AlertContainer';
+import { useCustomAlert } from '../hooks/useCustomAlert';
 
 
 const Workouts = () => {
+    const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError } = useCustomAlert();
     const [workouts, setWorkouts] = useState([]);
     const [allWorkouts, setAllWorkouts] = useState([]); // Cache for all workouts
     const [loading, setLoading] = useState(true);
@@ -394,6 +397,10 @@ const Workouts = () => {
     };
 
     const handleDelete = async (id) => {
+        // Find the workout to get its name before deletion
+        const workoutToDelete = workouts.find(w => w.id === id);
+        const workoutName = workoutToDelete?.title || 'Workout';
+        
         if (window.confirm('Are you sure you want to delete this workout?')) {
             try {
                 await authAPI.deleteWorkout(id);
@@ -419,9 +426,10 @@ const Workouts = () => {
                     await fetchWorkouts(targetPage, 10);
                 }
                 
+                showDeleteSuccess(workoutName);
             } catch (error) {
                 console.error('Error deleting workout:', error);
-                setError(error.message || 'Failed to delete workout');
+                showDeleteError(workoutName, error.message);
             }
         }
     };
@@ -476,13 +484,16 @@ const Workouts = () => {
             
             // Check if it's an edit or create operation
             const isEdit = workouts.some(w => w.id === currentWorkout.id);
+            const workoutName = currentWorkout.title || 'Workout';
             
             if (isEdit) {
                 // Update existing workout
                 await authAPI.updateWorkout(currentWorkout.id, formData);
+                showUpdateSuccess(workoutName);
             } else {
                 // Create new workout
                 await authAPI.createWorkout(formData);
+                showCreateSuccess(workoutName);
             }
             
             // Refresh workouts list (stay on current page)
@@ -495,7 +506,13 @@ const Workouts = () => {
             
         } catch (error) {
             console.error('Error saving workout:', error);
-            setError(error.message || 'Failed to save workout');
+            const workoutName = currentWorkout.title || 'Workout';
+            const isEdit = workouts.some(w => w.id === currentWorkout.id);
+            if (isEdit) {
+                showUpdateError(workoutName, error.message);
+            } else {
+                showCreateError(workoutName, error.message);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -503,6 +520,9 @@ const Workouts = () => {
 
     return (
         <div className="space-y-6 relative">
+            {/* Custom Alert Container */}
+            <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
+            
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Workouts</h1>
                 

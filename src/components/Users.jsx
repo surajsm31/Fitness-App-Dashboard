@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Filter, User, MoreVertical, X, ChevronDown } from 'lucide-react';
 import { authAPI } from '../services/api';
 import LazyImage from './LazyImage';
+import AlertContainer from './AlertContainer';
+import { useCustomAlert } from '../hooks/useCustomAlert';
 
 const GenderBadge = ({ gender }) => {
     if (!gender) {
@@ -94,6 +96,7 @@ const truncateText = (text, maxLength = 20) => {
 };
 
 const UsersPage = () => {
+    const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError, showWarning } = useCustomAlert();
     const [users, setUsers] = useState([]);
     const [allUsers, setAllUsers] = useState([]); // Cache for all users
     const [loading, setLoading] = useState(true);
@@ -563,16 +566,18 @@ const UsersPage = () => {
             console.log('Update response from backend:', updateResponse);
             
             // Close modal and clear current user
+            const userName = currentUser.username || 'User';
             setIsEditModalOpen(false);
             setCurrentUser(null);
             
             // Clear cache and refresh users list from API
             await fetchAllUsers();
             
-            alert('User updated successfully');
+            showUpdateSuccess(userName);
         } catch (error) {
             console.error('Failed to update user:', error);
-            alert(error.message || 'Failed to update user');
+            const userName = currentUser.username || 'User';
+            showUpdateError(userName, error.message);
         } finally {
             setLoading(false);
         }
@@ -585,14 +590,18 @@ const UsersPage = () => {
             await authAPI.createUser(createUser);
             
             // Reset form and close modal
+            const userName = createUser.username || 'User';
             setCreateUser({ username: '', email: '', password: '' });
             setIsCreateModalOpen(false);
             
             // Clear cache and refresh users list from API
             await fetchAllUsers();
+            
+            showCreateSuccess(userName);
         } catch (error) {
             console.error('Failed to create user:', error);
-            alert(error.message || 'Failed to create user');
+            const userName = createUser.username || 'User';
+            showCreateError(userName, error.message);
         } finally {
             setLoading(false);
         }
@@ -602,18 +611,48 @@ const UsersPage = () => {
         if (window.confirm(`Are you sure you want to delete user "${user.username}"? This action cannot be undone.`)) {
             try {
                 setLoading(true);
-                await authAPI.deleteUser(user.id);
+                const response = await authAPI.deleteUser(user.id);
                 
                 // Close dropdown
                 setIsDropdownOpen(null);
                 
-                // Clear cache and refresh users list from API
-                await fetchAllUsers();
-                
-                alert('User deleted successfully');
+                // Check for specific success message
+                const userName = user.username || 'User';
+                if (response && response.message && response.message.includes('and all associated records deleted successfully')) {
+                    // Clear cache and refresh users list from API
+                    await fetchAllUsers();
+                    // Show the actual API response message
+                    showDeleteSuccess(userName, response.message);
+                } else {
+                    // Fallback success message
+                    await fetchAllUsers();
+                    showDeleteSuccess(userName);
+                }
             } catch (error) {
                 console.error('Failed to delete user:', error);
-                alert(error.message || 'Failed to delete user');
+                console.error('Error response:', error.response);
+                console.error('Error data:', error.response?.data);
+                console.error('Error detail:', error.response?.data?.detail);
+                
+                // Show the actual API response message - handle different error structures
+                let errorMessage = 'Failed to delete user';
+
+                if (error.response?.data?.detail) {
+                    errorMessage = error.response.data.detail;
+                } else if (error.detail) { // Check if 'detail' is directly on the error object
+                    errorMessage = error.detail;
+                } else if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.response?.data) {
+                    errorMessage = JSON.stringify(error.response.data);
+                } else if (typeof error === 'object' && error !== null && 'detail' in error) {
+                    errorMessage = error.detail;
+                }
+                
+                const userName = user.username || 'User';
+                showDeleteError(userName, errorMessage);
             } finally {
                 setLoading(false);
             }
@@ -622,6 +661,9 @@ const UsersPage = () => {
 
     return (
         <div className="space-y-6 relative">
+            {/* Custom Alert Container */}
+            <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
+            
             {/* Loading State */}
             {loading && (
                 <div className="flex justify-center items-center py-8">
@@ -1667,7 +1709,7 @@ const UsersPage = () => {
                                     onClick={async () => {
                                         try {
                                             if (!currentSubscription.id || !currentSubscription.status) {
-                                                alert('Please select a status');
+                                                showWarning('Validation Required', 'Please select a status');
                                                 return;
                                             }
                                             
@@ -1681,10 +1723,10 @@ const UsersPage = () => {
                                             setIsSubscriptionEditModalOpen(false);
                                             setCurrentSubscription(null);
                                             
-                                            alert('Subscription updated successfully');
+                                            showUpdateSuccess('Subscription');
                                         } catch (error) {
                                             console.error('Failed to update subscription:', error);
-                                            alert(error.message || 'Failed to update subscription');
+                                            showUpdateError('Subscription', error.message);
                                         }
                                     }}
                                     className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg"

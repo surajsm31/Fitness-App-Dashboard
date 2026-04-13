@@ -2,8 +2,11 @@ import React, { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown } from 'lucide-react';
 import { authAPI } from '../services/api';
+import AlertContainer from './AlertContainer';
+import { useCustomAlert } from '../hooks/useCustomAlert';
 
 const Nutrition = () => {
+    const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError } = useCustomAlert();
     const [meals, setMeals] = useState([]);
     const [allMeals, setAllMeals] = useState([]); // Cache for all meals
     const [loading, setLoading] = useState(true);
@@ -246,6 +249,14 @@ const Nutrition = () => {
     const handleFilterChange = (category) => {
         setSelectedCategory(category);
         
+        // Update nutrition chart based on selected category (convert to lowercase for the chart)
+        if (category !== 'All') {
+            updateNutritionChart(category.toLowerCase());
+        } else {
+            // Reset to default (normal) when 'All' is selected
+            updateNutritionChart('normal');
+        }
+        
         // Apply filters immediately using cached data
         applyFiltersAndPagination(category, 1);
     };
@@ -324,14 +335,14 @@ const Nutrition = () => {
             
             // Prepare meal data for API - use correct field names as per API schema
             const mealData = {
-                name: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal', // Use 'name' field for API
+                food_item: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal', // Use 'food_item' field for API
                 calories: parseInt(currentMeal.calories) || 0,
                 meal_type: currentMeal.type ? currentMeal.type.toLowerCase() : 'breakfast',
                 bmi_category_id: parseInt(currentMeal.bmiCategory) || 4
             };
             
             // Validate required fields before sending
-            if (!mealData.name || mealData.name.trim() === '') {
+            if (!mealData.food_item || mealData.food_item.trim() === '') {
                 setError('Meal name is required');
                 setSubmitLoading(false);
                 setLoading(false);
@@ -406,10 +417,13 @@ const Nutrition = () => {
                     // Clear cache and refresh meals list from API
                     await fetchAllMeals();
                     
-                    alert('Meal updated successfully');
+                    const mealName = currentMeal.name || 'Meal';
+                    showUpdateSuccess(mealName);
                     
                 } else {
                     console.error('Update failed - Response:', responseData);
+                    const mealName = currentMeal.name || 'Meal';
+                    showUpdateError(mealName, 'Failed to update meal. Please try again.');
                     setError('Failed to update meal. Please try again.');
                     // Don't close modal on error so user can retry
                 }
@@ -468,9 +482,12 @@ const Nutrition = () => {
                     // Clear cache and refresh meals list from API
                     await fetchAllMeals();
                     
-                    alert('Meal created successfully');
+                    const mealName = currentMeal.name || 'Meal';
+                    showCreateSuccess(mealName);
                 } else {
                     console.error('Create failed - Response:', responseData);
+                    const mealName = currentMeal.name || 'Meal';
+                    showCreateError(mealName, 'Failed to create meal. Please try again.');
                     setError('Failed to create meal. Please try again.');
                     // Don't close modal on error so user can retry
                 }
@@ -486,6 +503,13 @@ const Nutrition = () => {
             console.error('Failed to save meal:', error);
             console.error('Error details:', error.response?.data);
             console.error('Error status:', error.response?.status);
+            const mealName = currentMeal.name || 'Meal';
+            const isEdit = !!currentMeal.id;
+            if (isEdit) {
+                showUpdateError(mealName, error.message || 'Failed to save meal. Please try again.');
+            } else {
+                showCreateError(mealName, error.message || 'Failed to save meal. Please try again.');
+            }
             setError('Failed to save meal. Please try again.');
         } finally {
             setLoading(false);
@@ -506,6 +530,10 @@ const Nutrition = () => {
     };
 
     const handleDelete = async (mealId) => {
+        // Find the meal to get its name before deletion
+        const mealToDelete = meals.find(m => m.id === mealId);
+        const mealName = mealToDelete?.name || 'Meal';
+        
         if (window.confirm('Are you sure you want to delete this meal plan?')) {
             try {
                 setLoading(true);
@@ -518,10 +546,10 @@ const Nutrition = () => {
                 // Clear cache and refresh meals list from API
                 await fetchAllMeals();
                 
-                alert('Meal deleted successfully');
+                showDeleteSuccess(mealName);
             } catch (error) {
                 console.error('Failed to delete meal:', error);
-                setError('Failed to delete meal. Please try again.');
+                showDeleteError(mealName, error.message);
             } finally {
                 setLoading(false);
             }
@@ -530,6 +558,9 @@ const Nutrition = () => {
 
     return (
         <div className="space-y-4 sm:space-y-6 relative px-2 sm:px-0">
+            {/* Custom Alert Container */}
+            <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
+            
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Nutrition</h1>
                 <button

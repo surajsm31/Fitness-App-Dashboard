@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Check, X, CreditCard } from 'lucide-react';
 import { authAPI } from '../services/api';
+import AlertContainer from './AlertContainer';
+import { useCustomAlert } from '../hooks/useCustomAlert';
 
 const INITIAL_PLANS = [
     {
@@ -39,6 +41,7 @@ const INITIAL_PLANS = [
 ];
 
 const Subscriptions = () => {
+    const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError } = useCustomAlert();
     const [plans, setPlans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -103,15 +106,20 @@ const Subscriptions = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this plan?')) {
+        // Find the plan to get its name before deletion
+        const planToDelete = plans.find(p => p.id === id);
+        const planName = planToDelete?.name || 'Plan';
+        
+        if (window.confirm(`Are you sure you want to delete this plan?`)) {
             try {
                 await authAPI.deletePlan(id);
                 console.log('Plan deleted successfully:', id);
                 // Refresh the plans list from API to ensure UI is in sync
                 await fetchPlans();
+                showDeleteSuccess(planName);
             } catch (error) {
                 console.error('Error deleting plan:', error);
-                alert(error.message || 'Failed to delete plan');
+                showDeleteError(planName, error.message);
             }
         }
     };
@@ -135,21 +143,30 @@ const Subscriptions = () => {
                 const updatedPlan = await authAPI.updatePlan(currentPlan.id, planData);
                 setPlans(plans.map(p => p.id === currentPlan.id ? updatedPlan : p));
                 console.log('Plan updated successfully:', updatedPlan);
+                showUpdateSuccess(planData.name || currentPlan.name);
             } else {
                 // Create new plan
                 const newPlan = await authAPI.createPlan(planData);
                 setPlans([...plans, newPlan]);
                 console.log('Plan created successfully:', newPlan);
+                showCreateSuccess(planData.name);
             }
             setIsModalOpen(false);
         } catch (error) {
             console.error('Error saving plan:', error);
-            alert(error.message || 'Failed to save plan');
+            if (currentPlan) {
+                showUpdateError(planData.name || currentPlan.name, error.message);
+            } else {
+                showCreateError(planData.name, error.message);
+            }
         }
     };
 
     return (
         <div className="space-y-6">
+            {/* Custom Alert Container */}
+            <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
+            
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
                 <button

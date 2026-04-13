@@ -132,7 +132,7 @@ const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onCl
             {/* Debug: Show notification count */}
             {process.env.NODE_ENV === 'development' && (
                 <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
-                    Debug: {notifications.length} notifications ({notifications.filter(n => !n.is_read).length} unread)
+                    You Got: {notifications.length} notifications ({notifications.filter(n => !n.is_read).length} unread)
                 </div>
             )}
         </div>
