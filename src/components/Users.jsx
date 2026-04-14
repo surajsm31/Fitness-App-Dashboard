@@ -181,42 +181,7 @@ const UsersPage = () => {
                 pageSize: pagination.pageSize
             });
             
-            // Fetch profile images in background
-            const fetchProfileImages = async () => {
-                const usersWithProfiles = await Promise.all(
-                    (data.users || []).map(async (user) => {
-                        try {
-                            const userDetails = await authAPI.getUserById(user.id);
-                            
-                            // Backend now returns complete Cloudinary URL directly
-                            const profileImage = userDetails.user?.profile_image || userDetails.profile_image || user.profile_image;
-                            
-                            return {
-                                ...user,
-                                profile_image: profileImage
-                            };
-                        } catch (error) {
-                            console.warn(`Failed to fetch details for user ${user.id}:`, error);
-                            return user;
-                        }
-                    })
-                );
-                
-                // Update both cache and display users with profile images
-                setAllUsers(prevUsers => {
-                    const updatedUsers = [...prevUsers];
-                    usersWithProfiles.forEach(userWithProfile => {
-                        const index = updatedUsers.findIndex(u => u.id === userWithProfile.id);
-                        if (index !== -1) {
-                            updatedUsers[index] = userWithProfile;
-                        }
-                    });
-                    setUsers(updatedUsers.slice(0, pagination.pageSize)); // Update display users too
-                    return updatedUsers;
-                });
-            };
-            
-            fetchProfileImages();
+            // Profile images are already included in the API response - no need for additional calls
             
         } catch (err) {
             console.error('Failed to fetch users:', err);
@@ -363,6 +328,10 @@ const UsersPage = () => {
         console.log('Previous button clicked. Current page:', pagination.currentPage, 'HasPrev:', pagination.hasPrev);
         if (pagination.hasPrev) {
             handlePageChange(pagination.currentPage - 1);
+            // Scroll to top of page for main users pagination with delay
+            setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            }, 100);
         }
     };
 
@@ -370,6 +339,10 @@ const UsersPage = () => {
         console.log('Next button clicked. Current page:', pagination.currentPage, 'HasNext:', pagination.hasNext);
         if (pagination.hasNext) {
             handlePageChange(pagination.currentPage + 1);
+            // Scroll to top of page for main users pagination with delay
+            setTimeout(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+            }, 100);
         }
     };
 
@@ -383,6 +356,16 @@ const UsersPage = () => {
         console.log('Subscription previous button clicked. Current page:', subscriptionsPagination.currentPage, 'HasPrev:', subscriptionsPagination.hasPrev);
         if (subscriptionsPagination.hasPrev) {
             handleSubscriptionPageChange(subscriptionsPagination.currentPage - 1);
+            // Scroll to subscription section for subscription pagination with delay
+            setTimeout(() => {
+                const subscriptionSection = document.getElementById('subscription-section');
+                if (subscriptionSection) {
+                    subscriptionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    console.log('Subscription section not found, scrolling to top instead');
+                    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                }
+            }, 200);
         }
     };
 
@@ -390,6 +373,16 @@ const UsersPage = () => {
         console.log('Subscription next button clicked. Current page:', subscriptionsPagination.currentPage, 'HasNext:', subscriptionsPagination.hasNext);
         if (subscriptionsPagination.hasNext) {
             handleSubscriptionPageChange(subscriptionsPagination.currentPage + 1);
+            // Scroll to subscription section for subscription pagination with delay
+            setTimeout(() => {
+                const subscriptionSection = document.getElementById('subscription-section');
+                if (subscriptionSection) {
+                    subscriptionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    console.log('Subscription section not found, scrolling to top instead');
+                    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+                }
+            }, 200);
         }
     };
 
@@ -1095,7 +1088,7 @@ const UsersPage = () => {
                     </div>
 
                     {/* Subscribed Users Table */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
+                    <div id="subscription-section" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subscribed Users</h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Users with subscription plans</p>
