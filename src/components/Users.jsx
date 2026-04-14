@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Filter, User, MoreVertical, X, ChevronDown } from 'lucide-react';
+import { Search, Filter, User, MoreVertical, X, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '../services/api';
 import LazyImage from './LazyImage';
 import AlertContainer from './AlertContainer';
@@ -120,8 +120,17 @@ const UsersPage = () => {
     const [createUser, setCreateUser] = useState({
         username: '',
         email: '',
-        password: ''
+        password: '',
+        confirmPassword: ''
     });
+    
+    // Password visibility toggle states
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    // Password validation state
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordMatchError, setPasswordMatchError] = useState('');
 
     // Subscribed users state
     const [subscriptions, setSubscriptions] = useState([]);
@@ -583,15 +592,57 @@ const UsersPage = () => {
         }
     };
 
+    // Password validation function
+    const validatePassword = (password) => {
+        if (password.length < 8) {
+            return 'Password must be at least 8 characters long';
+        }
+        if (!/[A-Z]/.test(password)) {
+            return 'Password must contain at least one uppercase letter';
+        }
+        if (!/[a-z]/.test(password)) {
+            return 'Password must contain at least one lowercase letter';
+        }
+        if (!/[0-9]/.test(password)) {
+            return 'Password must contain at least one number';
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            return 'Password must contain at least one special character';
+        }
+        return '';
+    };
+
     const handleCreateUser = async (e) => {
         e.preventDefault();
+        
+        // Validate password
+        const passwordValidationError = validatePassword(createUser.password);
+        if (passwordValidationError) {
+            setPasswordError(passwordValidationError);
+            return;
+        }
+        
+        // Check if passwords match
+        if (createUser.password !== createUser.confirmPassword) {
+            setPasswordMatchError('Passwords do not match');
+            return;
+        }
+        
         try {
             setLoading(true);
-            await authAPI.createUser(createUser);
+            await authAPI.createUser({
+                username: createUser.username,
+                email: createUser.email,
+                password: createUser.password
+            });
             
             // Reset form and close modal
             const userName = createUser.username || 'User';
-            setCreateUser({ username: '', email: '', password: '' });
+            setCreateUser({ username: '', email: '', password: '', confirmPassword: '' });
+            setPasswordError('');
+            setPasswordMatchError('');
+            setShowPassword(false);
+            setShowConfirmPassword(false);
             setIsCreateModalOpen(false);
             
             // Clear cache and refresh users list from API
@@ -1545,7 +1596,14 @@ const UsersPage = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create New User</h2>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <button onClick={() => {
+                            setIsCreateModalOpen(false);
+                            setCreateUser({ username: '', email: '', password: '', confirmPassword: '' });
+                            setPasswordError('');
+                            setPasswordMatchError('');
+                            setShowPassword(false);
+                            setShowConfirmPassword(false);
+                        }} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1574,19 +1632,153 @@ const UsersPage = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                                <input
-                                    type="password"
-                                    value={createUser.password}
-                                    onChange={e => setCreateUser({ ...createUser, password: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                                    placeholder="Enter password"
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={createUser.password}
+                                        onChange={e => {
+                                            const newPassword = e.target.value;
+                                            setCreateUser({ ...createUser, password: newPassword });
+                                            setPasswordError(''); // Clear single error message
+                                            
+                                            // Live password matching
+                                            if (createUser.confirmPassword && newPassword !== createUser.confirmPassword) {
+                                                setPasswordMatchError('Passwords do not match');
+                                            } else {
+                                                setPasswordMatchError('');
+                                            }
+                                        }}
+                                        className={`w-full px-3 py-2 pr-10 rounded-lg border ${passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all`}
+                                        placeholder="Enter password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                                
+                                {/* Password Requirements - Checkbox Style */}
+                                {createUser.password && (
+                                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600 mt-2">
+                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password Requirements:</p>
+                                        <div className="space-y-1">
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                createUser.password.length >= 8 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                {createUser.password.length >= 8 ? (
+                                                    <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 8 characters
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[A-Z]/.test(createUser.password) 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                {/[A-Z]/.test(createUser.password) ? (
+                                                    <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 uppercase letter
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[a-z]/.test(createUser.password) 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                {/[a-z]/.test(createUser.password) ? (
+                                                    <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 lowercase letter
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[0-9]/.test(createUser.password) 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                {/[0-9]/.test(createUser.password) ? (
+                                                    <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 number
+                                            </div>
+                                            <div className={`flex items-center gap-2 text-xs ${
+                                                /[!@#$%^&*(),.?":{}|<>]/.test(createUser.password) 
+                                                    ? 'text-green-600 dark:text-green-400' 
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                            }`}>
+                                                {/[!@#$%^&*(),.?":{}|<>]/.test(createUser.password) ? (
+                                                    <div className="w-3 h-3 rounded-full bg-green-600 dark:bg-green-400 flex-shrink-0" />
+                                                ) : (
+                                                    <div className="w-3 h-3 rounded-full border border-current flex-shrink-0" />
+                                                )}
+                                                At least 1 special character
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={createUser.confirmPassword}
+                                        onChange={e => {
+                                            const newConfirmPassword = e.target.value;
+                                            setCreateUser({ ...createUser, confirmPassword: newConfirmPassword });
+                                            
+                                            // Live password matching
+                                            if (newConfirmPassword && newConfirmPassword !== createUser.password) {
+                                                setPasswordMatchError('Passwords do not match');
+                                            } else if (newConfirmPassword && newConfirmPassword === createUser.password) {
+                                                setPasswordMatchError('');
+                                            } else {
+                                                setPasswordMatchError('');
+                                            }
+                                        }}
+                                        className={`w-full px-3 py-2 pr-10 rounded-lg border ${passwordMatchError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all`}
+                                        placeholder="Confirm password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                                {passwordMatchError && (
+                                    <p className="text-xs text-red-500 mt-1">{passwordMatchError}</p>
+                                )}
+                                {!passwordMatchError && createUser.confirmPassword && createUser.confirmPassword === createUser.password && (
+                                    <p className="text-xs text-green-500 mt-1">Passwords match</p>
+                                )}
                             </div>
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
+                                    onClick={() => {
+                                        setIsCreateModalOpen(false);
+                                        setCreateUser({ username: '', email: '', password: '', confirmPassword: '' });
+                                        setPasswordError('');
+                                        setPasswordMatchError('');
+                                        setShowPassword(false);
+                                        setShowConfirmPassword(false);
+                                    }}
                                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                                 >
                                     Cancel

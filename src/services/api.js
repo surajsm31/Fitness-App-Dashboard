@@ -195,16 +195,7 @@ export const authAPI = {
       console.log('Attempting login to:', `${API_BASE_URL}/login`);
       console.log('Credentials:', { email, password: '***' });
       
-      // First test basic connectivity
-      console.log('Testing basic connectivity...');
-      const connectivityTest = await fetch(`${API_BASE_URL}/`, {
-        method: 'GET',
-        mode: 'no-cors'
-      }).catch(e => {
-        console.log('Connectivity test failed:', e.message);
-        throw { message: `Cannot reach backend at ${API_BASE_URL}. Check if server is running and accessible.` };
-      });
-      
+    
       const response = await api.post('/api/admin/login', {
         email: email.trim(),
         password: password,
