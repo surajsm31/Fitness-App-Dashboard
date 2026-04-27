@@ -57,22 +57,22 @@ const Quotes = () => {
                 console.log('📈 [QUOTES COMPONENT] Quote API response keys:', response ? Object.keys(response) : 'response is null/undefined');
                 
                 // Handle different response structures
-                let newQuote = response;
+                let createdQuote = response;
                 if (response && response.data) {
-                    newQuote = response.data;
+                    createdQuote = response.data;
                 } else if (response && response.quote) {
-                    newQuote = response.quote;
+                    createdQuote = response.quote;
                 }
                 
-                console.log('📈 [QUOTES COMPONENT] Final quote to add:', newQuote);
+                console.log('📈 [QUOTES COMPONENT] Final quote to add:', createdQuote);
                 
-                if (newQuote && newQuote.text) {
-                    setQuotes([...quotes, newQuote]);
+                if (createdQuote && createdQuote.text) {
+                    setQuotes([...quotes, createdQuote]);
                     setNewQuote({ text: '', author: '', category: '' });
                     setIsAddingQuote(false);
                     showCreateSuccess('Quote');
                 } else {
-                    console.error('❌ [QUOTES COMPONENT] Invalid quote response from API:', newQuote);
+                    console.error('❌ [QUOTES COMPONENT] Invalid quote response from API:', createdQuote);
                     showCreateError('Quote', 'Invalid response from server. Please try again.');
                 }
             } catch (error) {
