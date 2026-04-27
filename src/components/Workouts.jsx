@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Clock, Flame, Dumbbell, ChevronDown } from 'lucide-react';
+import { Play, Clock, Flame, Dumbbell, ChevronDown, X } from 'lucide-react';
 import clsx from 'clsx';
 import { authAPI } from '../services/api';
 import AlertContainer from './AlertContainer';
@@ -456,42 +456,80 @@ const Workouts = () => {
     const handleSave = async (e) => {
         e.preventDefault();
         
+        console.log('💪 [WORKOUT COMPONENT] Starting handleSave process');
+        console.log('💪 [WORKOUT COMPONENT] Current workout data:', currentWorkout);
+        
         if (!validateForm()) {
+            console.log('💪 [WORKOUT COMPONENT] Form validation failed');
             return;
         }
         
+        console.log('💪 [WORKOUT COMPONENT] Form validation passed');
         setIsSubmitting(true);
         
         try {
             const formData = new FormData();
+            console.log('💪 [WORKOUT COMPONENT] Created new FormData instance');
             
             // Add all workout data with correct field names
+            console.log('💪 [WORKOUT COMPONENT] Adding workout data to FormData:');
+            console.log('💪 [WORKOUT COMPONENT]   title:', currentWorkout.title);
             formData.append('title', currentWorkout.title);
+            
+            console.log('💪 [WORKOUT COMPONENT]   description:', currentWorkout.description);
             formData.append('description', currentWorkout.description);
+            
+            console.log('💪 [WORKOUT COMPONENT]   duration:', currentWorkout.duration);
             formData.append('duration', currentWorkout.duration);
+            
+            console.log('💪 [WORKOUT COMPONENT]   calorie_burn:', currentWorkout.calories_burned);
             formData.append('calorie_burn', currentWorkout.calories_burned);
+            
+            console.log('💪 [WORKOUT COMPONENT]   activity_level:', currentWorkout.difficulty_level);
             formData.append('activity_level', currentWorkout.difficulty_level);
+            
+            console.log('💪 [WORKOUT COMPONENT]   workout_category:', currentWorkout.category);
             formData.append('workout_category', currentWorkout.category);
             
             // Add files if they exist
             if (currentWorkout.image_file) {
+                console.log('💪 [WORKOUT COMPONENT]   workout_image:', currentWorkout.image_file.name, currentWorkout.image_file.size, 'bytes');
                 formData.append('workout_image', currentWorkout.image_file);
+            } else {
+                console.log('💪 [WORKOUT COMPONENT]   No image file to upload');
             }
             
             if (currentWorkout.video_file) {
+                console.log('💪 [WORKOUT COMPONENT]   workout_video:', currentWorkout.video_file.name, currentWorkout.video_file.size, 'bytes');
                 formData.append('workout_video', currentWorkout.video_file);
+            } else {
+                console.log('💪 [WORKOUT COMPONENT]   No video file to upload');
+            }
+            
+            // Log final FormData before sending
+            console.log('💪 [WORKOUT COMPONENT] Final FormData contents:');
+            console.log('💪 [WORKOUT COMPONENT] FormData keys:', Array.from(formData.keys()));
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`💪 [WORKOUT COMPONENT]   ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                } else {
+                    console.log(`💪 [WORKOUT COMPONENT]   ${key}: ${value}`);
+                }
             }
             
             // Check if it's an edit or create operation
             const isEdit = workouts.some(w => w.id === currentWorkout.id);
             const workoutName = currentWorkout.title || 'Workout';
+            console.log(`💪 [WORKOUT COMPONENT] Operation: ${isEdit ? 'UPDATE' : 'CREATE'} workout "${workoutName}"`);
             
             if (isEdit) {
                 // Update existing workout
+                console.log('💪 [WORKOUT COMPONENT] Calling updateWorkout API...');
                 await authAPI.updateWorkout(currentWorkout.id, formData);
                 showUpdateSuccess(workoutName);
             } else {
                 // Create new workout
+                console.log('💪 [WORKOUT COMPONENT] Calling createWorkout API...');
                 await authAPI.createWorkout(formData);
                 showCreateSuccess(workoutName);
             }
@@ -513,6 +551,10 @@ const Workouts = () => {
             } else {
                 showCreateError(workoutName, error.message);
             }
+            // Close modal on error as well
+            setIsEditModalOpen(false);
+            setCurrentWorkout(null);
+            setValidationErrors({});
         } finally {
             setIsSubmitting(false);
         }
@@ -550,8 +592,8 @@ const Workouts = () => {
         description: '',
         duration: '', 
         calories_burned: '',
-        difficulty_level: 'beginner',
-        category: 'Loose',
+        difficulty_level: '',
+        category: '',
         workout_image_url: '',
         workout_video_url: ''
     });
@@ -608,8 +650,8 @@ const Workouts = () => {
         description: '',
         duration: '', 
         calories_burned: '',
-        difficulty_level: 'beginner',
-        category: 'Loose',
+        difficulty_level: '',
+        category: '',
         workout_image_url: '',
         workout_video_url: ''
     });
@@ -750,8 +792,16 @@ const Workouts = () => {
             {/* Edit/Add Modal */}
             {isEditModalOpen && currentWorkout && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl relative">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8">
                             {workouts.find(w => w.id === currentWorkout.id) ? 'Edit Workout' : 'Add Workout'}
                         </h2>
                         <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
@@ -886,10 +936,11 @@ const Workouts = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
                                     <select
-                                        value={currentWorkout.category}
+                                        value={currentWorkout.category || ''}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, category: e.target.value })}
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     >
+                                        <option value="" disabled>Select Category</option>
                                         {categories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
@@ -930,10 +981,11 @@ const Workouts = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty Level</label>
                                     <select
-                                        value={currentWorkout.difficulty_level}
+                                        value={currentWorkout.difficulty_level || ''}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, difficulty_level: e.target.value })}
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     >
+                                        <option value="" disabled>Select Difficulty Level</option>
                                         <option value="beginner">Beginner</option>
                                         <option value="intermediate">Intermediate</option>
                                         <option value="advanced">Advanced</option>

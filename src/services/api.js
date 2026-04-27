@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:8000';
+// const API_BASE_URL = 'http://localhost:9000';
 // const API_BASE_URL = 'http://192.168.1.6:8000';
 const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
@@ -624,7 +624,23 @@ export const authAPI = {
 
   createWorkout: async (workoutData) => {
     try {
-      console.log('Creating workout with data:', workoutData);
+      console.log('🏋️ [WORKOUT API] Creating workout with data type:', typeof workoutData);
+      console.log('🏋️ [WORKOUT API] Is FormData?', workoutData instanceof FormData);
+      
+      // Log FormData contents if it's FormData
+      if (workoutData instanceof FormData) {
+        console.log('🏋️ [WORKOUT API] FormData entries:');
+        for (let [key, value] of workoutData.entries()) {
+          if (value instanceof File) {
+            console.log(`🏋️ [WORKOUT API]   ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+          } else {
+            console.log(`🏋️ [WORKOUT API]   ${key}: ${value}`);
+          }
+        }
+        console.log('🏋️ [WORKOUT API] FormData keys:', Array.from(workoutData.keys()));
+      } else {
+        console.log('🏋️ [WORKOUT API] Workout data object:', workoutData);
+      }
       
       // For FormData, we need to delete the default Content-Type header
       // and let the browser set it automatically to multipart/form-data with boundary
@@ -641,15 +657,30 @@ export const authAPI = {
       // Add auth token to this instance
       const token = localStorage.getItem('authToken');
       if (token) {
+        console.log('🏋️ [WORKOUT API] Adding auth token:', token ? 'Token present' : 'No token');
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await apiInstance.post('/api/admin/workouts', workoutData);
+      console.log('🏋️ [WORKOUT API] Making POST request to /api/admin/workouts');
+      console.log('🏋️ [WORKOUT API] Request headers:', apiInstance.defaults.headers);
       
-      console.log('Create workout API response:', response.data);
+      const startTime = Date.now();
+      const response = await apiInstance.post('/api/admin/workouts', workoutData);
+      const endTime = Date.now();
+      
+      console.log(`🏋️ [WORKOUT API] Request completed in ${endTime - startTime}ms`);
+      console.log('🏋️ [WORKOUT API] Create workout API response:', response.data);
+      console.log('🏋️ [WORKOUT API] Response status:', response.status);
       return response.data;
     } catch (error) {
-      console.error('Error creating workout:', error);
+      console.error('💥 [WORKOUT API] Error creating workout:', error);
+      console.error('💥 [WORKOUT API] Error message:', error.message);
+      console.error('💥 [WORKOUT API] Error code:', error.code);
+      if (error.response) {
+        console.error('💥 [WORKOUT API] Error response status:', error.response.status);
+        console.error('💥 [WORKOUT API] Error response data:', error.response.data);
+        console.error('💥 [WORKOUT API] Error response headers:', error.response.headers);
+      }
       throw error.response?.data || { message: 'Failed to create workout' };
     }
   },
@@ -1056,6 +1087,105 @@ export const authAPI = {
     } catch (error) {
       console.error('Error updating profile:', error);
       throw error.response?.data || { message: 'Failed to update profile' };
+    }
+  }
+};
+
+// Quotes API
+export const quotesAPI = {
+  // Get all quotes
+  getQuotes: async () => {
+    console.log('🔍 [QUOTES API] Calling GET /api/admin/quotes');
+    try {
+      const response = await api.get('/api/admin/quotes');
+      console.log('✅ [QUOTES API] GET quotes response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers
+      });
+      return response.data; // Return the actual data array from the response
+    } catch (error) {
+      console.error('❌ [QUOTES API] Error fetching quotes:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw error;
+    }
+  },
+
+  // Create a new quote
+  createQuote: async (quoteData) => {
+    console.log('🔍 [QUOTES API] Calling POST /api/admin/quotes with data:', quoteData);
+    try {
+      const response = await api.post('/api/admin/quotes', quoteData);
+      console.log('✅ [QUOTES API] POST quotes response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ [QUOTES API] Error creating quote:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw error;
+    }
+  },
+
+  // Update a quote
+  updateQuote: async (quoteId, quoteData) => {
+    console.log('🔍 [QUOTES API] Calling PUT /api/admin/quotes/${quoteId} with data:', { quoteId, quoteData });
+    try {
+      const response = await api.put(`/api/admin/quotes/${quoteId}`, quoteData);
+      console.log('✅ [QUOTES API] PUT quotes response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ [QUOTES API] Error updating quote:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw error;
+    }
+  },
+
+  // Delete a quote
+  deleteQuote: async (quoteId) => {
+    console.log('🔍 [QUOTES API] Calling DELETE /api/admin/quotes/${quoteId}', { quoteId });
+    try {
+      const response = await api.delete(`/api/admin/quotes/${quoteId}`);
+      console.log('✅ [QUOTES API] DELETE quotes response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data,
+        headers: response.headers
+      });
+      return response.data;
+    } catch (error) {
+      console.error('❌ [QUOTES API] Error deleting quote:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: error.config
+      });
+      throw error;
     }
   }
 };

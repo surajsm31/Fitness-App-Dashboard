@@ -8,6 +8,7 @@ import Progress from './components/Progress';
 import UsersPage from './components/Users';
 import Subscriptions from './components/Subscriptions';
 import BmiClass from './components/BmiClass';
+import Quotes from './components/Quotes';
 import Settings from './components/Settings';
 import Login from './components/Login';
 import AppWithNotifications from './components/AppWithNotifications';
@@ -104,6 +105,7 @@ function App() {
                             {currentView === 'Nutrition' && <Nutrition />}
                             {currentView === 'BMI Class' && <BmiClass />}
                             {currentView === 'Analytics' && <Progress />} {/* Reusing Progress as Analytics for now */}
+                            {currentView === 'Quotes' && <Quotes />}
                             {currentView === 'Profile' && <Profile />}
                             {currentView === 'Settings' && <Settings />}
                         </DashboardLayout>

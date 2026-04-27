@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activity, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activity, CreditCard, Quote } from 'lucide-react';
 import clsx from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
     { label: 'Nutrition', icon: FileText },
     { label: 'BMI Class', icon: Activity },
     { label: 'Analytics', icon: BarChart3 },
+    { label: 'Quotes', icon: Quote },
     { label: 'Settings', icon: Settings },
 ];
 
@@ -31,6 +32,23 @@ const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
 
     return (
         <>
+            {/* Custom Scrollbar Styles */}
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: ${theme === 'dark' ? '#4B5563' : '#D1D5DB'};
+                    border-radius: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: ${theme === 'dark' ? '#6B7280' : '#9CA3AF'};
+                }
+            `}</style>
+            
             {/* Mobile Overlay */}
             <div
                 className={clsx(
@@ -44,18 +62,26 @@ const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
             <aside
                 className={clsx(
                     "fixed top-0 left-0 z-30 h-full w-64 border-r border-gray-200/50 dark:border-gray-700/50 transition-transform duration-300 ease-in-out lg:translate-x-0",
-                    "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-2xl lg:shadow-none",
+                    "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-2xl lg:shadow-none flex flex-col",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200/50 dark:border-gray-700/50">
+                {/* Header */}
+                <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200/50 dark:border-gray-700/50 flex-shrink-0">
                     <div className="flex items-center gap-2 font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                         <Activity className="w-6 h-6 text-primary" />
                         <span>FitTrack</span>
                     </div>
                 </div>
 
-                <nav className="p-4 space-y-2">
+                {/* Scrollable Navigation */}
+                <nav 
+                    className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar"
+                    style={{
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: theme === 'dark' ? '#4B5563 transparent' : '#D1D5DB transparent'
+                    }}
+                >
                     {NAV_ITEMS.map((item) => (
                         <button
                             key={item.label}
@@ -79,7 +105,8 @@ const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
                     ))}
                 </nav>
 
-                <div className="absolute bottom-0 w-full p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-t from-white/50 to-transparent dark:from-gray-900/50">
+                {/* Profile Section - Fixed at bottom */}
+                <div className="flex-shrink-0 p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-t from-white/50 to-transparent dark:from-gray-900/50">
                     <div 
                         onClick={() => {
                             onNavigate('Settings');
