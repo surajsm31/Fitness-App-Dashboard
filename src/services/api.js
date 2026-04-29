@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://localhost:9000';
 // const API_BASE_URL = 'http://192.168.1.6:8000';
-const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -782,10 +782,38 @@ export const authAPI = {
     }
   },
 
+  getMealById: async (mealId) => {
+    try {
+      console.log('Fetching meal with ID:', mealId);
+      const response = await api.get(`/api/admin/meal/${mealId}`);
+      
+      console.log('Get meal API response status:', response.status);
+      console.log('Get meal API response data:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching meal:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      throw error.response?.data || { message: 'Failed to fetch meal' };
+    }
+  },
+
   createMeal: async (mealData) => {
     try {
       console.log('Creating meal with data:', mealData);
-      const response = await api.post('/api/admin/meals', mealData);
+      
+      // Check if mealData is FormData (for image upload) or regular JSON
+      const isFormData = mealData instanceof FormData;
+      
+      let response;
+      if (isFormData) {
+        // For FormData, let browser set Content-Type header automatically with boundary
+        response = await api.post('/api/admin/meals', mealData);
+      } else {
+        // For regular JSON data
+        response = await api.post('/api/admin/meals', mealData);
+      }
       
       console.log('Create meal API response status:', response.status);
       console.log('Create meal API response data:', response.data);
@@ -804,9 +832,28 @@ export const authAPI = {
   updateMeal: async (mealId, mealData) => {
     try {
       console.log('Updating meal with ID:', mealId, 'Data:', mealData);
-      console.log('Request payload:', JSON.stringify(mealData, null, 2));
       
-      const response = await api.put(`/api/admin/update-meal/${mealId}`, mealData);
+      // Create FormData for multipart/form-data (follow same pattern as updateUser)
+      const formData = new FormData();
+      
+      // Add all fields to FormData
+      Object.keys(mealData).forEach(key => {
+        if (mealData[key] !== null && mealData[key] !== undefined) {
+          // Handle file objects separately
+          if (key === 'image' && mealData[key] instanceof File) {
+            formData.append(key, mealData[key]);
+          } else {
+            formData.append(key, mealData[key]);
+          }
+        }
+      });
+      
+      // Use the exact endpoint with multipart/form-data
+      const response = await api.put(`/api/admin/update-meal/${mealId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       console.log('Raw API response:', response);
       console.log('Response status:', response.status);

@@ -75,7 +75,9 @@ const Nutrition = () => {
                     ...meal,
                     name: meal.food_item || meal.name || 'Untitled Meal',
                     type: meal.meal_type ? meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1) : meal.type,
-                    bmiCategory: meal.bmi_category_id || meal.bmiCategory
+                    bmiCategory: meal.bmi_category_id || meal.bmiCategory,
+                    description: meal.description || '',
+                    image_url: meal.meal_image || meal.image_url || null
                 }));
                 
                 allFetchedMeals = [...allFetchedMeals, ...mappedMeals];
@@ -319,9 +321,69 @@ const Nutrition = () => {
     };
 
 
-    const handleEdit = (meal) => {
-        setCurrentMeal(meal);
-        setIsModalOpen(true);
+    const handleEdit = async (meal) => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            // Fetch complete meal data from API
+            const mealData = await authAPI.getMealById(meal.id);
+            
+            console.log('handleEdit - Raw API response:', mealData);
+            console.log('handleEdit - mealData.meal_image:', mealData.meal_image);
+            console.log('handleEdit - mealData.image_url:', mealData.image_url);
+            
+            // Map API response to frontend format
+            const mappedMeal = {
+                ...mealData,
+                name: mealData.food_item || mealData.name || 'Untitled Meal',
+                type: mealData.meal_type ? mealData.meal_type.charAt(0).toUpperCase() + mealData.meal_type.slice(1) : mealData.type,
+                bmiCategory: mealData.bmi_category_id || mealData.bmiCategory,
+                description: mealData.description || '',
+                image_url: mealData.meal_image || mealData.image_url || null,
+                imageFile: null,
+                imagePreview: null
+            };
+            
+            console.log('handleEdit - Mapped meal with image_url:', mappedMeal.image_url);
+            
+            // Ensure icon is properly mapped for the meal type
+            const getIconForMealType = (mealType) => {
+                const iconMap = {
+                    'breakfast': Coffee,
+                    'Breakfast': Coffee,
+                    'lunch': Sun,
+                    'Lunch': Sun,
+                    'dinner': Moon,
+                    'Dinner': Moon,
+                    'snack': Utensils,
+                    'Snack': Utensils
+                };
+                return iconMap[mealType] || Utensils;
+            };
+            
+            mappedMeal.icon = getIconForMealType(mappedMeal.type);
+            
+            setCurrentMeal(mappedMeal);
+            setIsModalOpen(true);
+            
+        } catch (error) {
+            console.error('Failed to fetch meal details:', error);
+            setError('Failed to load meal details. Please try again.');
+            
+            // Fallback to using the meal data from the list
+            const fallbackMeal = {
+                ...meal,
+                description: meal.description || '',
+                image_url: meal.image_url || null,
+                imageFile: null,
+                imagePreview: null
+            };
+            setCurrentMeal(fallbackMeal);
+            setIsModalOpen(true);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSave = async (e) => {
@@ -333,12 +395,13 @@ const Nutrition = () => {
             setSubmitLoading(true);
             setError(null);
             
-            // Prepare meal data for API - use correct field names as per API schema
+            // Prepare meal data for API - use correct field names as per backend schema
             const mealData = {
-                food_item: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal', // Use 'food_item' field for API
-                calories: parseInt(currentMeal.calories) || 0,
+                bmi_category_id: parseInt(currentMeal.bmiCategory) || 4,
                 meal_type: currentMeal.type ? currentMeal.type.toLowerCase() : 'breakfast',
-                bmi_category_id: parseInt(currentMeal.bmiCategory) || 4
+                food_item: currentMeal.name ? currentMeal.name.replace(' Plan', '').trim() : 'Untitled Meal',
+                calories: parseInt(currentMeal.calories) || 0,
+                description: currentMeal.description || ''
             };
             
             // Validate required fields before sending
@@ -363,8 +426,27 @@ const Nutrition = () => {
             if (currentMeal.id) {
                 // Update existing meal
                 console.log('Updating existing meal with ID:', currentMeal.id);
-                console.log('Updating existing meal with ID:', currentMeal.id);
-                response = await authAPI.updateMeal(currentMeal.id, mealData);
+                
+                // Create update data following same pattern as user profile update
+                const updateData = {
+                    bmi_category_id: mealData.bmi_category_id,
+                    meal_type: mealData.meal_type,
+                    food_item: mealData.food_item,
+                    calories: mealData.calories,
+                    description: mealData.description
+                };
+                
+                // Handle meal image - only include if a new file is selected
+                if (currentMeal.imageFile) {
+                    updateData.image = currentMeal.imageFile; // Send actual file only when new image is uploaded
+                }
+                // Don't include meal_image field at all when keeping the existing image
+                
+                console.log('Sending update data:', updateData);
+                console.log('Current meal data:', currentMeal);
+                console.log('Has new image file:', !!currentMeal.imageFile);
+                
+                response = await authAPI.updateMeal(currentMeal.id, updateData);
                 console.log('Update API response from service:', response);
                 console.log('Response data keys:', Object.keys(response || {}));
                 console.log('Response has data property:', 'data' in (response || {}));
@@ -381,14 +463,22 @@ const Nutrition = () => {
                 
                 // Check if update was successful - backend returns data without status field
                 if (responseData && responseData.id) {
+                    console.log('Update successful - Response data:', responseData);
+                    console.log('meal_image field:', responseData.meal_image);
+                    console.log('image_url field:', responseData.image_url);
+                    
                     // Update the meal in local state with the new data from backend response
                     // API response has food_item field, so map it to name for frontend display
                     const updatedMeal = {
                         ...responseData,
                         name: responseData.food_item || responseData.name || currentMeal.name,
                         type: responseData.meal_type ? responseData.meal_type.charAt(0).toUpperCase() + responseData.meal_type.slice(1) : currentMeal.type,
-                        bmiCategory: responseData.bmi_category_id || currentMeal.bmiCategory
+                        bmiCategory: responseData.bmi_category_id || currentMeal.bmiCategory,
+                        description: responseData.description || currentMeal.description,
+                        image_url: responseData.meal_image || responseData.image_url || currentMeal.image_url
                     };
+                    
+                    console.log('Mapped updatedMeal with image_url:', updatedMeal.image_url);
                     
                     // Ensure icon is properly mapped for the updated meal type
                     const getIconForMealType = (mealType) => {
@@ -415,7 +505,9 @@ const Nutrition = () => {
                     setCurrentMeal(null);
                     
                     // Clear cache and refresh meals list from API
+                    console.log('Refreshing meals list after update...');
                     await fetchAllMeals();
+                    console.log('Meals list refreshed after update');
                     
                     const mealName = currentMeal.name || 'Meal';
                     showUpdateSuccess(mealName);
@@ -430,8 +522,22 @@ const Nutrition = () => {
             } else {
                 // Create new meal
                 console.log('Creating new meal');
-                console.log('Creating new meal');
-                response = await authAPI.createMeal(mealData);
+                
+                // Handle image upload if there's an image file
+                if (currentMeal.imageFile) {
+                    const formData = new FormData();
+                    formData.append('image', currentMeal.imageFile);
+                    
+                    // Add other meal data to formData
+                    Object.keys(mealData).forEach(key => {
+                        formData.append(key, mealData[key]);
+                    });
+                    
+                    response = await authAPI.createMeal(formData);
+                } else {
+                    // If no image, send regular data
+                    response = await authAPI.createMeal(mealData);
+                }
                 console.log('Create API response from service:', response);
                 console.log('Response data keys:', Object.keys(response || {}));
                 console.log('Response has data property:', 'data' in (response || {}));
@@ -455,7 +561,9 @@ const Nutrition = () => {
                         ...responseData,
                         name: responseData.food_item || responseData.name || currentMeal.name,
                         type: responseData.meal_type ? responseData.meal_type.charAt(0).toUpperCase() + responseData.meal_type.slice(1) : currentMeal.type,
-                        bmiCategory: responseData.bmi_category_id || currentMeal.bmiCategory
+                        bmiCategory: responseData.bmi_category_id || currentMeal.bmiCategory,
+                        description: responseData.description || currentMeal.description,
+                        image_url: responseData.meal_image || responseData.image_url || currentMeal.image_url
                     };
                     
                     // Ensure icon is properly mapped for the meal type
@@ -524,7 +632,11 @@ const Nutrition = () => {
             name: '',
             calories: '',
             icon: Coffee,
-            bmiCategory: 4 // Default to Normal (ID 4)
+            bmiCategory: 4, // Default to Normal (ID 4)
+            description: '',
+            imageFile: null,
+            imagePreview: null,
+            image_url: null
         });
         setIsModalOpen(true);
     };
@@ -709,33 +821,57 @@ const Nutrition = () => {
                         <div className="space-y-3 sm:space-y-4">
                             {meals.map((meal) => (
                                 <div key={meal.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 flex-shrink-0">
-                                                <meal.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{meal.name} Plan</p>
-                                                <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                    <span>{meal.type}</span>
-                                                    <span className="hidden sm:inline">•</span>
-                                                    <span>{meal.calories} kcal</span>
-                                                    <span className={`px-2 py-0.5 rounded text-xs ${
-                                                        [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-100 text-blue-800' : // Underweight (IDs 1-3)
-                                                            meal.bmiCategory === 4 ? 'bg-green-100 text-green-800' : // Normal (ID 4)
-                                                                meal.bmiCategory === 5 ? 'bg-yellow-100 text-yellow-800' : // Overweight (ID 5)
-                                                                    [6, 7, 8].includes(meal.bmiCategory) ? 'bg-red-100 text-red-800' : // Obese (IDs 6-8)
-                                                                        'bg-gray-100 text-gray-800'
-                                                    }`}>
-                                                        ID {meal.bmiCategory}
-                                                    </span>
+                                    <div className="flex flex-col gap-3">
+                                        {/* Meal Header with Image */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3 flex-1">
+                                                {/* Meal Image or Icon */}
+                                                {(() => {
+                                                    console.log(`Meal ID ${meal.id}: image_url =`, meal.image_url);
+                                                    return meal.image_url ? (
+                                                        <img 
+                                                            src={meal.image_url} 
+                                                            alt={meal.name} 
+                                                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover flex-shrink-0"
+                                                            onLoad={() => console.log(`Image loaded successfully for meal ${meal.id}`)}
+                                                            onError={() => console.log(`Image failed to load for meal ${meal.id}:`, meal.image_url)}
+                                                        />
+                                                    ) : (
+                                                        <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 flex-shrink-0">
+                                                            <meal.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                        </div>
+                                                    );
+                                                })()}
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{meal.name} Plan</p>
+                                                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                        <span>{meal.type}</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span>{meal.calories} kcal</span>
+                                                        <span className={`px-2 py-0.5 rounded text-xs ${
+                                                            [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-100 text-blue-800' : // Underweight (IDs 1-3)
+                                                                meal.bmiCategory === 4 ? 'bg-green-100 text-green-800' : // Normal (ID 4)
+                                                                    meal.bmiCategory === 5 ? 'bg-yellow-100 text-yellow-800' : // Overweight (ID 5)
+                                                                        [6, 7, 8].includes(meal.bmiCategory) ? 'bg-red-100 text-red-800' : // Obese (IDs 6-8)
+                                                                            'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                            ID {meal.bmiCategory}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+                                                <button onClick={() => handleEdit(meal)} className="text-xs sm:text-sm text-primary hover:underline font-medium">Edit</button>
+                                                <button onClick={() => handleDelete(meal.id)} className="text-xs sm:text-sm text-red-500 hover:underline font-medium">Delete</button>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-                                            <button onClick={() => handleEdit(meal)} className="text-xs sm:text-sm text-primary hover:underline font-medium">Edit</button>
-                                            <button onClick={() => handleDelete(meal.id)} className="text-xs sm:text-sm text-red-500 hover:underline font-medium">Delete</button>
-                                        </div>
+                                        
+                                        {/* Meal Description */}
+                                        {meal.description && (
+                                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                                {meal.description}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -896,6 +1032,74 @@ const Nutrition = () => {
                                     className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                                     required
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                                <textarea
+                                    value={currentMeal.description || ''}
+                                    onChange={e => setCurrentMeal({ ...currentMeal, description: e.target.value })}
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none"
+                                    rows={3}
+                                    placeholder="Enter meal description (optional)..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meal Image</label>
+                                <div className="space-y-2">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={e => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setCurrentMeal({ ...currentMeal, imageFile: file });
+                                                // Create preview URL
+                                                const reader = new FileReader();
+                                                reader.onload = (e) => {
+                                                    setCurrentMeal(prev => ({ ...prev, imagePreview: e.target.result }));
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                    />
+                                    {currentMeal.imagePreview && (
+                                        <div className="relative">
+                                            <img 
+                                                src={currentMeal.imagePreview} 
+                                                alt="Meal preview" 
+                                                className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setCurrentMeal({ ...currentMeal, imageFile: null, imagePreview: null, image_url: null });
+                                                }}
+                                                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    {currentMeal.image_url && !currentMeal.imagePreview && (
+                                        <div className="relative">
+                                            <img 
+                                                src={currentMeal.image_url} 
+                                                alt="Current meal image" 
+                                                className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setCurrentMeal({ ...currentMeal, image_url: null });
+                                                }}
+                                                className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <button type="submit" className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-indigo-700 mt-2 flex items-center justify-center gap-2 disabled:opacity-50 text-sm" disabled={submitLoading}>
                                 {submitLoading ? (
