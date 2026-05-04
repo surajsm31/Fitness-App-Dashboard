@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 
-// const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://localhost:9000';
 // const API_BASE_URL = 'http://192.168.1.6:8000';
-const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -757,14 +757,17 @@ export const authAPI = {
       
       // Map API response fields to component expected format
       // API returns: id, bmi_category_id, meal_type, food_item, calories
-      // Component expects: id, type, name, calories, bmiCategory, icon
+      // Component expects: id, type, name, calories, bmiCategory, icon, image_url, description
       const mappedMeals = mealsArray.map(meal => ({
+        ...meal, // Preserve all original fields including meal_image and description
         id: meal.id,
         type: meal.meal_type.charAt(0).toUpperCase() + meal.meal_type.slice(1),
         name: meal.food_item,
         calories: meal.calories,
         bmiCategory: meal.bmi_category_id, // Show ID instead of category name
-        icon: getIconForMealType(meal.meal_type)
+        icon: getIconForMealType(meal.meal_type),
+        image_url: meal.meal_image || null, // Map meal_image to image_url for display
+        description: meal.description || ''
       }));
       
       console.log('Mapped meals:', mappedMeals);

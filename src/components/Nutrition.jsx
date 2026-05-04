@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown } from 'lucide-react';
+import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown, RefreshCw } from 'lucide-react';
 import { authAPI } from '../services/api';
 import AlertContainer from './AlertContainer';
 import { useCustomAlert } from '../hooks/useCustomAlert';
@@ -145,77 +145,98 @@ const Nutrition = () => {
     // Reusable Nutrition Chart Component
     const NutritionChart = memo(({ data, bmiCategory }) => {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Nutrition Distribution 
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 lg:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                <h3 className="text-sm sm:text-base lg:text-base font-semibold text-gray-900 dark:text-white mb-2">
+                    Nutrition Distribution
                     {bmiCategory && (
-                        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
+                        <span className="text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
                             ({bmiCategory})
                         </span>
                     )}
                 </h3>
-                <div className="h-[200px] sm:h-[250px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart key={bmiCategory || 'default-chart'}>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={60}
-                                paddingAngle={5}
-                                dataKey="value"
-                                animationBegin={0}
-                                animationDuration={0}
-                                isAnimationActive={false}
-                            >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip 
-                                contentStyle={{ 
-                                    borderRadius: '8px', 
-                                    border: 'none', 
-                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    backdropFilter: 'blur(10px)'
-                                }}
-                                formatter={(value, name) => {
-                                    const calories = 2000;
-                                    const multiplier = name === 'Protein' ? 4 : name === 'Carbs' ? 4 : 9;
-                                    const grams = Math.round((value / 100) * calories / multiplier);
-                                    return [
-                                        `${value}% (~${grams}g)`, 
-                                        name
-                                    ];
-                                }}
-                                labelFormatter={() => 'Macronutrient Ratio (2000 kcal diet)'}
-                            />
-                            <Legend 
-                                verticalAlign="bottom" 
-                                height={36}
-                                formatter={(value, entry) => (
-                                    <span style={{ color: entry.color }}>
-                                        {value}: {entry.payload.value}%
-                                    </span>
-                                )}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-                <div className="text-center mt-4">
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                        {bmiCategory 
-                            ? `Optimized for ${bmiCategory} BMI category` 
-                            : 'Enter height and weight, then click Calculate to see personalized nutrition ratios'
-                        }
-                    </p>
-                    {bmiCategory && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            Based on 2000 calorie daily intake
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 items-center">
+                    {/* Chart Section */}
+                    <div className="h-[150px] sm:h-[180px] lg:h-[180px] w-full lg:w-1/2">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart key={bmiCategory || 'default-chart'}>
+                                <Pie
+                                    data={data}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={35}
+                                    outerRadius={55}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    animationBegin={0}
+                                    animationDuration={0}
+                                    isAnimationActive={false}
+                                >
+                                    {data.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        borderRadius: '8px',
+                                        border: 'none',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(10px)'
+                                    }}
+                                    formatter={(value, name) => {
+                                        const calories = 2000;
+                                        const multiplier = name === 'Protein' ? 4 : name === 'Carbs' ? 4 : 9;
+                                        const grams = Math.round((value / 100) * calories / multiplier);
+                                        return [
+                                            `${value}% (~${grams}g)`,
+                                            name
+                                        ];
+                                    }}
+                                    labelFormatter={() => 'Macronutrient Ratio (2000 kcal diet)'}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Stats/Details Section */}
+                    <div className="w-full lg:w-1/2 text-center lg:text-left">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {bmiCategory
+                                ? `Optimized for ${bmiCategory} BMI category`
+                                : 'Enter height and weight, then click Calculate to see personalized nutrition ratios'
+                            }
                         </p>
-                    )}
+                        {bmiCategory && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                Based on 2000 calorie daily intake
+                            </p>
+                        )}
+
+                        {/* Macro Stats */}
+                        <div className="mt-2 space-y-1.5">
+                            {data.map((item, index) => {
+                                const calories = 2000;
+                                const multiplier = item.name === 'Protein' ? 4 : item.name === 'Carbs' ? 4 : 9;
+                                const grams = Math.round((item.value / 100) * calories / multiplier);
+                                return (
+                                    <div key={index} className="flex items-center justify-between lg:justify-start gap-3">
+                                        <div className="flex items-center gap-2">
+                                            <div
+                                                className="w-2.5 h-2.5 rounded-full"
+                                                style={{ backgroundColor: item.color }}
+                                            />
+                                            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                {item.name}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                                            {item.value}% (~{grams}g)
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -683,33 +704,42 @@ const Nutrition = () => {
                     <span className="hidden sm:inline">Create Meal Plan</span>
                     <span className="sm:hidden">Create</span>
                 </button>
+                <button
+                    onClick={fetchAllMeals}
+                    disabled={loading}
+                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Refresh</span>
+                    <span className="sm:hidden">Refresh</span>
+                </button>
             </div>
 
             {/* BMI Calculator Section */}
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white shadow-lg">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 lg:p-4 text-white shadow-lg">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4">
                     <div className="w-full lg:w-auto">
-                        <h2 className="text-xl sm:text-2xl font-bold mb-2">BMI Smart Planner</h2>
-                        <p className="opacity-90 text-sm sm:text-base max-w-full lg:max-w-md">Enter user details to filter nutrition plans specifically tailored for their BMI category.</p>
+                        <h2 className="text-lg sm:text-xl lg:text-xl font-bold mb-1">BMI Smart Planner</h2>
+                        <p className="opacity-90 text-xs sm:text-sm lg:text-sm max-w-full lg:max-w-md">Enter user details to filter nutrition plans specifically tailored for their BMI category.</p>
 
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-3 mt-2 sm:mt-3 lg:mt-3">
                             <div className="flex-1 sm:flex-none">
-                                <label className="block text-sm font-medium mb-1 opacity-80">Height (cm)</label>
+                                <label className="block text-xs sm:text-sm font-medium mb-1 opacity-80">Height (cm)</label>
                                 <input
                                     type="number"
                                     value={bmiInputs.height}
                                     onChange={e => setBmiInputs({ ...bmiInputs, height: e.target.value })}
-                                    className="px-3 py-2 rounded-lg text-gray-900 w-full sm:w-32 focus:outline-none"
+                                    className="px-3 py-1.5 sm:py-2 rounded-lg text-gray-900 w-full sm:w-28 lg:w-32 focus:outline-none"
                                     placeholder="175"
                                 />
                             </div>
                             <div className="flex-1 sm:flex-none">
-                                <label className="block text-sm font-medium mb-1 opacity-80">Weight (kg)</label>
+                                <label className="block text-xs sm:text-sm font-medium mb-1 opacity-80">Weight (kg)</label>
                                 <input
                                     type="number"
                                     value={bmiInputs.weight}
                                     onChange={e => setBmiInputs({ ...bmiInputs, weight: e.target.value })}
-                                    className="px-3 py-2 rounded-lg text-gray-900 w-full sm:w-32 focus:outline-none"
+                                    className="px-3 py-1.5 sm:py-2 rounded-lg text-gray-900 w-full sm:w-28 lg:w-32 focus:outline-none"
                                     placeholder="70"
                                 />
                             </div>
@@ -717,11 +747,11 @@ const Nutrition = () => {
                                 <button
                                     onClick={calculateBMI}
                                     disabled={bmiCalculating}
-                                    className="bg-white text-indigo-600 px-4 sm:px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="bg-white text-indigo-600 px-3 sm:px-4 lg:px-5 py-1.5 sm:py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                                 >
                                     {bmiCalculating ? (
                                         <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                                             Calculating...
                                         </>
                                     ) : (
@@ -733,10 +763,10 @@ const Nutrition = () => {
                     </div>
 
                     {bmiResult && (
-                        <div className="bg-white/20 backdrop-blur-md p-4 sm:p-6 rounded-xl border border-white/30 text-center w-full lg:w-auto lg:min-w-[200px]">
-                            <p className="text-sm font-medium opacity-90">Calculated BMI</p>
-                            <p className="text-3xl sm:text-4xl font-bold my-2">{bmiResult.bmi}</p>
-                            <span className="inline-block px-3 py-1 bg-white text-indigo-600 rounded-full text-sm font-bold">
+                        <div className="bg-white/20 backdrop-blur-md p-3 sm:p-4 lg:p-4 rounded-xl border border-white/30 text-center w-full lg:w-auto lg:min-w-[180px]">
+                            <p className="text-xs sm:text-sm font-medium opacity-90">Calculated BMI</p>
+                            <p className="text-2xl sm:text-3xl lg:text-3xl font-bold my-1 lg:my-2">{bmiResult.bmi}</p>
+                            <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 bg-white text-indigo-600 rounded-full text-xs sm:text-sm font-bold">
                                 {bmiResult.category}
                             </span>
                         </div>
@@ -744,18 +774,18 @@ const Nutrition = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-                {/* Macro Chart */}
-                <div className="xl:col-span-1">
-                    <NutritionChart 
-                        key={bmiResult?.category || 'default'} 
-                        data={nutritionData} 
-                        bmiCategory={bmiResult?.category} 
+            <div className="flex flex-col gap-4 sm:gap-6">
+                {/* Macro Chart - Full Width for Desktop */}
+                <div className="w-full">
+                    <NutritionChart
+                        key={bmiResult?.category || 'default'}
+                        data={nutritionData}
+                        bmiCategory={bmiResult?.category}
                     />
                 </div>
 
-                {/* Meals List */}
-                <div className="xl:col-span-2 space-y-4">
+                {/* Meals List - Full Width */}
+                <div className="w-full space-y-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-1">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                             {selectedCategory === 'All' ? 'All Plans' : `Plans for ${selectedCategory}`}
@@ -820,28 +850,23 @@ const Nutrition = () => {
                     ) : (
                         <div className="space-y-3 sm:space-y-4">
                             {meals.map((meal) => (
-                                <div key={meal.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                                <div key={meal.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md hover:scale-[1.01] transition-all duration-200 ease-in-out cursor-pointer">
                                     <div className="flex flex-col gap-3">
                                         {/* Meal Header with Image */}
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                             <div className="flex items-center gap-3 flex-1">
                                                 {/* Meal Image or Icon */}
-                                                {(() => {
-                                                    console.log(`Meal ID ${meal.id}: image_url =`, meal.image_url);
-                                                    return meal.image_url ? (
-                                                        <img 
-                                                            src={meal.image_url} 
-                                                            alt={meal.name} 
-                                                            className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover flex-shrink-0"
-                                                            onLoad={() => console.log(`Image loaded successfully for meal ${meal.id}`)}
-                                                            onError={() => console.log(`Image failed to load for meal ${meal.id}:`, meal.image_url)}
-                                                        />
-                                                    ) : (
-                                                        <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 flex-shrink-0">
-                                                            <meal.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                        </div>
-                                                    );
-                                                })()}
+                                                {meal.image_url ? (
+                                                    <img 
+                                                        src={meal.image_url} 
+                                                        alt={meal.name} 
+                                                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover flex-shrink-0"
+                                                    />
+                                                ) : (
+                                                    <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 flex-shrink-0">
+                                                        <meal.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                    </div>
+                                                )}
                                                 <div className="min-w-0 flex-1">
                                                     <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{meal.name} Plan</p>
                                                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -868,7 +893,7 @@ const Nutrition = () => {
                                         
                                         {/* Meal Description */}
                                         {meal.description && (
-                                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2 sm:line-clamp-3">
                                                 {meal.description}
                                             </div>
                                         )}
