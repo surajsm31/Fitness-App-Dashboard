@@ -696,23 +696,25 @@ const Nutrition = () => {
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Nutrition</h1>
-                <button
-                    onClick={handleAdd}
-                    className="flex items-center gap-2 bg-primary text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full sm:w-auto justify-center"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Create Meal Plan</span>
-                    <span className="sm:hidden">Create</span>
-                </button>
-                <button
-                    onClick={fetchAllMeals}
-                    disabled={loading}
-                    className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">Refresh</span>
-                    <span className="sm:hidden">Refresh</span>
-                </button>
+                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button
+                        onClick={handleAdd}
+                        className="flex items-center gap-2 bg-primary text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full sm:w-auto justify-center"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Create Meal Plan</span>
+                        <span className="sm:hidden">Create</span>
+                    </button>
+                    <button
+                        onClick={fetchAllMeals}
+                        disabled={loading}
+                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        <span className="hidden sm:inline">Refresh</span>
+                        <span className="sm:hidden">Refresh</span>
+                    </button>
+                </div>
             </div>
 
             {/* BMI Calculator Section */}
