@@ -84,3 +84,11 @@ export const isRememberMeActive = () => {
   const flag = Cookies.get(REMEMBER_ME_FLAG);
   return flag === 'true';
 };
+
+// Check if credentials are already stored
+export const areCredentialsStored = () => {
+  const email = Cookies.get(REMEMBER_ME_EMAIL);
+  const password = Cookies.get(REMEMBER_ME_PASSWORD);
+  const flag = Cookies.get(REMEMBER_ME_FLAG);
+  return !!(email && password && flag === 'true');
+};

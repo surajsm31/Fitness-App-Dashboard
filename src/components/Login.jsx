@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
 import { authAPI } from '../services/api';
-import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, isRememberMeActive } from '../utils/cookieUtils';
+import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, isRememberMeActive, areCredentialsStored } from '../utils/cookieUtils';
 
 const Login = ({ onLogin, loginError }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -67,26 +67,47 @@ const Login = ({ onLogin, loginError }) => {
         
         try {
             // Handle remember me logic
+            const credentialsAlreadyStored = areCredentialsStored();
+            
             if (rememberMe) {
-                // Ask for confirmation before storing credentials
-                const shouldStore = window.confirm(
-                    'For your security, we want to confirm:\n\n' +
-                    'Do you want to store your login credentials on this device for future convenience?\n\n' +
-                    'Your password will be encrypted and stored securely in cookies.\n' +
-                    'This will allow you to auto-login on future visits.\n\n' +
-                    'Click OK to confirm, or Cancel to login without saving.'
-                );
-                
-                if (shouldStore) {
-                    storeCredentialsInCookies(credentials.email, credentials.password);
+                // Only ask for permission if we're storing NEW credentials
+                if (!credentialsAlreadyStored) {
+                    const shouldStore = window.confirm(
+                        'For your security, we want to confirm:\n\n' +
+                        'Do you want to store your login credentials on this device for future convenience?\n\n' +
+                        'Your password will be encrypted and stored securely in cookies.\n' +
+                        'This will allow you to auto-login on future visits.\n\n' +
+                        'Click OK to confirm, or Cancel to login without saving.'
+                    );
+                    
+                    if (shouldStore) {
+                        storeCredentialsInCookies(credentials.email, credentials.password);
+                    } else {
+                        // User declined, clear any existing cookies
+                        clearRememberMeCookies();
+                        setRememberMe(false);
+                    }
                 } else {
-                    // User declined, clear any existing cookies
-                    clearRememberMeCookies();
-                    setRememberMe(false);
+                    // Credentials already stored, just update them if they're different
+                    const savedCredentials = getCredentialsFromCookies();
+                    if (savedCredentials && (savedCredentials.email !== credentials.email || savedCredentials.password !== credentials.password)) {
+                        storeCredentialsInCookies(credentials.email, credentials.password);
+                    }
                 }
             } else {
-                // Clear cookies if remember me is unchecked
-                clearRememberMeCookies();
+                // Only clear cookies if user explicitly wants to remove stored credentials
+                // AND credentials are currently stored
+                if (credentialsAlreadyStored) {
+                    const shouldClear = window.confirm(
+                        'You have unchecked "Remember me".\n\n' +
+                        'Do you want to remove the stored login credentials from this device?\n\n' +
+                        'Click OK to remove stored credentials, or Cancel to keep them for future convenience.'
+                    );
+                    
+                    if (shouldClear) {
+                        clearRememberMeCookies();
+                    }
+                }
             }
             
             await onLogin(credentials.email, credentials.password);
