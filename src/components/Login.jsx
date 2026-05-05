@@ -72,123 +72,190 @@ const Login = ({ onLogin, loginError }) => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gray-900">
-            {/* Background Effects */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[128px] animate-pulse"></div>
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[128px] animate-pulse delay-1000"></div>
+        <div className="h-screen flex flex-col lg:flex-row relative overflow-hidden">
+            {/* Full Background Image - Covers entire page */}
+            <div className="absolute inset-0 overflow-hidden">
+                <img 
+                    src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Fitness Dashboard" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                        e.target.style.display = 'none';
+                    }}
+                />
+                {/* Color Overlay - Merges image with theme colors */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-primary/30 to-blue-800/35"></div>
+                
+                {/* Additional color blending for depth */}
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-indigo-600/10"></div>
+                
+                {/* Glow Effects - Integrated with image colors */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-10 left-10 w-60 h-60 bg-blue-400/30 rounded-full blur-[80px] lg:top-20 lg:left-20 lg:w-80 lg:h-80 lg:blur-[100px]"></div>
+                    <div className="absolute bottom-10 right-10 w-72 h-72 bg-indigo-400/25 rounded-full blur-[90px] lg:bottom-20 lg:right-20 lg:w-96 lg:h-96 lg:blur-[120px]"></div>
+                    <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-primary/20 rounded-full blur-[100px] lg:top-1/2 lg:left-1/2 lg:w-[600px] lg:h-[600px] lg:blur-[150px]"></div>
+                    <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-emerald-400/15 rounded-full blur-[70px] lg:bottom-1/3 lg:right-1/3 lg:w-80 lg:h-80 lg:blur-[90px]"></div>
+                </div>
             </div>
 
-            {/* Login Card */}
-            <div className="relative z-10 w-full max-w-md p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 mb-4">
-                        <div className="p-3 bg-primary/20 rounded-xl">
-                            <Activity className="w-8 h-8 text-primary" />
+                {/* Left Section - Illustration Area (60-65% on desktop) */}
+            <div className="hidden lg:flex lg:w-[62%] relative overflow-hidden">
+                {/* Overlay Content */}
+                <div className="relative z-10 flex flex-col justify-center h-full px-8 xl:px-16 text-white">
+                    <div className="max-w-lg xl:max-w-xl">
+                        <div className="inline-flex items-center gap-2 xl:gap-3 mb-4 xl:mb-6">
+                            <div className="p-2 xl:p-3 bg-white/10 backdrop-blur-sm rounded-xl">
+                                <Activity className="w-8 h-8 xl:w-10 xl:h-10 text-white" />
+                            </div>
+                            <span className="text-base xl:text-lg font-semibold tracking-wide">FitTrack Admin</span>
+                        </div>
+                        
+                        <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold mb-3 xl:mb-4 leading-tight">
+                            Empowering Personal Fitness
+                        </h1>
+                        <p className="text-lg xl:text-xl text-gray-200 mb-8 xl:mb-12 leading-relaxed">
+                            The industry's leading admin platform for tracking and optimization
+                        </p>
+
+                        {/* Stats Section */}
+                        <div className="flex gap-6 xl:gap-12">
+                            <div>
+                                <div className="text-2xl xl:text-4xl font-bold mb-1">95%</div>
+                                <div className="text-gray-300 text-xs xl:text-sm">User Engagement</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl xl:text-4xl font-bold mb-1">500+</div>
+                                <div className="text-gray-300 text-xs xl:text-sm">Workout Plans</div>
+                            </div>
+                            <div>
+                                <div className="text-2xl xl:text-4xl font-bold mb-1">10K+</div>
+                                <div className="text-gray-300 text-xs xl:text-sm">Active Users</div>
+                            </div>
                         </div>
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-                    <p className="text-gray-400">Enter your credentials to access the dashboard.</p>
                 </div>
+            </div>
 
-                {/* Error Display */}
-                {displayError && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-red-400 text-sm font-medium mb-1">
-                                    {isSessionExpired ? 'Session Expired' : 'Login Error'}
-                                </p>
-                                <p className="text-red-300 text-xs">{displayError}</p>
-                                <p className="text-red-400 text-xs mt-2">Check browser console (F12) for detailed error information</p>
-                            </div>
+            {/* Right Section - Login UI (35-40% on desktop) */}
+            <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-0">
+                <div className="w-full max-w-sm sm:max-w-md p-4 sm:p-6 lg:p-8 lg:px-12">
+                    {/* Mobile Logo - Only visible on mobile/tablet */}
+                    <div className="lg:hidden flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-primary to-indigo-700 rounded-xl">
+                            <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                         </div>
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300">Email Address</label>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            </div>
-                            <input
-                                type="email"
-                                required
-                                value={credentials.email}
-                                onChange={e => setCredentials({ ...credentials, email: e.target.value })}
-                                className="block w-full pl-10 pr-3 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-                                placeholder="admin@admin.com"
-                            />
-                        </div>
+                        <span className="text-lg sm:text-xl font-bold text-white">FitTrack Admin</span>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300">Password</label>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                    {/* Glassmorphism Card */}
+                    <div className="bg-white/5 backdrop-blur-3xl rounded-2xl shadow-xl shadow-black/20 p-4 sm:p-6 lg:p-8 border border-white/10">
+                        <div className="mb-6 sm:mb-8">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Sign in</h1>
+                            <p className="text-gray-200 text-sm sm:text-base">Enter your credentials to access the dashboard</p>
+                        </div>
+
+                        {/* Error Display */}
+                        {displayError && (
+                            <div className="bg-red-500/10 backdrop-blur-2xl border border-red-400/20 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+                                <div className="flex items-start gap-2 sm:gap-3">
+                                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-300 flex-shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <p className="text-red-200 text-xs sm:text-sm font-medium mb-1">
+                                            {isSessionExpired ? 'Session Expired' : 'Login Error'}
+                                        </p>
+                                        <p className="text-red-300 text-xs">{displayError}</p>
+                                        <p className="text-red-400 text-xs mt-2">Check browser console (F12) for detailed error information</p>
+                                    </div>
+                                </div>
                             </div>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                required
-                                value={credentials.password}
-                                onChange={e => setCredentials({ ...credentials, password: e.target.value })}
-                                className="block w-full pl-10 pr-12 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-                                placeholder="••••••••"
-                            />
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-200">Email Address</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300 group-focus-within:text-white transition-colors" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={credentials.email}
+                                        onChange={e => setCredentials({ ...credentials, email: e.target.value })}
+                                        className="block w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
+                                        placeholder="admin@admin.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-200">Password</label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300 group-focus-within:text-white transition-colors" />
+                                    </div>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        required
+                                        value={credentials.password}
+                                        onChange={e => setCredentials({ ...credentials, password: e.target.value })}
+                                        className="block w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center text-gray-300 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        ) : (
+                                            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs sm:text-sm">
+                                <label className="flex items-center text-gray-200 cursor-pointer">
+                                    <input type="checkbox" className="mr-1.5 sm:mr-2 rounded border-white/20 bg-white/5 text-primary focus:ring-white/20" />
+                                    <span className="text-xs sm:text-sm">Remember me</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowForgotPassword(true)}
+                                    className="text-blue-200 hover:text-blue-100 font-medium transition-colors text-xs sm:text-sm"
+                                >
+                                    Forgot Password?
+                                </button>
+                            </div>
+
                             <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-400/20 hover:shadow-blue-500/30 disabled:opacity-70 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
                             >
-                                {showPassword ? (
-                                    <EyeOff className="h-5 w-5" />
+                                {isLoading ? (
+                                    <>
+                                        <Loader className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                                        <span className="text-xs sm:text-sm">Signing in...</span>
+                                    </>
                                 ) : (
-                                    <Eye className="h-5 w-5" />
+                                    <>
+                                        Sign In
+                                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                                    </>
                                 )}
                             </button>
-                        </div>
+                        </form>
                     </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                        <label className="flex items-center text-gray-400 cursor-pointer">
-                            <input type="checkbox" className="mr-2 rounded border-gray-700 bg-gray-800 text-primary focus:ring-offset-gray-900" />
-                            Remember me
-                        </label>
-                        <button
-                            type="button"
-                            onClick={() => setShowForgotPassword(true)}
-                            className="text-primary hover:text-primary/80 font-medium transition-colors"
-                        >
-                            Forgot Password?
-                        </button>
+                    {/* Footer */}
+                    <div className="text-center mt-6 sm:mt-8 text-xs text-gray-300">
+                        &copy; 2026 FitTrack. All rights reserved.
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-primary to-indigo-600 hover:from-indigo-600 hover:to-primary text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.98]"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader className="w-5 h-5 animate-spin" />
-                                Signing in...
-                            </>
-                        ) : (
-                            <>
-                                Sign In
-                                <ArrowRight className="w-5 h-5" />
-                            </>
-                        )}
-                    </button>
-                </form>
-            </div>
-
-            <div className="absolute bottom-6 text-center text-xs text-gray-600">
-                &copy; 2026 FitTrack. All rights reserved.
+                </div>
             </div>
         </div>
     );

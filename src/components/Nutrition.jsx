@@ -128,6 +128,15 @@ const Nutrition = () => {
         obese: { protein: 40, carbs: 30, fats: 30 }
     };
 
+    // Function to map BMI category ID to category name
+    const getBmiCategoryName = (bmiCategoryId) => {
+        if ([1, 2, 3].includes(bmiCategoryId)) return 'Underweight';
+        if (bmiCategoryId === 4) return 'Normal';
+        if (bmiCategoryId === 5) return 'Overweight';
+        if ([6, 7, 8].includes(bmiCategoryId)) return 'Obese';
+        return 'Unknown';
+    };
+
     // Function to update nutrition chart based on BMI category
     const updateNutritionChart = (bmiCategory) => {
         const ratios = nutritionRatios[bmiCategory] || nutritionRatios.normal;
@@ -882,7 +891,7 @@ const Nutrition = () => {
                                                                         [6, 7, 8].includes(meal.bmiCategory) ? 'bg-red-100 text-red-800' : // Obese (IDs 6-8)
                                                                             'bg-gray-100 text-gray-800'
                                                         }`}>
-                                                            ID {meal.bmiCategory}
+                                                            {getBmiCategoryName(meal.bmiCategory)}
                                                         </span>
                                                     </div>
                                                 </div>
