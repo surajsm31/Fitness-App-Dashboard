@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
+import { clearRememberMeCookies } from '../utils/cookieUtils';
 
 // const API_BASE_URL = 'http://localhost:9000';
 // const API_BASE_URL = 'http://192.168.1.6:8000';

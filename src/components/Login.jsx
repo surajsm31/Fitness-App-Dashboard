@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Activity, Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
 import { authAPI } from '../services/api';
+import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, isRememberMeActive } from '../utils/cookieUtils';
 
 const Login = ({ onLogin, loginError }) => {
     const [isLoading, setIsLoading] = useState(false);
@@ -10,6 +11,7 @@ const Login = ({ onLogin, loginError }) => {
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [isSessionExpired, setIsSessionExpired] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const sessionTimerRef = useRef(null);
 
     // Check for session expired message on component mount
@@ -39,6 +41,18 @@ const Login = ({ onLogin, loginError }) => {
         return undefined;
     }, []);
 
+    // Auto-fill credentials from cookies on component mount
+    useEffect(() => {
+        const savedCredentials = getCredentialsFromCookies();
+        if (savedCredentials) {
+            setCredentials({
+                email: savedCredentials.email,
+                password: savedCredentials.password
+            });
+            setRememberMe(true);
+        }
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -52,6 +66,29 @@ const Login = ({ onLogin, loginError }) => {
         }
         
         try {
+            // Handle remember me logic
+            if (rememberMe) {
+                // Ask for confirmation before storing credentials
+                const shouldStore = window.confirm(
+                    'For your security, we want to confirm:\n\n' +
+                    'Do you want to store your login credentials on this device for future convenience?\n\n' +
+                    'Your password will be encrypted and stored securely in cookies.\n' +
+                    'This will allow you to auto-login on future visits.\n\n' +
+                    'Click OK to confirm, or Cancel to login without saving.'
+                );
+                
+                if (shouldStore) {
+                    storeCredentialsInCookies(credentials.email, credentials.password);
+                } else {
+                    // User declined, clear any existing cookies
+                    clearRememberMeCookies();
+                    setRememberMe(false);
+                }
+            } else {
+                // Clear cookies if remember me is unchecked
+                clearRememberMeCookies();
+            }
+            
             await onLogin(credentials.email, credentials.password);
         } catch (error) {
             setError(error.message || 'Login failed. Please try again.');
@@ -219,7 +256,12 @@ const Login = ({ onLogin, loginError }) => {
 
                             <div className="flex items-center justify-between text-xs sm:text-sm">
                                 <label className="flex items-center text-gray-200 cursor-pointer">
-                                    <input type="checkbox" className="mr-1.5 sm:mr-2 rounded border-white/20 bg-white/5 text-primary focus:ring-white/20" />
+                                    <input 
+                                        type="checkbox" 
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="mr-1.5 sm:mr-2 rounded border-white/20 bg-white/5 text-primary focus:ring-white/20" 
+                                    />
                                     <span className="text-xs sm:text-sm">Remember me</span>
                                 </label>
                                 <button
