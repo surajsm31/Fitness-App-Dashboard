@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
+import AnimatedActivityIcon from './AnimatedActivityIcon';
 import { authAPI } from '../services/api';
 import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, isRememberMeActive, areCredentialsStored } from '../utils/cookieUtils';
 
@@ -12,6 +13,9 @@ const Login = ({ onLogin, loginError }) => {
     const [isSessionExpired, setIsSessionExpired] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+    const [permissionDialogType, setPermissionDialogType] = useState('');
+    const [pendingAction, setPendingAction] = useState(null);
     const sessionTimerRef = useRef(null);
 
     // Check for session expired message on component mount
@@ -47,11 +51,24 @@ const Login = ({ onLogin, loginError }) => {
         if (savedCredentials) {
             setCredentials({
                 email: savedCredentials.email,
-                password: savedCredentials.password
+                password: '' // Password is not stored
             });
             setRememberMe(true);
         }
     }, []);
+
+    const handlePermissionDialogClose = () => {
+        setShowPermissionDialog(false);
+        setPermissionDialogType('');
+        setPendingAction(null);
+    };
+
+    const handlePermissionDialogConfirm = () => {
+        if (pendingAction) {
+            pendingAction();
+        }
+        handlePermissionDialogClose();
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -68,45 +85,45 @@ const Login = ({ onLogin, loginError }) => {
         try {
             // Handle remember me logic
             const credentialsAlreadyStored = areCredentialsStored();
+            const savedCredentials = getCredentialsFromCookies();
+            const emailChanged = savedCredentials && savedCredentials.email !== credentials.email;
             
             if (rememberMe) {
-                // Only ask for permission if we're storing NEW credentials
+                // Ask for permission if we're storing NEW credentials
                 if (!credentialsAlreadyStored) {
-                    const shouldStore = window.confirm(
-                        'For your security, we want to confirm:\n\n' +
-                        'Do you want to store your login credentials on this device for future convenience?\n\n' +
-                        'Your password will be encrypted and stored securely in cookies.\n' +
-                        'This will allow you to auto-login on future visits.\n\n' +
-                        'Click OK to confirm, or Cancel to login without saving.'
-                    );
-                    
-                    if (shouldStore) {
-                        storeCredentialsInCookies(credentials.email, credentials.password);
-                    } else {
-                        // User declined, clear any existing cookies
-                        clearRememberMeCookies();
-                        setRememberMe(false);
-                    }
-                } else {
-                    // Credentials already stored, just update them if they're different
-                    const savedCredentials = getCredentialsFromCookies();
-                    if (savedCredentials && (savedCredentials.email !== credentials.email || savedCredentials.password !== credentials.password)) {
-                        storeCredentialsInCookies(credentials.email, credentials.password);
-                    }
+                    setPermissionDialogType('store');
+                    setPendingAction(() => () => {
+                        storeCredentialsInCookies(credentials.email);
+                        onLogin(credentials.email, credentials.password);
+                    });
+                    setShowPermissionDialog(true);
+                    setIsLoading(false);
+                    return;
+                } 
+                // Ask for permission if email is being changed/overwritten
+                else if (emailChanged) {
+                    setPermissionDialogType('update');
+                    setPendingAction(() => () => {
+                        storeCredentialsInCookies(credentials.email);
+                        onLogin(credentials.email, credentials.password);
+                    });
+                    setShowPermissionDialog(true);
+                    setIsLoading(false);
+                    return;
                 }
+                // Email already stored and same, just proceed
             } else {
                 // Only clear cookies if user explicitly wants to remove stored credentials
                 // AND credentials are currently stored
                 if (credentialsAlreadyStored) {
-                    const shouldClear = window.confirm(
-                        'You have unchecked "Remember me".\n\n' +
-                        'Do you want to remove the stored login credentials from this device?\n\n' +
-                        'Click OK to remove stored credentials, or Cancel to keep them for future convenience.'
-                    );
-                    
-                    if (shouldClear) {
+                    setPermissionDialogType('clear');
+                    setPendingAction(() => () => {
                         clearRememberMeCookies();
-                    }
+                        onLogin(credentials.email, credentials.password);
+                    });
+                    setShowPermissionDialog(true);
+                    setIsLoading(false);
+                    return;
                 }
             }
             
@@ -164,9 +181,9 @@ const Login = ({ onLogin, loginError }) => {
                     <div className="max-w-lg xl:max-w-xl">
                         <div className="inline-flex items-center gap-2 xl:gap-3 mb-4 xl:mb-6">
                             <div className="p-2 xl:p-3 bg-white/10 backdrop-blur-sm rounded-xl">
-                                <Activity className="w-8 h-8 xl:w-10 xl:h-10 text-white" />
+                                <AnimatedActivityIcon className="w-10 h-10 xl:w-12 xl:h-12 text-white" />
                             </div>
-                            <span className="text-base xl:text-lg font-semibold tracking-wide">FitTrack Admin</span>
+                            <span className="text-lg xl:text-xl font-semibold tracking-wide">FitTrack Admin</span>
                         </div>
                         
                         <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold mb-3 xl:mb-4 leading-tight">
@@ -201,9 +218,9 @@ const Login = ({ onLogin, loginError }) => {
                     {/* Mobile Logo - Only visible on mobile/tablet */}
                     <div className="lg:hidden flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
                         <div className="p-2 sm:p-3 bg-gradient-to-br from-primary to-indigo-700 rounded-xl">
-                            <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                            <AnimatedActivityIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                         </div>
-                        <span className="text-lg sm:text-xl font-bold text-white">FitTrack Admin</span>
+                        <span className="text-xl sm:text-2xl font-bold text-white">FitTrack Admin</span>
                     </div>
 
                     {/* Glassmorphism Card */}
@@ -242,7 +259,7 @@ const Login = ({ onLogin, loginError }) => {
                                         value={credentials.email}
                                         onChange={e => setCredentials({ ...credentials, email: e.target.value })}
                                         className="block w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
-                                        placeholder="admin@admin.com"
+                                        placeholder="Enter Your Email"
                                     />
                                 </div>
                             </div>
@@ -259,7 +276,7 @@ const Login = ({ onLogin, loginError }) => {
                                         value={credentials.password}
                                         onChange={e => setCredentials({ ...credentials, password: e.target.value })}
                                         className="block w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
-                                        placeholder="••••••••"
+                                        placeholder="Enter your password"
                                     />
                                     <button
                                         type="button"
@@ -320,6 +337,65 @@ const Login = ({ onLogin, loginError }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Permission Dialog */}
+            {showPermissionDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white/10 backdrop-blur-xl rounded-2xl max-w-sm w-full p-6 shadow-xl border border-white/20">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-white">
+                                {permissionDialogType === 'store' ? 'Store Credentials' : permissionDialogType === 'update' ? 'Update Credentials' : 'Remove Credentials'}
+                            </h3>
+                            <button
+                                onClick={handlePermissionDialogClose}
+                                className="text-gray-300 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="mb-6">
+                            {permissionDialogType === 'store' ? (
+                                <p className="text-gray-200 text-sm leading-relaxed">
+                                    For your security, we want to confirm:
+                                    <br /><br />
+                                    Do you want to store your email on this device for future convenience?
+                                    <br /><br />
+                                    Your email will be stored securely in cookies.
+                                    This will allow you to quickly fill your email on future visits.
+                                </p>
+                            ) : permissionDialogType === 'update' ? (
+                                <p className="text-gray-200 text-sm leading-relaxed">
+                                    You are logging in with a different email than what is currently stored.
+                                    <br /><br />
+                                    Do you want to update the stored email to the new one?
+                                    <br /><br />
+                                    Your email will be stored securely in cookies.
+                                </p>
+                            ) : (
+                                <p className="text-gray-200 text-sm leading-relaxed">
+                                    You have unchecked "Remember me".
+                                    <br /><br />
+                                    Do you want to remove the stored email from this device?
+                                </p>
+                            )}
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handlePermissionDialogClose}
+                                className="flex-1 px-4 py-2 text-sm font-medium text-gray-200 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handlePermissionDialogConfirm}
+                                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 rounded-lg transition-colors"
+                            >
+                                {permissionDialogType === 'store' ? 'Confirm' : permissionDialogType === 'update' ? 'Update' : 'Remove'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

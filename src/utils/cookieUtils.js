@@ -9,19 +9,11 @@ const REMEMBER_ME_FLAG = 'fittrack_remember_flag';
 // Cookie expiration (30 days)
 const COOKIE_EXPIRES = 30;
 
-// Store credentials in cookies
-export const storeCredentialsInCookies = (email, password) => {
+// Store credentials in cookies (email only)
+export const storeCredentialsInCookies = (email) => {
   try {
-    // Store email
+    // Store email only
     Cookies.set(REMEMBER_ME_EMAIL, email, { 
-      expires: COOKIE_EXPIRES, 
-      secure: true, 
-      sameSite: 'strict' 
-    });
-    
-    // Store encrypted password
-    const encryptedPassword = encryptPassword(password);
-    Cookies.set(REMEMBER_ME_PASSWORD, encryptedPassword, { 
       expires: COOKIE_EXPIRES, 
       secure: true, 
       sameSite: 'strict' 
@@ -34,13 +26,13 @@ export const storeCredentialsInCookies = (email, password) => {
       sameSite: 'strict' 
     });
     
-    console.log('Credentials stored in cookies successfully');
+    console.log('Email stored in cookies successfully');
   } catch (error) {
-    console.error('Error storing credentials in cookies:', error);
+    console.error('Error storing email in cookies:', error);
   }
 };
 
-// Retrieve credentials from cookies
+// Retrieve credentials from cookies (email only)
 export const getCredentialsFromCookies = () => {
   try {
     const rememberFlag = Cookies.get(REMEMBER_ME_FLAG);
@@ -49,20 +41,17 @@ export const getCredentialsFromCookies = () => {
     }
     
     const email = Cookies.get(REMEMBER_ME_EMAIL) || '';
-    const encryptedPassword = Cookies.get(REMEMBER_ME_PASSWORD) || '';
     
-    if (!email || !encryptedPassword) {
+    if (!email) {
       return null;
     }
     
-    const password = decryptPassword(encryptedPassword);
-    
     return {
       email,
-      password
+      password: '' // Password is not stored
     };
   } catch (error) {
-    console.error('Error retrieving credentials from cookies:', error);
+    console.error('Error retrieving email from cookies:', error);
     return null;
   }
 };
@@ -71,7 +60,7 @@ export const getCredentialsFromCookies = () => {
 export const clearRememberMeCookies = () => {
   try {
     Cookies.remove(REMEMBER_ME_EMAIL);
-    Cookies.remove(REMEMBER_ME_PASSWORD);
+    Cookies.remove(REMEMBER_ME_PASSWORD); // Clear password cookie if it exists
     Cookies.remove(REMEMBER_ME_FLAG);
     console.log('Remember me cookies cleared successfully');
   } catch (error) {
@@ -85,10 +74,9 @@ export const isRememberMeActive = () => {
   return flag === 'true';
 };
 
-// Check if credentials are already stored
+// Check if credentials are already stored (email only)
 export const areCredentialsStored = () => {
   const email = Cookies.get(REMEMBER_ME_EMAIL);
-  const password = Cookies.get(REMEMBER_ME_PASSWORD);
   const flag = Cookies.get(REMEMBER_ME_FLAG);
-  return !!(email && password && flag === 'true');
+  return !!(email && flag === 'true');
 };
