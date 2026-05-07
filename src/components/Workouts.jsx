@@ -46,7 +46,8 @@ const Workouts = () => {
                 duration: `${workout.duration_minutes} min`,
                 calories: workout.calories_burned,
                 difficulty: workout.difficulty_level,
-                type: workout.category, // Use the category directly from API
+                type: workout.workout_type || workout.category, // Use workout_type first, fallback to category
+                category: workout.category, // Keep category for filtering
                 video: workout.workout_video_url,
                 image: workout.workout_image_url
             }));
@@ -169,7 +170,8 @@ const Workouts = () => {
             duration: `${workout.duration_minutes} min`,
             calories: workout.calories_burned,
             difficulty: workout.difficulty_level,
-            type: workout.category,
+            type: workout.workout_type || workout.category,
+            category: workout.category,
             video: workout.workout_video_url,
             image: workout.workout_image_url
         }));
@@ -183,7 +185,8 @@ const Workouts = () => {
                 duration: `${workout.duration_minutes} min`,
                 calories: workout.calories_burned,
                 difficulty: workout.difficulty_level,
-                type: workout.category,
+                type: workout.workout_type || workout.category,
+                category: workout.category,
                 video: workout.workout_video_url,
                 image: workout.workout_image_url
             }))
@@ -443,7 +446,8 @@ const Workouts = () => {
             duration: workout.duration ? workout.duration.replace(' min', '') : '',
             calories_burned: workout.calories || '',
             difficulty_level: workout.difficulty || 'beginner',
-            category: workout.type || 'loose',
+            category: workout.category || 'loose',
+            workout_type: workout.type || '', // Add workout_type field
             workout_image_url: workout.image || '',
             workout_video_url: workout.video || '',
             // Don't set file objects for editing (user can re-upload if needed)
@@ -490,6 +494,9 @@ const Workouts = () => {
             
             console.log('💪 [WORKOUT COMPONENT]   workout_category:', currentWorkout.category);
             formData.append('workout_category', currentWorkout.category);
+            
+            console.log('💪 [WORKOUT COMPONENT]   workout_type:', currentWorkout.workout_type);
+            formData.append('workout_type', currentWorkout.workout_type);
             
             // Add files if they exist
             if (currentWorkout.image_file) {
@@ -594,6 +601,7 @@ const Workouts = () => {
         calories_burned: '',
         difficulty_level: '',
         category: '',
+        workout_type: '', // Add workout_type field
         workout_image_url: '',
         workout_video_url: ''
     });
@@ -652,6 +660,7 @@ const Workouts = () => {
         calories_burned: '',
         difficulty_level: '',
         category: '',
+        workout_type: '', // Add workout_type field
         workout_image_url: '',
         workout_video_url: ''
     });
@@ -959,6 +968,20 @@ const Workouts = () => {
                                         <p className="mt-1 text-xs text-red-500">{validationErrors.duration}</p>
                                     )}
                                 </div>
+                            </div>
+
+                            {/* Workout Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Workout Type</label>
+                                <select
+                                    value={currentWorkout.workout_type || ''}
+                                    onChange={e => setCurrentWorkout({ ...currentWorkout, workout_type: e.target.value })}
+                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                    <option value="" disabled>Select workout type</option>
+                                    <option value="Gym">GYM</option>
+                                    <option value="Home">Home</option>
+                                </select>
                             </div>
 
                             {/* Calories and Difficulty Level */}
