@@ -2,9 +2,9 @@ import axios from 'axios';
 import { Coffee, Sun, Moon, Utensils } from 'lucide-react';
 import { clearRememberMeCookies } from '../utils/cookieUtils';
 
-// const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://localhost:9000';
 // const API_BASE_URL = 'http://192.168.1.6:8000';
-const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
+// const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 
 // Helper functions for meal data mapping
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
@@ -952,6 +952,97 @@ export const authAPI = {
     } catch (error) {
       console.error('Error deleting subscription plan:', error);
       throw error.response?.data || { message: 'Failed to delete subscription plan' };
+    }
+  },
+
+  // Activity API functions
+  getActivities: async (page = 1, pageSize = 10) => {
+    try {
+      const validPage = Math.max(1, parseInt(page) || 1);
+      const validPageSize = Math.max(1, parseInt(pageSize) || 10);
+      const skip = (validPage - 1) * validPageSize;
+      
+      const response = await api.get('/api/admin/explore-activities', {
+        params: {
+          skip: skip,
+          limit: validPageSize
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch activities' };
+    }
+  },
+
+  getActivityById: async (activityId) => {
+    try {
+      const response = await api.get(`/api/admin/explore-activities/${activityId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch activity' };
+    }
+  },
+
+  createActivity: async (activityData) => {
+    try {
+      const apiInstance = axios.create({
+        baseURL: API_BASE_URL,
+        timeout: 120000,
+        headers: {
+          'Accept': 'application/json',
+        },
+        withCredentials: true,
+        mode: 'cors',
+      });
+      
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await apiInstance.post('/api/admin/explore-activities', activityData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to create activity' };
+    }
+  },
+
+  updateActivity: async (activityId, activityData) => {
+    try {
+      const apiInstance = axios.create({
+        baseURL: API_BASE_URL,
+        timeout: 120000,
+        headers: {
+          'Accept': 'application/json',
+        },
+        withCredentials: true,
+        mode: 'cors',
+      });
+      
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await apiInstance.put(`/api/admin/explore-activities/${activityId}`, activityData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to update activity' };
+    }
+  },
+
+  deleteActivity: async (activityId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await api.delete(`/api/admin/explore-activities/${activityId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to delete activity' };
     }
   },
 

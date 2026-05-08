@@ -10,6 +10,7 @@ import Subscriptions from './components/Subscriptions';
 import BmiClass from './components/BmiClass';
 import Quotes from './components/Quotes';
 import Settings from './components/Settings';
+import ExploreActivities from './components/ExploreActivities';
 import Login from './components/Login';
 import AppWithNotifications from './components/AppWithNotifications';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -101,9 +102,10 @@ function App() {
                                 {currentView === 'Users' && <UsersPage />}
                                 {currentView === 'Subscriptions' && <Subscriptions />}
                                 {currentView === 'Workouts' && <Workouts />}
+                                {currentView === 'Explore Activities' && <ExploreActivities />}
                                 {currentView === 'Nutrition' && <Nutrition />}
                                 {currentView === 'BMI Class' && <BmiClass />}
-                                {currentView === 'Analytics' && <Progress />} {/* Reusing Progress as Analytics for now */}
+                                {currentView === 'Analytics' && <Progress />}
                                 {currentView === 'Quotes' && <Quotes />}
                                 {currentView === 'Profile' && <Profile />}
                                 {currentView === 'Settings' && <Settings />}

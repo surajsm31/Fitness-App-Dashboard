@@ -1,5 +1,5 @@
-import React from 'react';
-import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activity, CreditCard, Quote } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activity, CreditCard, Quote, ChevronDown, Dumbbell, Compass } from 'lucide-react';
 import clsx from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
@@ -8,7 +8,15 @@ const NAV_ITEMS = [
     { label: 'Dashboard', icon: LayoutDashboard },
     { label: 'Users', icon: Users },
     { label: 'Subscriptions', icon: CreditCard },
-    { label: 'Workouts', icon: FileText },
+    { 
+        label: 'Workouts', 
+        icon: FileText,
+        isDropdown: true,
+        dropdownItems: [
+            { label: 'Workout', icon: Dumbbell, view: 'Workouts' },
+            { label: 'Explore Activities', icon: Compass, view: 'Explore Activities' }
+        ]
+    },
     { label: 'Nutrition', icon: FileText },
     { label: 'BMI Class', icon: Activity },
     { label: 'Analytics', icon: BarChart3 },
@@ -19,6 +27,7 @@ const NAV_ITEMS = [
 const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
     const { theme } = useTheme();
     const { profile, loading: profileLoading } = useProfile();
+    const [dropdownOpen, setDropdownOpen] = useState(null);
 
     // Function to get initials from name
     const getInitials = (name) => {
@@ -83,25 +92,79 @@ const Sidebar = ({ isOpen, onClose, currentView, onNavigate }) => {
                     }}
                 >
                     {NAV_ITEMS.map((item) => (
-                        <button
-                            key={item.label}
-                            onClick={() => {
-                                onNavigate(item.label);
-                                onClose();
-                            }}
-                            className={clsx(
-                                "relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group overflow-hidden",
-                                currentView === item.label
-                                    ? "text-white shadow-lg shadow-indigo-500/30"
-                                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100"
+                        <div key={item.label} className="relative">
+                            {item.isDropdown ? (
+                                // Dropdown menu item
+                                <div>
+                                    <button
+                                        onMouseEnter={() => setDropdownOpen(item.label)}
+                                        onMouseLeave={() => setDropdownOpen(null)}
+                                        className={clsx(
+                                            "relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group overflow-hidden",
+                                            currentView === item.label || item.dropdownItems.some(d => d.view === currentView)
+                                                ? "text-white shadow-lg shadow-indigo-500/30"
+                                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100"
+                                        )}
+                                    >
+                                        {currentView === item.label || item.dropdownItems.some(d => d.view === currentView) && (
+                                            <div className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl" />
+                                        )}
+                                        <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", currentView === item.label || item.dropdownItems.some(d => d.view === currentView) ? "text-white" : "")} />
+                                        <span className="relative z-10 flex-1 text-left">{item.label}</span>
+                                        <ChevronDown className={clsx("w-4 h-4 relative z-10 transition-transform", dropdownOpen === item.label ? "rotate-180" : "", currentView === item.label || item.dropdownItems.some(d => d.view === currentView) ? "text-white" : "")} />
+                                    </button>
+                                    
+                                    {/* Dropdown menu */}
+                                    {dropdownOpen === item.label && (
+                                        <div 
+                                            onMouseEnter={() => setDropdownOpen(item.label)}
+                                            onMouseLeave={() => setDropdownOpen(null)}
+                                            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+                                        >
+                                            {item.dropdownItems.map((dropdownItem) => (
+                                                <button
+                                                    key={dropdownItem.label}
+                                                    onClick={() => {
+                                                        onNavigate(dropdownItem.view);
+                                                        onClose();
+                                                        setDropdownOpen(null);
+                                                    }}
+                                                    className={clsx(
+                                                        "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors",
+                                                        currentView === dropdownItem.view
+                                                            ? "bg-primary text-white"
+                                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    )}
+                                                >
+                                                    <dropdownItem.icon className="w-4 h-4" />
+                                                    <span>{dropdownItem.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                // Regular menu item
+                                <button
+                                    onClick={() => {
+                                        onNavigate(item.label);
+                                        onClose();
+                                    }}
+                                    className={clsx(
+                                        "relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group overflow-hidden",
+                                        currentView === item.label
+                                            ? "text-white shadow-lg shadow-indigo-500/30"
+                                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100"
+                                    )}
+                                >
+                                    {currentView === item.label && (
+                                        <div className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl" />
+                                    )}
+                                    <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", currentView === item.label ? "text-white" : "")} />
+                                    <span className="relative z-10">{item.label}</span>
+                                </button>
                             )}
-                        >
-                            {currentView === item.label && (
-                                <div className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl" />
-                            )}
-                            <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", currentView === item.label ? "text-white" : "")} />
-                            <span className="relative z-10">{item.label}</span>
-                        </button>
+                        </div>
                     ))}
                 </nav>
 
