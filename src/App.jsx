@@ -15,6 +15,9 @@ import Login from './components/Login';
 import AppWithNotifications from './components/AppWithNotifications';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProfileProvider } from './context/ProfileContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { authAPI } from './services/api';
@@ -28,30 +31,19 @@ const Analytics = () => (
 );
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [currentView, setCurrentView] = useState('Dashboard');
-    const [loginError, setLoginError] = useState('');
+    return (
+        <ThemeProvider>
+            <AuthProvider>
+                <AppRoutes />
+            </AuthProvider>
+        </ThemeProvider>
+    );
+}
+
+// Separate component to use useAuth hook
+const AppRoutes = () => {
+    const { isAuthenticated, loading, logout } = useAuth();
     const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-
-    // Check authentication status on app load
-    useEffect(() => {
-        if (authAPI.isAuthenticated()) {
-            setIsAuthenticated(true);
-        }
-        // Scroll to top on initial app load
-        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    }, []);
-
-    const handleLogin = async (email, password) => {
-        setLoginError('');
-        try {
-            await authAPI.login(email, password);
-            setIsAuthenticated(true);
-        } catch (error) {
-            setLoginError(error.message || 'Login failed. Please try again.');
-            throw error;
-        }
-    };
 
     const handleLogoutClick = () => {
         setShowLogoutDialog(true);
@@ -59,18 +51,11 @@ function App() {
 
     const handleLogoutConfirm = async () => {
         try {
-            await authAPI.logout();
-            setIsAuthenticated(false);
-            setCurrentView('Dashboard'); // Reset view on logout
-            setLoginError('');
+            await logout();
             setShowLogoutDialog(false);
             console.log('Logout successful');
         } catch (error) {
             console.error('Logout error:', error);
-            // Still logout locally even if API fails
-            setIsAuthenticated(false);
-            setCurrentView('Dashboard');
-            setLoginError('');
             setShowLogoutDialog(false);
         }
     };
@@ -79,78 +64,96 @@ function App() {
         setShowLogoutDialog(false);
     };
 
-    const handleNavigate = (view) => {
-        setCurrentView(view);
-        // Scroll to top when navigating to a new page
-        window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-    };
+    if (loading) {
+        return (
+            <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Loading App...</p>
+            </div>
+        );
+    }
 
     return (
-        <ThemeProvider>
-            {!isAuthenticated ? (
-                <Login onLogin={handleLogin} loginError={loginError} />
-            ) : (
-                <ProfileProvider>
-                    <NotificationProvider>
-                        <AppWithNotifications>
-                            <DashboardLayout
-                                currentView={currentView}
-                                onNavigate={handleNavigate}
-                                onLogout={handleLogoutClick}
-                            >
-                                {currentView === 'Dashboard' && <Dashboard />}
-                                {currentView === 'Users' && <UsersPage />}
-                                {currentView === 'Subscriptions' && <Subscriptions />}
-                                {currentView === 'Workouts' && <Workouts />}
-                                {currentView === 'Explore Activities' && <ExploreActivities />}
-                                {currentView === 'Nutrition' && <Nutrition />}
-                                {currentView === 'BMI Class' && <BmiClass />}
-                                {currentView === 'Analytics' && <Progress />}
-                                {currentView === 'Quotes' && <Quotes />}
-                                {currentView === 'Profile' && <Profile />}
-                                {currentView === 'Settings' && <Settings />}
-                            </DashboardLayout>
-                        
-                        {/* Logout Confirmation Dialog */}
-                        {showLogoutDialog && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                                <div className="bg-white dark:bg-gray-800 rounded-xl max-w-sm w-full p-6 shadow-xl">
-                                    <div className="text-center">
-                                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/50 mb-4">
-                                            <svg className="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                            </svg>
+        <Routes>
+            {/* Public Route */}
+            <Route 
+                path="/login" 
+                element={
+                    isAuthenticated ? <Navigate to="/" replace /> : <Login />
+                } 
+            />
+
+            {/* Protected Dashboard Routes */}
+            <Route 
+                path="/*" 
+                element={
+                    <ProtectedRoute>
+                        <ProfileProvider>
+                            <NotificationProvider>
+                                <AppWithNotifications>
+                                    <DashboardLayout
+                                        onLogout={handleLogoutClick}
+                                    >
+                                        <Routes>
+                                            <Route path="/" element={<Dashboard />} />
+                                            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                                            <Route path="/users" element={<UsersPage />} />
+                                            <Route path="/subscriptions" element={<Subscriptions />} />
+                                            <Route path="/workouts" element={<Workouts />} />
+                                            <Route path="/explore-activities" element={<ExploreActivities />} />
+                                            <Route path="/nutrition" element={<Nutrition />} />
+                                            <Route path="/bmi-class" element={<BmiClass />} />
+                                            <Route path="/analytics" element={<Progress />} />
+                                            <Route path="/quotes" element={<Quotes />} />
+                                            <Route path="/profile" element={<Profile />} />
+                                            <Route path="/settings" element={<Settings />} />
+                                            {/* Catch all for dashboard - redirect to home */}
+                                            <Route path="*" element={<Navigate to="/" replace />} />
+                                        </Routes>
+                                    </DashboardLayout>
+                                    
+                                    {/* Logout Confirmation Dialog */}
+                                    {showLogoutDialog && (
+                                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                                            <div className="bg-white dark:bg-gray-800 rounded-xl max-w-sm w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700">
+                                                <div className="text-center">
+                                                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/50 mb-4">
+                                                        <svg className="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                        </svg>
+                                                    </div>
+                                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                                        Confirm Logout
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                                                        Are you sure you want to logout? You will need to login again to access the dashboard.
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        onClick={handleLogoutCancel}
+                                                        className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={handleLogoutConfirm}
+                                                        className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg transition-colors shadow-md shadow-primary/20"
+                                                    >
+                                                        Logout
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                            Confirm Logout
-                                        </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                                            Are you sure you want to logout? You will need to login again to access the dashboard.
-                                        </p>
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={handleLogoutCancel}
-                                            className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleLogoutConfirm}
-                                            className="flex-1 px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg transition-colors"
-                                        >
-                                            OK
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        </AppWithNotifications>
-                    </NotificationProvider>
-                </ProfileProvider>
-            )}
-        </ThemeProvider>
+                                    )}
+                                </AppWithNotifications>
+                            </NotificationProvider>
+                        </ProfileProvider>
+                    </ProtectedRoute>
+                } 
+            />
+        </Routes>
     );
-}
+};
 
 export default App;

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Bell, LogOut, Menu, Moon, Sun, Search, Wifi, WifiOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import { useNotifications } from '../context/NotificationContext';
 import NotificationDropdown from './NotificationDropdown';
 
-const Header = ({ onMenuClick, onLogout, onNavigate }) => {
+const Header = ({ onMenuClick, onLogout }) => {
     const { theme, toggleTheme } = useTheme();
     const { profile, loading: profileLoading } = useProfile();
     const [showNotifications, setShowNotifications] = useState(false);
@@ -64,17 +65,6 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
             </button>
 
             <div className="flex flex-1 gap-x-2 sm:gap-x-4 self-stretch lg:gap-x-6">
-                {/* <div className="relative flex flex-1 items-center max-w-xs sm:max-w-md my-3">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <Search className="h-4 w-4 text-gray-400" aria-hidden="true" />
-                    </div>
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="block h-full w-full rounded-full border-0 bg-gray-100/50 dark:bg-gray-800/50 py-0 pl-10 pr-2 sm:pr-4 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50 text-xs sm:text-sm transition-all shadow-sm hover:shadow-md focus:shadow-md"
-                    />
-                </div> */}
-
                 <div className="flex items-center gap-x-1 sm:gap-x-2 lg:gap-x-6 ml-auto">
 
                     <button
@@ -156,8 +146,8 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
 
                     {/* Profile & Logout */}
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <span
-                            onClick={() => onNavigate('Settings')}
+                        <Link
+                            to="/settings"
                             className="flex items-center relative group cursor-pointer"
                         >
                             <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-purple-500 blur opacity-0 group-hover:opacity-75 transition duration-200"></span>
@@ -168,13 +158,13 @@ const Header = ({ onMenuClick, onLogout, onNavigate }) => {
                                     alt={profile.name || 'Admin'}
                                 />
                             ) : (
-                                <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md">
-                                    <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+                                <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md">
+                                    <span className="text-sm font-semibold text-white">
                                         {getInitials(profile.name)}
                                     </span>
                                 </div>
                             )}
-                        </span>
+                        </Link>
                         <button
                             onClick={onLogout}
                             className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"

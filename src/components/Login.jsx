@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
 import AnimatedActivityIcon from './AnimatedActivityIcon';
-import { authAPI } from '../services/api';
-import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, isRememberMeActive, areCredentialsStored } from '../utils/cookieUtils';
+import { useAuth } from '../context/AuthContext';
+import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, areCredentialsStored } from '../utils/cookieUtils';
 
-const Login = ({ onLogin, loginError }) => {
+const Login = ({ loginError }) => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [credentials, setCredentials] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
@@ -40,8 +43,6 @@ const Login = ({ onLogin, loginError }) => {
             }, 5000);
         }
         
-        // Don't return cleanup function that would clear timer on unmount
-        // We want the timer to complete even if component re-renders
         return undefined;
     }, []);
 
@@ -51,7 +52,7 @@ const Login = ({ onLogin, loginError }) => {
         if (savedCredentials) {
             setCredentials({
                 email: savedCredentials.email,
-                password: '' // Password is not stored
+                password: ''
             });
             setRememberMe(true);
         }
@@ -74,52 +75,54 @@ const Login = ({ onLogin, loginError }) => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
-        setIsSessionExpired(false); // Reset session expired flag on new login attempt
+        setIsSessionExpired(false);
         
-        // Clear any existing session timer when user tries to login
         if (sessionTimerRef.current) {
             clearTimeout(sessionTimerRef.current);
             sessionTimerRef.current = null;
         }
         
         try {
-            // Handle remember me logic
             const credentialsAlreadyStored = areCredentialsStored();
             const savedCredentials = getCredentialsFromCookies();
             const emailChanged = savedCredentials && savedCredentials.email !== credentials.email;
             
+            const performLogin = async () => {
+                try {
+                    await login(credentials.email, credentials.password);
+                    navigate('/');
+                } catch (err) {
+                    setError(err.message || 'Login failed. Please try again.');
+                }
+            };
+
             if (rememberMe) {
-                // Ask for permission if we're storing NEW credentials
                 if (!credentialsAlreadyStored) {
                     setPermissionDialogType('store');
                     setPendingAction(() => () => {
                         storeCredentialsInCookies(credentials.email);
-                        onLogin(credentials.email, credentials.password);
+                        performLogin();
                     });
                     setShowPermissionDialog(true);
                     setIsLoading(false);
                     return;
                 } 
-                // Ask for permission if email is being changed/overwritten
                 else if (emailChanged) {
                     setPermissionDialogType('update');
                     setPendingAction(() => () => {
                         storeCredentialsInCookies(credentials.email);
-                        onLogin(credentials.email, credentials.password);
+                        performLogin();
                     });
                     setShowPermissionDialog(true);
                     setIsLoading(false);
                     return;
                 }
-                // Email already stored and same, just proceed
             } else {
-                // Only clear cookies if user explicitly wants to remove stored credentials
-                // AND credentials are currently stored
                 if (credentialsAlreadyStored) {
                     setPermissionDialogType('clear');
                     setPendingAction(() => () => {
                         clearRememberMeCookies();
-                        onLogin(credentials.email, credentials.password);
+                        performLogin();
                     });
                     setShowPermissionDialog(true);
                     setIsLoading(false);
@@ -127,7 +130,7 @@ const Login = ({ onLogin, loginError }) => {
                 }
             }
             
-            await onLogin(credentials.email, credentials.password);
+            await performLogin();
         } catch (error) {
             setError(error.message || 'Login failed. Please try again.');
         } finally {
@@ -135,7 +138,6 @@ const Login = ({ onLogin, loginError }) => {
         }
     };
 
-    // Display error from props or local state
     const displayError = loginError || error;
 
     if (showForgotPassword) {

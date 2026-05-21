@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Clock, Flame, Compass, ChevronDown, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Filter, Play, Clock, Flame, Compass, ChevronDown, X, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { authAPI } from '../services/api';
 import AlertContainer from './AlertContainer';
@@ -8,10 +8,16 @@ import { useCustomAlert } from '../hooks/useCustomAlert';
 const ExploreActivities = () => {
     const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError } = useCustomAlert();
     const [activities, setActivities] = useState([]);
-    const [allActivities, setAllActivities] = useState([]);
+    const [allActivities, setAllActivities] = useState([]); // Cache for all activities
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filter, setFilter] = useState('All');
+    
+    // Filter & Search State
+    const [showFilters, setShowFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({
+        activityType: 'All'
+    });
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentActivity, setCurrentActivity] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
@@ -33,50 +39,90 @@ const ExploreActivities = () => {
         pageSize: 10
     });
 
-    // Fetch activities from API
-    const fetchActivities = async (page = 1, pageSize = 10) => {
+    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsTypeDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Fetch all activities and cache them
+    const fetchAllActivities = async () => {
         try {
             setLoading(true);
-            const response = await authAPI.getActivities(page, pageSize);
+            setError(null);
             
-            // Map API response to component format
-            const activitiesData = response.data || [];
+            // Clear cache first to ensure fresh data
+            setAllActivities([]);
+            setActivities([]);
             
-            const mappedActivities = activitiesData.map(activity => ({
-                id: activity.id,
-                title: activity.activity_name,
-                description: activity.description,
-                duration: activity.duration,
-                type: activity.activity_type,
-                image: activity.image,
-                video: activity.video
-            }));
+            // Fetch all activities with pagination to get everything
+            let allFetchedActivities = [];
+            let currentPage = 1;
+            let hasMore = true;
             
-            setActivities(mappedActivities);
-            
-            // Update pagination from API response
-            const paginationData = response.pagination;
-            if (paginationData) {
-                setPagination({
-                    currentPage: paginationData.page || paginationData.current_page,
-                    totalPages: paginationData.total_pages,
-                    totalItems: paginationData.total,
-                    hasNext: paginationData.has_next,
-                    hasPrev: paginationData.has_prev,
-                    pageSize: paginationData.limit || paginationData.page_size
-                });
-            } else {
-                const totalItems = mappedActivities.length;
-                const totalPages = Math.ceil(totalItems / pageSize);
-                setPagination({
-                    currentPage: page,
-                    totalPages: totalPages,
-                    totalItems: totalItems,
-                    hasNext: page < totalPages,
-                    hasPrev: page > 1,
-                    pageSize: pageSize
-                });
+            while (hasMore) {
+                try {
+                    const response = await authAPI.getActivities(currentPage, 50); // Use reasonable limit
+                    
+                    const activitiesData = response.data || [];
+                    
+                    if (activitiesData.length === 0) {
+                        hasMore = false;
+                        break;
+                    }
+                    
+                    const mappedActivities = activitiesData.map(activity => ({
+                        id: activity.id,
+                        title: activity.activity_name,
+                        description: activity.description,
+                        duration: activity.duration,
+                        type: activity.activity_type,
+                        image: activity.image,
+                        video: activity.video
+                    }));
+                    
+                    allFetchedActivities.push(...mappedActivities);
+                    
+                    // Check if there are more pages
+                    const pagination = response.pagination;
+                    if (pagination) {
+                        hasMore = pagination.has_next && pagination.current_page < pagination.total_pages;
+                        if (hasMore) {
+                            currentPage = pagination.current_page + 1;
+                        }
+                    } else {
+                        hasMore = false;
+                    }
+                } catch (error) {
+                    console.error(`Error fetching page ${currentPage}:`, error);
+                    hasMore = false;
+                }
             }
+            
+            // Cache all activities
+            setAllActivities(allFetchedActivities);
+            
+            // Set initial display activities
+            setActivities(allFetchedActivities);
+            
+            // Update pagination
+            const totalItems = allFetchedActivities.length;
+            const totalPages = Math.ceil(totalItems / 10);
+            setPagination({
+                currentPage: 1,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                hasNext: totalPages > 1,
+                hasPrev: false,
+                pageSize: 10
+            });
             
             setError(null);
         } catch (err) {
@@ -86,9 +132,17 @@ const ExploreActivities = () => {
         }
     };
 
+    // Load activities on component mount
     useEffect(() => {
-        fetchActivities(1, 10);
-    }, []);
+        fetchAllActivities();
+    }, []); // Only run once on mount
+
+    // Re-apply filters when allActivities are loaded (for initial display)
+    useEffect(() => {
+        if (allActivities.length > 0) {
+            applyFiltersAndPagination(searchTerm, filters, pagination.currentPage);
+        }
+    }, [allActivities]); // Re-run when cache is populated
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -102,133 +156,97 @@ const ExploreActivities = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isDropdownOpen]);
 
-    const activityTypes = ['All', 'meditation', 'yoga', 'cycling', 'treadmill', 'outdoor', 'mindful_cooldown'];
+    const activityTypes = [
+        { label: 'All', value: 'All' },
+        { label: 'Meditation', value: 'meditation' },
+        { label: 'Yoga', value: 'yoga' },
+        { label: 'Cycling', value: 'cycling' },
+        { label: 'Treadmill', value: 'treadmill' },
+        { label: 'Outdoor', value: 'outdoor' },
+        { label: 'Mindful_Cooldown', value: 'mindful_cooldown' }
+    ];
 
-    // Smart filtering - find all pages containing filtered activities and build filtered pagination
-    const getFilteredPagination = async (activityType) => {
-        const pageSize = 10;
-        const allFilteredActivities = [];
-        const filteredPages = [];
+    // Client-side filtering and pagination
+    const applyFiltersAndPagination = (searchTerm = '', filters = null, page = 1) => {
+        let filteredActivities = [...allActivities];
         
-        let currentPage = 1;
-        let totalPages = 1;
-        
-        while (currentPage <= totalPages) {
-            try {
-                const response = await authAPI.getActivities(currentPage, pageSize);
-                
-                totalPages = response.pagination?.total_pages || 1;
-                
-                const activitiesData = response.data || [];
-                const filteredActivitiesOnPage = activitiesData.filter(activity => 
-                    activityType === 'All' || activity.activity_type.toLowerCase() === activityType.toLowerCase()
+        // Apply search filter
+        if (searchTerm.trim() !== '') {
+            const searchLower = searchTerm.toLowerCase();
+            filteredActivities = filteredActivities.filter(activity => {
+                return (
+                    activity.title?.toLowerCase().includes(searchLower) ||
+                    activity.description?.toLowerCase().includes(searchLower) ||
+                    activity.type?.toLowerCase().includes(searchLower)
                 );
-                
-                if (filteredActivitiesOnPage.length > 0) {
-                    allFilteredActivities.push(...filteredActivitiesOnPage);
-                    filteredPages.push({
-                        pageNumber: currentPage,
-                        activitiesCount: filteredActivitiesOnPage.length
-                    });
-                }
-                
-                currentPage++;
-                
-            } catch (error) {
-                console.error(`Error checking page ${currentPage}:`, error);
-                break;
-            }
+            });
         }
         
-        const paginatedFilteredResults = [];
-        for (let i = 0; i < allFilteredActivities.length; i += pageSize) {
-            paginatedFilteredResults.push(allFilteredActivities.slice(i, i + pageSize));
+        // Apply activity type filter (case-insensitive like Users page)
+        if (filters && filters.activityType && filters.activityType !== 'All') {
+            filteredActivities = filteredActivities.filter(activity => {
+                const activityType = activity.type || '';
+                const filterType = filters.activityType.toLowerCase();
+                return activityType.toLowerCase() === filterType;
+            });
         }
         
-        const filteredPagination = {
-            currentPage: 1,
-            totalPages: paginatedFilteredResults.length,
-            totalItems: allFilteredActivities.length,
-            hasNext: paginatedFilteredResults.length > 1,
-            hasPrev: false,
-            pageSize: pageSize,
-            filteredPages: filteredPages
-        };
+        // Apply pagination
+        const totalItems = filteredActivities.length;
+        const totalPages = Math.ceil(totalItems / pagination.pageSize);
+        const startIndex = (page - 1) * pagination.pageSize;
+        const endIndex = startIndex + pagination.pageSize;
+        const paginatedActivities = filteredActivities.slice(startIndex, endIndex);
         
-        const firstPageActivities = paginatedFilteredResults.length > 0 ? paginatedFilteredResults[0] : [];
-        const mappedActivities = firstPageActivities.map(activity => ({
-            id: activity.id,
-            title: activity.activity_name,
-            description: activity.description,
-            duration: activity.duration,
-            type: activity.activity_type,
-            image: activity.image,
-            video: activity.video
-        }));
-        
-        const allPaginatedMappedResults = paginatedFilteredResults.map(page => 
-            page.map(activity => ({
-                id: activity.id,
-                title: activity.activity_name,
-                description: activity.description,
-                duration: activity.duration,
-                type: activity.activity_type,
-                image: activity.image,
-                video: activity.video
-            }))
-        );
-        
-        return {
-            activities: mappedActivities,
-            pagination: filteredPagination,
-            allPaginatedResults: allPaginatedMappedResults
-        };
+        // Update display activities and pagination
+        setActivities(paginatedActivities);
+        setPagination({
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+            pageSize: pagination.pageSize
+        });
     };
 
-    // Handle activity type filter change
-    const handleFilterChange = async (newFilter) => {
-        setFilter(newFilter);
-        
-        if (newFilter === 'All') {
-            setIsFilteredMode(false);
-            setFilteredPages([]);
-            setAllPaginatedResults([]);
-            fetchActivities(1, 10);
+    // Search and filter handlers
+    const handleSearchChange = (value) => {
+        setSearchTerm(value);
+        // Apply filters immediately with new search term
+        applyFiltersAndPagination(value, filters, 1);
+    };
+
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters);
+        // Apply filters immediately using cached data
+        applyFiltersAndPagination(searchTerm, newFilters, 1);
+    };
+
+    // Clear all filters and search
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setFilters({ activityType: 'All' });
+        setIsDropdownOpen(false);
+        // Apply cleared filters immediately using cached data - this will show all activities from cache
+        applyFiltersAndPagination('', { activityType: 'All' }, 1);
+    };
+
+    // Handle filter toggle - close and clear filters when toggling off
+    const handleFilterToggle = () => {
+        if (showFilters) {
+            // If filters are currently shown, close panel and clear all filters
+            setShowFilters(false);
+            handleClearFilters(); // This will show all activities from cache
         } else {
-            try {
-                setLoading(true);
-                const filteredData = await getFilteredPagination(newFilter);
-                setActivities(filteredData.activities);
-                setPagination(filteredData.pagination);
-                setFilteredPages(filteredData.pagination.filteredPages);
-                setAllPaginatedResults(filteredData.allPaginatedResults);
-                setIsFilteredMode(true);
-                setError(null);
-            } catch (error) {
-                console.error('Error filtering activities:', error);
-                setError('Failed to filter activities. Please try again.');
-            } finally {
-                setLoading(false);
-            }
+            // If filters are hidden, show the panel
+            setShowFilters(true);
         }
     };
 
     // Pagination handlers
     const handlePageChange = (newPage) => {
-        if (isFilteredMode && allPaginatedResults.length > 0) {
-            const targetPageResults = allPaginatedResults[newPage - 1];
-            if (targetPageResults) {
-                setActivities(targetPageResults);
-                setPagination(prev => ({
-                    ...prev,
-                    currentPage: newPage,
-                    hasNext: newPage < allPaginatedResults.length,
-                    hasPrev: newPage > 1
-                }));
-            }
-        } else {
-            fetchActivities(newPage, 10);
-        }
+        applyFiltersAndPagination(searchTerm, filters, newPage);
     };
 
     const handlePrevPage = () => {
@@ -243,6 +261,7 @@ const ExploreActivities = () => {
         }
     };
 
+    
     // Validation functions
     const validateImageFile = (file) => {
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -393,19 +412,8 @@ const ExploreActivities = () => {
         try {
             await authAPI.deleteActivity(activityToDelete.id);
             
-            let targetPage = Math.max(1, parseInt(pagination.currentPage) || 1);
-            
-            if (isFilteredMode) {
-                if (activities.length === 1 && pagination.currentPage > 1) {
-                    targetPage = pagination.currentPage - 1;
-                }
-                await handleFilterChange(filter);
-            } else {
-                if (activities.length === 1 && pagination.currentPage > 1) {
-                    targetPage = pagination.currentPage - 1;
-                }
-                await fetchActivities(targetPage, 10);
-            }
+            // Clear cache and refresh activities list
+            await fetchAllActivities();
             
             showDeleteSuccess(activityName);
             setDeleteModalOpen(false);
@@ -434,6 +442,8 @@ const ExploreActivities = () => {
         };
         
         setCurrentActivity(editActivity);
+        setImageDimensions({ width: 0, height: 0 });
+        setVideoDimensions({ width: 0, height: 0 });
         setIsEditModalOpen(true);
     };
 
@@ -443,6 +453,9 @@ const ExploreActivities = () => {
         if (!validateForm()) {
             return;
         }
+        
+        console.log('🚀 [EXPLORE ACTIVITIES] Starting handleSave process');
+        console.log('🚀 [EXPLORE ACTIVITIES] Current activity data:', currentActivity);
         
         setIsSubmitting(true);
         
@@ -493,14 +506,17 @@ const ExploreActivities = () => {
                 showCreateSuccess(activityName);
             }
             
-            const currentPage = Math.max(1, parseInt(pagination.currentPage) || 1);
-            await fetchActivities(currentPage, 10);
+            console.log('✅ [EXPLORE ACTIVITIES] Activity saved successfully');
+            
+            // Clear cache and refresh activities list
+            await fetchAllActivities();
             
             setIsEditModalOpen(false);
             setCurrentActivity(null);
             setValidationErrors({});
             
         } catch (error) {
+            console.error('❌ [EXPLORE ACTIVITIES] Error saving activity:', error);
             const activityName = currentActivity.activity_name || 'Activity';
             const isEdit = activities.some(a => a.id === currentActivity.id);
             if (isEdit) {
@@ -508,9 +524,10 @@ const ExploreActivities = () => {
             } else {
                 showCreateError(activityName, error.message);
             }
-            setIsEditModalOpen(false);
-            setCurrentActivity(null);
-            setValidationErrors({});
+            // Do NOT close modal on error so user can fix and retry
+            // setIsEditModalOpen(false);
+            // setCurrentActivity(null);
+            // setValidationErrors({});
         } finally {
             setIsSubmitting(false);
         }
@@ -524,94 +541,110 @@ const ExploreActivities = () => {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Explore Activities</h1>
                 
-                {/* Desktop: Activity type buttons + Add button */}
-                <div className="hidden lg:flex items-center gap-2 flex-wrap">
-                    {activityTypes.map(type => (
+                {/* Search Bar and Filters */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <div className="relative flex-1 lg:flex-initial">
+                        <input
+                            type="text"
+                            placeholder="Search activities..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="w-full lg:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                        <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
                         <button
-                            key={type}
-                            onClick={() => handleFilterChange(type)}
-                            className={clsx(
-                                "px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                                filter === type
-                                    ? "bg-primary text-white"
-                                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            )}
+                            onClick={handleFilterToggle}
+                            className={`p-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                         >
-                            {type}
+                            <Filter className="h-5 w-5" />
                         </button>
-                    ))}
-                    <button
-                        onClick={() => {
-                            setCurrentActivity({ 
-                                id: Date.now(), 
-                                activity_name: '', 
-                                description: '',
-                                duration: '', 
-                                activity_type: '',
-                                image: '',
-                                video: ''
-                            });
-                            setIsEditModalOpen(true);
-                        }}
-                        className="ml-4 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
-                    >
-                        + Add Activity
-                    </button>
+                        <button 
+                            onClick={() => {
+                                setCurrentActivity({ 
+                                    id: Date.now(), 
+                                    activity_name: '', 
+                                    description: '',
+                                    duration: '', 
+                                    activity_type: '',
+                                    image: '',
+                                    video: ''
+                                });
+                                setImageDimensions({ width: 0, height: 0 });
+                                setVideoDimensions({ width: 0, height: 0 });
+                                setIsEditModalOpen(true);
+                            }}
+                            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                        >
+                            + Add Activity
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                {/* Mobile: Dropdown + Add button */}
-                <div className="lg:hidden flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <div className="relative dropdown-container">
-                        <button
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full sm:w-auto flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <span>{filter}</span>
-                            <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
-                                {activityTypes.map(type => (
+            {/* Filter Bar */}
+            {showFilters && (
+                <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                    <div className="w-full max-w-full dropdown-container relative !overflow-visible">
+                        <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Activity Type</label>
+                        <div className="relative w-full">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsDropdownOpen(!isDropdownOpen);
+                                }}
+                                className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                            >
+                                <span className="truncate">
+                                    {filters.activityType === 'All' 
+                                        ? 'All Activity Types' 
+                                        : (activityTypes.find(t => t.value === filters.activityType)?.label || filters.activityType)
+                                    }
+                                </span>
+                                <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            {isDropdownOpen && (
+                                <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
                                     <button
-                                        key={type}
+                                        type="button"
                                         onClick={() => {
-                                            handleFilterChange(type);
+                                            handleFilterChange({ ...filters, activityType: 'All' });
                                             setIsDropdownOpen(false);
                                         }}
-                                        className={clsx(
-                                            "w-full px-4 py-2 text-left text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg",
-                                            filter === type
-                                                ? "bg-primary text-white"
-                                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        )}
+                                        className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
                                     >
-                                        {type}
+                                        All Activity Types
                                     </button>
-                                ))}
-                            </div>
-                        )}
+                                    {activityTypes.filter(type => type.value !== 'All').map(type => (
+                                        <button
+                                            key={type.value}
+                                            type="button"
+                                            onClick={() => {
+                                                handleFilterChange({ ...filters, activityType: type.value });
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === type.value ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                        >
+                                            {type.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     
                     <button
-                        onClick={() => {
-                            setCurrentActivity({ 
-                                id: Date.now(), 
-                                activity_name: '', 
-                                description: '',
-                                duration: '', 
-                                activity_type: '',
-                                image: '',
-                                video: ''
-                            });
-                            setIsEditModalOpen(true);
-                        }}
-                        className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
+                        onClick={handleClearFilters}
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap border border-transparent active:scale-95"
                     >
-                        + Add Activity
+                        Clear All Filters
                     </button>
                 </div>
-            </div>
+            )}
+
 
             {/* Loading State */}
             {loading && (
@@ -629,7 +662,7 @@ const ExploreActivities = () => {
                         <span className="text-red-700 dark:text-red-300">{error}</span>
                     </div>
                     <button
-                        onClick={fetchActivities}
+                        onClick={fetchAllActivities}
                         className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
                     >
                         Retry
@@ -641,39 +674,65 @@ const ExploreActivities = () => {
             {!loading && !error && (
                 <div className="grid grid-cols-1 gap-4">
                     {activities.map((activity) => (
-                        <div key={activity.id} className="flex flex-col sm:flex-row items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div className="w-full sm:w-48 h-32 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden relative">
-                                {activity.image ? (
-                                    <img src={activity.image} alt={activity.title} className="w-full h-full object-cover" />
-                                ) : activity.video ? (
-                                    <video src={activity.video} className="w-full h-full object-cover" controls />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <Compass className="w-10 h-10 opacity-50" />
+                        <div key={activity.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
+                            {/* Mobile: Stack layout, Desktop: Side-by-side */}
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                                {/* Image/Video Section */}
+                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                    <div className="w-full h-full relative">
+                                        {activity.image ? (
+                                            <img src={activity.image} alt={activity.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        ) : activity.video ? (
+                                            <video src={activity.video} className="w-full h-full object-cover" controls />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                <Compass className="w-10 h-10 opacity-30 animate-pulse" />
+                                            </div>
+                                        )}
+                                        {/* Overlay for hover */}
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex-1 text-center sm:text-left">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{activity.title}</h3>
-                                <div className="flex justify-center sm:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    <span>{activity.type}</span>
-                                    <span>•</span>
-                                    <span>{activity.duration}</span>
                                 </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleEditClick(activity)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(activity.id)}
-                                    className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30"
-                                >
-                                    Delete
-                                </button>
+                                
+                                {/* Content Section */}
+                                <div className="flex-1 flex flex-col min-w-0 justify-between">
+                                    {/* Title and Meta */}
+                                    <div>
+                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                                {activityTypes.find(t => t.value === (activity.type?.toLowerCase() || ''))?.label || activity.type}
+                                            </span>
+                                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                                            <span className="inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                <Clock className="w-3 h-3 mr-1" />
+                                                {activity.duration}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{activity.title}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                                            {activity.description}
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <button
+                                            onClick={() => handleEditClick(activity)}
+                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                        >
+                                            Edit Details
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(activity.id)}
+                                            className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                            title="Delete Activity"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -686,7 +745,7 @@ const ExploreActivities = () => {
                     <Compass className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No activities found</h3>
                     <p className="text-gray-500 dark:text-gray-400">
-                        {filter === 'All' ? 'Start by adding your first activity.' : `No activities found in ${filter} type.`}
+                        {filters.activityType === 'All' ? 'Start by adding your first activity.' : `No activities found in ${filters.activityType} type.`}
                     </p>
                 </div>
             )}
@@ -742,7 +801,7 @@ const ExploreActivities = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl relative">
                         <button
                             onClick={() => setIsEditModalOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 z-10"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -755,45 +814,38 @@ const ExploreActivities = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Activity Image</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 w-full max-w-full"
                                          style={{ 
-                                             width: imageDimensions.width ? `${Math.min(imageDimensions.width, window.innerWidth > 640 ? 600 : window.innerWidth - 32)}px` : '100%',
                                              height: imageDimensions.height ? `${imageDimensions.height}px` : '160px',
                                              maxWidth: '100%'
                                          }}>
-                                        {currentActivity.image ? (
-                                            <img 
-                                                src={currentActivity.image} 
-                                                alt="Activity preview" 
-                                                className="w-full h-full object-contain" 
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400" style={{ minHeight: '160px' }}>
-                                                <div className="text-center">
-                                                    <Compass className="w-8 h-8 opacity-50 mx-auto mb-2" />
-                                                    <span className="text-xs">No image selected</span>
+                                        <div className="w-full h-full">
+                                            {currentActivity.image ? (
+                                                <img 
+                                                    src={currentActivity.image} 
+                                                    alt="Activity preview" 
+                                                    className="w-full h-full object-contain" 
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 min-h-[160px]">
+                                                    <div className="text-center">
+                                                        <ImageIcon className="w-8 h-8 opacity-50 mx-auto mb-2" />
+                                                        <p className="text-xs">No image selected</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <input
-                                            type="file"
-                                            accept=".jpg,.jpeg,.png"
-                                            onChange={handleImageUpload}
-                                            className="block w-full text-sm text-gray-500
-                                                file:mr-4 file:py-2 file:px-4
-                                                file:rounded-full file:border-0
-                                                file:text-sm file:font-semibold
-                                                file:bg-primary file:text-white
-                                                hover:file:bg-indigo-700
-                                            "
-                                        />
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">JPG, JPEG, PNG up to 10MB</p>
-                                        {validationErrors.image && (
-                                            <p className="mt-1 text-xs text-red-500">{validationErrors.image}</p>
-                                        )}
-                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/jpg,image/jpeg,image/png"
+                                        onChange={handleImageUpload}
+                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">JPG, JPEG, PNG up to 10MB</p>
+                                    {validationErrors.image && (
+                                        <p className="mt-1 text-xs text-red-500">{validationErrors.image}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -801,45 +853,38 @@ const ExploreActivities = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Activity Video</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 w-full max-w-full"
                                          style={{ 
-                                             width: videoDimensions.width ? `${Math.min(videoDimensions.width, window.innerWidth > 640 ? 600 : window.innerWidth - 32)}px` : '100%',
                                              height: videoDimensions.height ? `${videoDimensions.height}px` : '160px',
                                              maxWidth: '100%'
                                          }}>
-                                        {currentActivity.video ? (
-                                            <video 
-                                                src={currentActivity.video} 
-                                                className="w-full h-full object-contain" 
-                                                controls
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400" style={{ minHeight: '160px' }}>
-                                                <div className="text-center">
-                                                    <Play className="w-8 h-8 opacity-50 mx-auto mb-2" />
-                                                    <span className="text-xs">No video selected</span>
+                                        <div className="w-full h-full">
+                                            {currentActivity.video ? (
+                                                <video 
+                                                    src={currentActivity.video} 
+                                                    className="w-full h-full object-contain" 
+                                                    controls
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 min-h-[160px]">
+                                                    <div className="text-center">
+                                                        <Play className="w-8 h-8 opacity-50 mx-auto mb-2" />
+                                                        <p className="text-xs">No video selected</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <input
-                                            type="file"
-                                            accept=".mp4,.avi,.mov,.mkv"
-                                            onChange={handleVideoUpload}
-                                            className="block w-full text-sm text-gray-500
-                                                file:mr-4 file:py-2 file:px-4
-                                                file:rounded-full file:border-0
-                                                file:text-sm file:font-semibold
-                                                file:bg-primary file:text-white
-                                                hover:file:bg-indigo-700
-                                            "
-                                        />
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">MP4, AVI, MOV, MKV up to 30-35MB</p>
-                                        {validationErrors.video && (
-                                            <p className="mt-1 text-xs text-red-500">{validationErrors.video}</p>
-                                        )}
-                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="video/mp4,video/avi,video/mov,video/mkv"
+                                        onChange={handleVideoUpload}
+                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">MP4, AVI, MOV, MKV up to 35MB</p>
+                                    {validationErrors.video && (
+                                        <p className="mt-1 text-xs text-red-500">{validationErrors.video}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -887,7 +932,7 @@ const ExploreActivities = () => {
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     >
                                         <option value="" disabled>Select Activity Type</option>
-                                        {activityTypes.filter(t => t !== 'All').map(t => <option key={t} value={t}>{t}</option>)}
+                                        {activityTypes.filter(t => t.value !== 'All').map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                     </select>
                                     {validationErrors.activity_type && (
                                         <p className="mt-1 text-xs text-red-500">{validationErrors.activity_type}</p>

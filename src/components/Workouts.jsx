@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Clock, Flame, Dumbbell, ChevronDown, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Play, Clock, Flame, Dumbbell, ChevronDown, X, Filter, Search } from 'lucide-react';
 import clsx from 'clsx';
 import { authAPI } from '../services/api';
 import AlertContainer from './AlertContainer';
@@ -12,7 +12,14 @@ const Workouts = () => {
     const [allWorkouts, setAllWorkouts] = useState([]); // Cache for all workouts
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filter, setFilter] = useState('All');
+    
+    // Filter & Search State
+    const [showFilters, setShowFilters] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filters, setFilters] = useState({
+        activityType: 'All',
+        workoutCategory: 'All'
+    });
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentWorkout, setCurrentWorkout] = useState(null);
     const [validationErrors, setValidationErrors] = useState({});
@@ -23,6 +30,8 @@ const Workouts = () => {
     const [isFilteredMode, setIsFilteredMode] = useState(false); // Track if we're in filtered mode
     const [allPaginatedResults, setAllPaginatedResults] = useState([]); // Store all paginated filtered results
     const [isDropdownOpen, setIsDropdownOpen] = useState(false); // For mobile dropdown
+    const [isActivityTypeDropdownOpen, setIsActivityTypeDropdownOpen] = useState(false);
+    const [isWorkoutCategoryDropdownOpen, setIsWorkoutCategoryDropdownOpen] = useState(false);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalPages: 1,
@@ -32,52 +41,51 @@ const Workouts = () => {
         pageSize: 10 // Show 10 workouts per page
     });
 
-    // Fetch workouts from API
-    const fetchWorkouts = async (page = 1, pageSize = 10) => {
+    // Fetch all workouts and cache them
+    const fetchAllWorkouts = async () => {
         try {
             setLoading(true);
-            const response = await authAPI.getWorkouts(page, pageSize);
+            setError(null);
             
-            // Map API response to component format - access the workouts array from response
+            // Clear cache first to ensure fresh data
+            setAllWorkouts([]);
+            setWorkouts([]);
+            
+            // Fetch all workouts (use a large limit to get everything)
+            const response = await authAPI.getWorkouts(1, 1000); // Fetch up to 1000 workouts
+            
+            // Map API response to component format matching new API schema
             const mappedWorkouts = response.workouts.map(workout => ({
                 id: workout.id,
-                title: workout.name,
+                title: workout.name, // API returns 'name', map to 'title' for display
                 description: workout.description,
                 duration: `${workout.duration_minutes} min`,
                 calories: workout.calories_burned,
                 difficulty: workout.difficulty_level,
                 type: workout.workout_type || workout.category, // Use workout_type first, fallback to category
                 category: workout.category, // Keep category for filtering
+                workout_type: workout.workout_type, // Keep workout_type for filtering
                 video: workout.workout_video_url,
                 image: workout.workout_image_url
             }));
             
-            // Set display workouts
+            // Cache all workouts
+            setAllWorkouts(mappedWorkouts);
+            
+            // Set initial display workouts
             setWorkouts(mappedWorkouts);
             
-            // Update pagination from API response - use the pagination object from API
-            if (response.pagination) {
-                setPagination({
-                    currentPage: response.pagination.current_page,
-                    totalPages: response.pagination.total_pages,
-                    totalItems: response.pagination.total_items,
-                    hasNext: response.pagination.has_next,
-                    hasPrev: response.pagination.has_prev,
-                    pageSize: response.pagination.page_size
-                });
-            } else {
-                // Fallback if no pagination object in response
-                const totalItems = mappedWorkouts.length;
-                const totalPages = Math.ceil(totalItems / pageSize);
-                setPagination({
-                    currentPage: page,
-                    totalPages: totalPages,
-                    totalItems: totalItems,
-                    hasNext: page < totalPages,
-                    hasPrev: page > 1,
-                    pageSize: pageSize
-                });
-            }
+            // Update pagination
+            const totalItems = mappedWorkouts.length;
+            const totalPages = Math.ceil(totalItems / 10);
+            setPagination({
+                currentPage: 1,
+                totalPages: totalPages,
+                totalItems: totalItems,
+                hasNext: totalPages > 1,
+                hasPrev: false,
+                pageSize: 10
+            });
             
             setError(null);
         } catch (err) {
@@ -88,166 +96,133 @@ const Workouts = () => {
         }
     };
 
+    // Load workouts on component mount
     useEffect(() => {
-        fetchWorkouts(1, 10);
-    }, []);
+        fetchAllWorkouts();
+    }, []); // Only run once on mount
 
-    // Close dropdown when clicking outside
+    // Re-apply filters when allWorkouts are loaded (for initial display)
+    useEffect(() => {
+        if (allWorkouts.length > 0) {
+            applyFiltersAndPagination(searchTerm, filters, pagination.currentPage);
+        }
+    }, [allWorkouts]); // Re-run when cache is populated
+
+    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (isDropdownOpen && !event.target.closest('.dropdown-container')) {
-                setIsDropdownOpen(false);
+            if (isActivityTypeDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsActivityTypeDropdownOpen(false);
+            }
+            if (isWorkoutCategoryDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsWorkoutCategoryDropdownOpen(false);
             }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isDropdownOpen]);
+    }, [isActivityTypeDropdownOpen, isWorkoutCategoryDropdownOpen]);
 
-    const categories = ['All', 'loose', 'maintain', 'gain'];
+    const activityTypes = ['All', 'Gym', 'Home'];
+    const workoutCategories = ['All', 'Loose', 'Maintain', 'Gain'];
 
-    // Smart filtering - find all pages containing filtered workouts and build filtered pagination
-    const getFilteredPagination = async (category) => {
-        const pageSize = 10;
-        const allFilteredWorkouts = [];
-        const filteredPages = [];
+    // Client-side filtering and pagination
+    const applyFiltersAndPagination = (searchTerm = '', filters = null, page = 1) => {
+        let filteredWorkouts = [...allWorkouts];
         
-        // Search through all pages to find which ones contain target category
-        let currentPage = 1;
-        let totalPages = 1;
-        
-        while (currentPage <= totalPages) {
-            try {
-                const response = await authAPI.getWorkouts(currentPage, pageSize);
-                
-                totalPages = response.pagination.total_pages || 1;
-                
-                // Find workouts with target category on this page
-                const filteredWorkoutsOnPage = response.workouts.filter(workout => 
-                    category === 'All' || workout.category.toLowerCase() === category.toLowerCase()
+        // Apply search filter
+        if (searchTerm.trim() !== '') {
+            const searchLower = searchTerm.toLowerCase();
+            filteredWorkouts = filteredWorkouts.filter(workout => {
+                return (
+                    workout.title?.toLowerCase().includes(searchLower) ||
+                    workout.description?.toLowerCase().includes(searchLower) ||
+                    workout.category?.toLowerCase().includes(searchLower) ||
+                    workout.workout_type?.toLowerCase().includes(searchLower)
                 );
-                
-                if (filteredWorkoutsOnPage.length > 0) {
-                    // Add all filtered workouts to our collection
-                    allFilteredWorkouts.push(...filteredWorkoutsOnPage);
-                    filteredPages.push({
-                        pageNumber: currentPage,
-                        workoutsCount: filteredWorkoutsOnPage.length
-                    });
-                }
-                
-                currentPage++;
-                
-            } catch (error) {
-                console.error(`Error checking page ${currentPage}:`, error);
-                break;
+            });
+        }
+        
+        // Apply other filters (case-insensitive like Users page)
+        if (filters) {
+            if (filters.activityType && filters.activityType !== 'All') {
+                filteredWorkouts = filteredWorkouts.filter(workout => {
+                    const workoutType = workout.workout_type || '';
+                    const filterType = filters.activityType.toLowerCase();
+                    return workoutType.toLowerCase() === filterType;
+                });
+            }
+            if (filters.workoutCategory && filters.workoutCategory !== 'All') {
+                filteredWorkouts = filteredWorkouts.filter(workout => {
+                    const workoutCategory = workout.category || '';
+                    const filterCategory = filters.workoutCategory.toLowerCase();
+                    return workoutCategory.toLowerCase() === filterCategory;
+                });
             }
         }
         
-        // Create paginated filtered results (10 per page)
-        const paginatedFilteredResults = [];
-        for (let i = 0; i < allFilteredWorkouts.length; i += pageSize) {
-            paginatedFilteredResults.push(allFilteredWorkouts.slice(i, i + pageSize));
-        }
+        // Apply pagination
+        const totalItems = filteredWorkouts.length;
+        const totalPages = Math.ceil(totalItems / pagination.pageSize);
+        const startIndex = (page - 1) * pagination.pageSize;
+        const endIndex = startIndex + pagination.pageSize;
+        const paginatedWorkouts = filteredWorkouts.slice(startIndex, endIndex);
         
-        // Build filtered pagination info
-        const filteredPagination = {
-            currentPage: 1,
-            totalPages: paginatedFilteredResults.length,
-            totalItems: allFilteredWorkouts.length,
-            hasNext: paginatedFilteredResults.length > 1,
-            hasPrev: false,
-            pageSize: pageSize,
-            filteredPages: filteredPages // Store which original pages have data
-        };
-        
-        // Map first page of filtered results to component format
-        const firstPageWorkouts = paginatedFilteredResults.length > 0 ? paginatedFilteredResults[0] : [];
-        const mappedWorkouts = firstPageWorkouts.map(workout => ({
-            id: workout.id,
-            title: workout.name,
-            description: workout.description,
-            duration: `${workout.duration_minutes} min`,
-            calories: workout.calories_burned,
-            difficulty: workout.difficulty_level,
-            type: workout.workout_type || workout.category,
-            category: workout.category,
-            video: workout.workout_video_url,
-            image: workout.workout_image_url
-        }));
-        
-        // Store all paginated results for navigation
-        const allPaginatedMappedResults = paginatedFilteredResults.map(page => 
-            page.map(workout => ({
-                id: workout.id,
-                title: workout.name,
-                description: workout.description,
-                duration: `${workout.duration_minutes} min`,
-                calories: workout.calories_burned,
-                difficulty: workout.difficulty_level,
-                type: workout.workout_type || workout.category,
-                category: workout.category,
-                video: workout.workout_video_url,
-                image: workout.workout_image_url
-            }))
-        );
-        
-        return {
-            workouts: mappedWorkouts,
-            pagination: filteredPagination,
-            allPaginatedResults: allPaginatedMappedResults
-        };
+        // Update display workouts and pagination
+        setWorkouts(paginatedWorkouts);
+        setPagination({
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+            pageSize: pagination.pageSize
+        });
     };
 
-    // Handle category filter change
-    const handleFilterChange = async (newFilter) => {
-        setFilter(newFilter);
-        
-        if (newFilter === 'All') {
-            // Reset to normal pagination
-            setIsFilteredMode(false);
-            setFilteredPages([]);
-            setAllPaginatedResults([]);
-            fetchWorkouts(1, 10);
+    // Search and filter handlers
+    const handleSearchChange = (value) => {
+        setSearchTerm(value);
+        // Apply filters immediately with new search term
+        applyFiltersAndPagination(value, filters, 1);
+    };
+
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters);
+        // Apply filters immediately using cached data
+        applyFiltersAndPagination(searchTerm, newFilters, 1);
+    };
+
+    // Clear all filters and search
+    const handleClearFilters = () => {
+        setSearchTerm('');
+        setFilters({ activityType: 'All', workoutCategory: 'All' });
+        setIsActivityTypeDropdownOpen(false);
+        setIsWorkoutCategoryDropdownOpen(false);
+        // Apply cleared filters immediately using cached data - this will show all workouts from cache
+        applyFiltersAndPagination('', { activityType: 'All', workoutCategory: 'All' }, 1);
+    };
+
+    // Handle filter toggle - close and clear filters when toggling off
+    const handleFilterToggle = () => {
+        if (showFilters) {
+            // If filters are currently shown, close panel and clear all filters
+            setShowFilters(false);
+            handleClearFilters(); // This will show all workouts from cache
         } else {
-            // Apply server-side filtering
-            try {
-                setLoading(true);
-                const filteredData = await getFilteredPagination(newFilter);
-                setWorkouts(filteredData.workouts);
-                setPagination(filteredData.pagination);
-                setFilteredPages(filteredData.pagination.filteredPages);
-                setAllPaginatedResults(filteredData.allPaginatedResults);
-                setIsFilteredMode(true);
-                setError(null);
-            } catch (error) {
-                console.error('Error filtering workouts:', error);
-                setError('Failed to filter workouts. Please try again.');
-            } finally {
-                setLoading(false);
-            }
+            // If filters are hidden, show the panel
+            setShowFilters(true);
         }
     };
-
+    
     // Pagination handlers
     const handlePageChange = (newPage) => {
-        
-        if (isFilteredMode && allPaginatedResults.length > 0) {
-            // Handle filtered pagination - use pre-paginated results
-            const targetPageResults = allPaginatedResults[newPage - 1];
-            if (targetPageResults) {
-                setWorkouts(targetPageResults);
-                setPagination(prev => ({
-                    ...prev,
-                    currentPage: newPage,
-                    hasNext: newPage < allPaginatedResults.length,
-                    hasPrev: newPage > 1
-                }));
-            }
-        } else {
-            // Handle normal pagination
-            fetchWorkouts(newPage, 10);
-        }
+        console.log('Changing to page:', newPage);
+        applyFiltersAndPagination(searchTerm, filters, newPage);
+        // Scroll to top of page with delay
+        setTimeout(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        }, 100);
     };
 
     const handlePrevPage = () => {
@@ -383,16 +358,20 @@ const Workouts = () => {
             errors.duration = 'Duration is required';
         }
         
-        if (!currentWorkout.calories_burned?.toString().trim()) {
-            errors.calories_burned = 'Calories burned is required';
+        if (!currentWorkout.calories?.toString().trim()) {
+            errors.calories = 'Calories burned is required';
         }
         
-        if (!currentWorkout.workout_image_url && !currentWorkout.image_file) {
-            errors.workout_image_url = 'Workout image is required';
-        }
-        
-        if (!currentWorkout.workout_video_url && !currentWorkout.video_file) {
-            errors.workout_video_url = 'Workout video is required';
+        // For CREATE: image and video files are required (UploadFile schema)
+        // For UPDATE: image and video are optional (Optional[str] schema)
+        if (!isEdit) {
+            if (!currentWorkout.image_file) {
+                errors.workout_image_url = 'Workout image is required for creating new workout';
+            }
+            
+            if (!currentWorkout.video_file) {
+                errors.workout_video_url = 'Workout video is required for creating new workout';
+            }
         }
         
         setValidationErrors(errors);
@@ -409,25 +388,8 @@ const Workouts = () => {
                 await authAPI.deleteWorkout(id);
                 console.log('Workout deleted successfully');
                 
-                // Determine which page to load after deletion
-                let targetPage = Math.max(1, parseInt(pagination.currentPage) || 1);
-                
-                // If we're in filtered mode, handle differently
-                if (isFilteredMode) {
-                    // In filtered mode, check if current page will be empty after deletion
-                    if (workouts.length === 1 && pagination.currentPage > 1) {
-                        targetPage = pagination.currentPage - 1;
-                    }
-                    // Re-apply filter to get updated results
-                    await handleFilterChange(filter);
-                } else {
-                    // In normal mode, check if we're on the last page and it has only one item
-                    if (workouts.length === 1 && pagination.currentPage > 1) {
-                        targetPage = pagination.currentPage - 1;
-                    }
-                    // Refresh workouts list with the determined page
-                    await fetchWorkouts(targetPage, 10);
-                }
+                // Clear cache and refresh workouts list
+                await fetchAllWorkouts();
                 
                 showDeleteSuccess(workoutName);
             } catch (error) {
@@ -444,10 +406,10 @@ const Workouts = () => {
             title: workout.title,
             description: workout.description || '',
             duration: workout.duration ? workout.duration.replace(' min', '') : '',
-            calories_burned: workout.calories || '',
-            difficulty_level: workout.difficulty || 'beginner',
+            calories: workout.calories || '',
+            difficulty: workout.difficulty || 'beginner',
             category: workout.category || 'loose',
-            workout_type: workout.type || '', // Add workout_type field
+            workout_type: workout.type || '',
             workout_image_url: workout.image || '',
             workout_video_url: workout.video || '',
             // Don't set file objects for editing (user can re-upload if needed)
@@ -475,7 +437,7 @@ const Workouts = () => {
             const formData = new FormData();
             console.log('💪 [WORKOUT COMPONENT] Created new FormData instance');
             
-            // Add all workout data with correct field names
+            // Add all workout data with correct field names matching actual API schema
             console.log('💪 [WORKOUT COMPONENT] Adding workout data to FormData:');
             console.log('💪 [WORKOUT COMPONENT]   title:', currentWorkout.title);
             formData.append('title', currentWorkout.title);
@@ -486,11 +448,11 @@ const Workouts = () => {
             console.log('💪 [WORKOUT COMPONENT]   duration:', currentWorkout.duration);
             formData.append('duration', currentWorkout.duration);
             
-            console.log('💪 [WORKOUT COMPONENT]   calorie_burn:', currentWorkout.calories_burned);
-            formData.append('calorie_burn', currentWorkout.calories_burned);
+            console.log('💪 [WORKOUT COMPONENT]   calorie_burn:', currentWorkout.calories);
+            formData.append('calorie_burn', currentWorkout.calories);
             
-            console.log('💪 [WORKOUT COMPONENT]   activity_level:', currentWorkout.difficulty_level);
-            formData.append('activity_level', currentWorkout.difficulty_level);
+            console.log('💪 [WORKOUT COMPONENT]   activity_level:', currentWorkout.difficulty);
+            formData.append('activity_level', currentWorkout.difficulty);
             
             console.log('💪 [WORKOUT COMPONENT]   workout_category:', currentWorkout.category);
             formData.append('workout_category', currentWorkout.category);
@@ -541,9 +503,8 @@ const Workouts = () => {
                 showCreateSuccess(workoutName);
             }
             
-            // Refresh workouts list (stay on current page)
-            const currentPage = Math.max(1, parseInt(pagination.currentPage) || 1);
-            await fetchWorkouts(currentPage, 10);
+            // Clear cache and refresh workouts list
+            await fetchAllWorkouts();
             
             setIsEditModalOpen(false);
             setCurrentWorkout(null);
@@ -573,105 +534,154 @@ const Workouts = () => {
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Workouts</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"> Workouts</h1>
                 
-                {/* Desktop: Category buttons + Add button */}
-                <div className="hidden lg:flex items-center gap-2 flex-wrap">
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => handleFilterChange(cat)}
-                            className={clsx(
-                                "px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                                filter === cat
-                                    ? "bg-primary text-white"
-                                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            )}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => {
-                            setCurrentWorkout({ 
-        id: Date.now(), 
-        title: '', 
-        description: '',
-        duration: '', 
-        calories_burned: '',
-        difficulty_level: '',
-        category: '',
-        workout_type: '', // Add workout_type field
-        workout_image_url: '',
-        workout_video_url: ''
-    });
-                            setIsEditModalOpen(true);
-                        }}
-                        className="ml-4 bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
-                    >
-                        + Add Workout
-                    </button>
-                </div>
-
-                {/* Mobile: Dropdown + Add button */}
-                <div className="lg:hidden flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    {/* Dropdown for categories */}
-                    <div className="relative dropdown-container">
-                        <button
-                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full sm:w-auto flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <span>{filter}</span>
-                            <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        {/* Dropdown menu */}
-                        {isDropdownOpen && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50">
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => {
-                                            handleFilterChange(cat);
-                                            setIsDropdownOpen(false);
-                                        }}
-                                        className={clsx(
-                                            "w-full px-4 py-2 text-left text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg",
-                                            filter === cat
-                                                ? "bg-primary text-white"
-                                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                        )}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                {/* Search Bar and Filters */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <div className="relative flex-1 lg:flex-initial">
+                        <input
+                            type="text"
+                            placeholder="Search workouts..."
+                            value={searchTerm}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="w-full lg:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        />
+                        <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
                     
-                    {/* Add Workout button for mobile */}
-                    <button
-                        onClick={() => {
-                            setCurrentWorkout({ 
-        id: Date.now(), 
-        title: '', 
-        description: '',
-        duration: '', 
-        calories_burned: '',
-        difficulty_level: '',
-        category: '',
-        workout_type: '', // Add workout_type field
-        workout_image_url: '',
-        workout_video_url: ''
-    });
-                            setIsEditModalOpen(true);
-                        }}
-                        className="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 whitespace-nowrap"
-                    >
-                        + Add Workout
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleFilterToggle}
+                            className={`p-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        >
+                            <Filter className="h-5 w-5" />
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setCurrentWorkout({ 
+                                    id: Date.now(), 
+                                    title: '', 
+                                    description: '',
+                                    duration: '', 
+                                    calories: '',
+                                    difficulty: '',
+                                    category: '',
+                                    workout_type: '',
+                                    workout_image_url: '',
+                                    workout_video_url: ''
+                                });
+                                setIsEditModalOpen(true);
+                            }}
+                            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                        >
+                            + Add Workout
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            {/* Filter Bar */}
+            {showFilters && (
+                <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
+                        <div className="w-full max-w-full dropdown-container relative !overflow-visible">
+                            <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Activity Type</label>
+                            <div className="relative w-full">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsActivityTypeDropdownOpen(!isActivityTypeDropdownOpen);
+                                        setIsWorkoutCategoryDropdownOpen(false);
+                                    }}
+                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                >
+                                    <span className="truncate">{filters.activityType === 'All' ? 'All Activity Types' : filters.activityType}</span>
+                                    <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isActivityTypeDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {isActivityTypeDropdownOpen && (
+                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleFilterChange({ ...filters, activityType: 'All' });
+                                                setIsActivityTypeDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                        >
+                                            All Activity Types
+                                        </button>
+                                        {activityTypes.filter(type => type !== 'All').map(type => (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => {
+                                                    handleFilterChange({ ...filters, activityType: type });
+                                                    setIsActivityTypeDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === type ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="w-full max-w-full dropdown-container relative !overflow-visible">
+                            <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Workout Category</label>
+                            <div className="relative w-full">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsWorkoutCategoryDropdownOpen(!isWorkoutCategoryDropdownOpen);
+                                        setIsActivityTypeDropdownOpen(false);
+                                    }}
+                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                >
+                                    <span className="truncate">{filters.workoutCategory === 'All' ? 'All Categories' : filters.workoutCategory}</span>
+                                    <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isWorkoutCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {isWorkoutCategoryDropdownOpen && (
+                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleFilterChange({ ...filters, workoutCategory: 'All' });
+                                                setIsWorkoutCategoryDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.workoutCategory === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                        >
+                                            All Categories
+                                        </button>
+                                        {workoutCategories.filter(category => category !== 'All').map(category => (
+                                            <button
+                                                key={category}
+                                                type="button"
+                                                onClick={() => {
+                                                    handleFilterChange({ ...filters, workoutCategory: category });
+                                                    setIsWorkoutCategoryDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.workoutCategory === category ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            >
+                                                {category}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button
+                        onClick={handleClearFilters}
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap border border-transparent active:scale-95"
+                    >
+                        Clear All Filters
+                    </button>
+                </div>
+            )}
 
             {/* Loading State */}
             {loading && (
@@ -701,41 +711,90 @@ const Workouts = () => {
             {!loading && !error && (
                 <div className="grid grid-cols-1 gap-4">
                     {workouts.map((workout) => (
-                        <div key={workout.id} className="flex flex-col sm:flex-row items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                            <div className="w-full sm:w-48 h-32 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden relative">
-                                {workout.image ? (
-                                    <img src={workout.image} alt={workout.title} className="w-full h-full object-cover" />
-                                ) : workout.video ? (
-                                    <video src={workout.video} className="w-full h-full object-cover" controls />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <Dumbbell className="w-10 h-10 opacity-50" />
+                        <div key={workout.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
+                            {/* Mobile: Stack layout, Desktop: Side-by-side */}
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                                {/* Image/Video Section */}
+                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                    <div className="w-full h-full relative">
+                                        {workout.image ? (
+                                            <img src={workout.image} alt={workout.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        ) : workout.video ? (
+                                            <video src={workout.video} className="w-full h-full object-cover" controls />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                <Dumbbell className="w-10 h-10 opacity-30 animate-pulse" />
+                                            </div>
+                                        )}
+                                        {/* Overlay for hover */}
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
                                     </div>
-                                )}
-                            </div>
-                            <div className="flex-1 text-center sm:text-left">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{workout.title}</h3>
-                                <div className="flex justify-center sm:justify-start gap-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    <span>{workout.type}</span>
-                                    <span>•</span>
-                                    <span>{workout.duration}</span>
-                                    <span>•</span>
-                                    <span>{workout.difficulty}</span>
                                 </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => handleEditClick(workout)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(workout.id)}
-                                    className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30"
-                                >
-                                    Delete
-                                </button>
+                                
+                                {/* Content Section */}
+                                <div className="flex-1 flex flex-col min-w-0 justify-between">
+                                    {/* Title and Meta */}
+                                    <div>
+                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                                {workout.type}
+                                            </span>
+                                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                                            <span className="inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                <Clock className="w-3 h-3 mr-1" />
+                                                {workout.duration}
+                                            </span>
+                                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                                            <span className="inline-flex items-center text-xs font-medium text-orange-500 dark:text-orange-400">
+                                                <Flame className="w-3 h-3 mr-1" />
+                                                {workout.calories} kcal
+                                            </span>
+                                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                                            <span className={clsx(
+                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                                workout.difficulty?.toLowerCase() === 'beginner' ? 'bg-green-100 text-green-700' :
+                                                workout.difficulty?.toLowerCase() === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-red-100 text-red-700'
+                                            )}>
+                                                {workout.difficulty}
+                                            </span>
+                                            {/* Workout Category Badge */}
+                                            <span className="text-gray-300 dark:text-gray-600">•</span>
+                                            <span className={clsx(
+                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                                workout.category?.toLowerCase() === 'loose' ? 'bg-blue-100 text-blue-700' :
+                                                workout.category?.toLowerCase() === 'maintain' ? 'bg-indigo-100 text-indigo-700' :
+                                                workout.category?.toLowerCase() === 'gain' ? 'bg-purple-100 text-purple-700' :
+                                                'bg-gray-100 text-gray-700'
+                                            )}>
+                                                {workout.category}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{workout.title}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                                            {workout.description}
+                                        </p>
+                                    </div>
+                                    
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <button
+                                            onClick={() => handleEditClick(workout)}
+                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                        >
+                                            Edit Details
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(workout.id)}
+                                            className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                            title="Delete Workout"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -748,7 +807,7 @@ const Workouts = () => {
                     <Dumbbell className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No workouts found</h3>
                     <p className="text-gray-500 dark:text-gray-400">
-                        {filter === 'All' ? 'Start by adding your first workout.' : `No workouts found in ${filter} category.`}
+                        {filters.workoutCategory === 'All' ? 'Start by adding your first workout.' : `No workouts found in ${filters.workoutCategory} category.`}
                     </p>
                 </div>
             )}
@@ -950,7 +1009,7 @@ const Workouts = () => {
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     >
                                         <option value="" disabled>Select Category</option>
-                                        {categories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                                        {workoutCategories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -990,22 +1049,22 @@ const Workouts = () => {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Calories Burned</label>
                                     <input
                                         type="number"
-                                        value={currentWorkout.calories_burned}
-                                        onChange={e => setCurrentWorkout({ ...currentWorkout, calories_burned: e.target.value })}
+                                        value={currentWorkout.calories}
+                                        onChange={e => setCurrentWorkout({ ...currentWorkout, calories: e.target.value })}
                                         className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                            validationErrors.calories_burned ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                            validationErrors.calories ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                                         }`}
                                         required
                                     />
-                                    {validationErrors.calories_burned && (
-                                        <p className="mt-1 text-xs text-red-500">{validationErrors.calories_burned}</p>
+                                    {validationErrors.calories && (
+                                        <p className="mt-1 text-xs text-red-500">{validationErrors.calories}</p>
                                     )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Difficulty Level</label>
                                     <select
-                                        value={currentWorkout.difficulty_level || ''}
-                                        onChange={e => setCurrentWorkout({ ...currentWorkout, difficulty_level: e.target.value })}
+                                        value={currentWorkout.difficulty || ''}
+                                        onChange={e => setCurrentWorkout({ ...currentWorkout, difficulty: e.target.value })}
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     >
                                         <option value="" disabled>Select Difficulty Level</option>

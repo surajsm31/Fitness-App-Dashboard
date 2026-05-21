@@ -51,7 +51,14 @@ const clearAllTokens = () => {
   localStorage.removeItem('authToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
+  localStorage.removeItem('lastTokenRefresh');
   console.log('All tokens cleared');
+};
+
+// Function to track last refresh time for session management
+const trackTokenRefresh = () => {
+  localStorage.setItem('lastTokenRefresh', Date.now().toString());
+  console.log('Token refresh time tracked');
 };
 
 // Create axios instance with default configuration
@@ -136,10 +143,13 @@ api.interceptors.response.use(
         
         const { access_token, refresh_token: newRefreshToken } = response.data;
         
-        // Store new tokens
+        // Store new tokens - always update both tokens for proper rotation
         localStorage.setItem('authToken', access_token);
         if (newRefreshToken) {
           localStorage.setItem('refreshToken', newRefreshToken);
+          console.log('New refresh token stored with fresh 7-day expiration');
+          // Track when the token was refreshed
+          trackTokenRefresh();
         }
         
         // Update authorization header for original request
@@ -261,7 +271,8 @@ export const authAPI = {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (!refreshToken) {
-        throw new Error('No refresh token available');
+        console.log('No refresh token available');
+        return false;
       }
       
       console.log('Refreshing token...');
@@ -276,18 +287,40 @@ export const authAPI = {
       
       const { access_token, refresh_token: newRefreshToken } = response.data;
       
-      // Store new tokens
+      // Store new tokens - always update both tokens for proper rotation
       localStorage.setItem('authToken', access_token);
       if (newRefreshToken) {
         localStorage.setItem('refreshToken', newRefreshToken);
+        console.log('New refresh token stored with fresh 7-day expiration');
+        // Track when the token was refreshed
+        trackTokenRefresh();
       }
       
       console.log('Token refreshed successfully');
-      
-      return response.data;
+      return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
-      throw error.response?.data || { message: 'Failed to refresh token' };
+      
+      // Check for specific refresh token errors
+      const errorMessage = error.response?.data?.detail || 
+                         error.response?.data?.message || 
+                         error.message;
+      
+      // If refresh token is invalid/expired, clear all tokens and force logout
+      if (errorMessage === "Refresh token not found or revoked" || 
+          errorMessage?.toLowerCase().includes('refresh token') ||
+          errorMessage?.toLowerCase().includes('expired') ||
+          error.response?.status === 401) {
+        console.log('Refresh token invalid/revoked/expired, forcing logout');
+        clearAllTokens();
+        localStorage.setItem('sessionExpired', 'Your session has expired. Please login again.');
+        // Force redirect to login page
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100);
+      }
+      
+      return false;
     }
   },
 
@@ -310,6 +343,50 @@ export const authAPI = {
 
   isAuthenticated: () => {
     return !!localStorage.getItem('authToken');
+  },
+
+  // Enhanced session validation with automatic token refresh
+  validateAndRefreshSession: async () => {
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!authToken) {
+        console.log('No auth token found');
+        return false;
+      }
+      
+      if (!refreshToken) {
+        console.log('No refresh token found');
+        return false;
+      }
+      
+      // Try to make a simple API call to validate the current token
+      // If it fails with 401, we'll refresh the token
+      try {
+        await api.get('/api/admin/profile');
+        console.log('Current token is valid');
+        return true;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          console.log('Token expired, attempting refresh with 7-day rotation...');
+          const refreshSuccess = await authAPI.refreshToken();
+          if (refreshSuccess) {
+            console.log('Token refreshed successfully with new 7-day refresh token');
+            return true;
+          } else {
+            console.log('Token refresh failed - session expired');
+            return false;
+          }
+        } else {
+          console.log('Token validation failed with non-401 error:', error);
+          return false;
+        }
+      }
+    } catch (error) {
+      console.error('Session validation error:', error);
+      return false;
+    }
   },
 
   // Forgot password API function

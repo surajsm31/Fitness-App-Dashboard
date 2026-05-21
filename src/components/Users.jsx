@@ -116,6 +116,8 @@ const UsersPage = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(null);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 'auto', bottom: 'auto' });
+    const [isGenderDropdownOpen, setIsGenderDropdownOpen] = useState(false);
+    const [isActivityLevelDropdownOpen, setIsActivityLevelDropdownOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [createUser, setCreateUser] = useState({
         username: '',
@@ -300,6 +302,8 @@ const UsersPage = () => {
     const handleClearFilters = () => {
         setSearchTerm('');
         setFilters({ gender: 'All', activityLevel: 'All' });
+        setIsGenderDropdownOpen(false);
+        setIsActivityLevelDropdownOpen(false);
         // Apply cleared filters immediately using cached data - this will show all users
         applyFiltersAndPagination('', { gender: 'All', activityLevel: 'All' }, 1);
     };
@@ -424,11 +428,17 @@ const UsersPage = () => {
             if (isDropdownOpen && !event.target.closest('.dropdown-menu')) {
                 setIsDropdownOpen(null);
             }
+            if (isGenderDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsGenderDropdownOpen(false);
+            }
+            if (isActivityLevelDropdownOpen && !event.target.closest('.dropdown-container')) {
+                setIsActivityLevelDropdownOpen(false);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isDropdownOpen]);
+    }, [isDropdownOpen, isGenderDropdownOpen, isActivityLevelDropdownOpen]);
 
     // Filter & Search State
     const [showFilters, setShowFilters] = useState(false);
@@ -769,42 +779,101 @@ const UsersPage = () => {
 
                     {/* Filter Bar */}
                     {showFilters && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
-                                <select
-                                    value={filters.gender}
-                                    onChange={(e) => handleFilterChange({ ...filters, gender: e.target.value })}
-                                    className="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-                                >
-                                    <option value="All">All Genders</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Activity Level</label>
-                                <select
-                                    value={filters.activityLevel}
-                                    onChange={(e) => handleFilterChange({ ...filters, activityLevel: e.target.value })}
-                                    className="w-full text-sm p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-                                >
-                                    <option value="All">All Levels</option>
-                                    <option value="Beginner">Beginner</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Advanced">Advanced</option>
-                                </select>
+                        <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
+                                <div className="w-full max-w-full dropdown-container relative !overflow-visible">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Gender</label>
+                                    <div className="relative w-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsGenderDropdownOpen(!isGenderDropdownOpen);
+                                                setIsActivityLevelDropdownOpen(false);
+                                            }}
+                                            className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                        >
+                                            <span className="truncate">{filters.gender === 'All' ? 'All Genders' : filters.gender}</span>
+                                            <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        
+                                        {isGenderDropdownOpen && (
+                                            <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleFilterChange({ ...filters, gender: 'All' });
+                                                        setIsGenderDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.gender === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                >
+                                                    All Genders
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleFilterChange({ ...filters, gender: 'Male' });
+                                                        setIsGenderDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.gender === 'Male' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                >
+                                                    Male
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleFilterChange({ ...filters, gender: 'Female' });
+                                                        setIsGenderDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.gender === 'Female' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                >
+                                                    Female
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="w-full max-w-full dropdown-container relative !overflow-visible">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Activity Level</label>
+                                    <div className="relative w-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsActivityLevelDropdownOpen(!isActivityLevelDropdownOpen);
+                                                setIsGenderDropdownOpen(false);
+                                            }}
+                                            className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                        >
+                                            <span className="truncate">{filters.activityLevel === 'All' ? 'All Levels' : filters.activityLevel}</span>
+                                            <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isActivityLevelDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        
+                                        {isActivityLevelDropdownOpen && (
+                                            <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                                {['All', 'Beginner', 'Intermediate', 'Advanced'].map(level => (
+                                                    <button
+                                                        key={level}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleFilterChange({ ...filters, activityLevel: level });
+                                                            setIsActivityLevelDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityLevel === level ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                    >
+                                                        {level === 'All' ? 'All Levels' : level}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                             
-                            {/* Clear Filters Button */}
-                            <div className="sm:col-span-2">
-                                <button
-                                    onClick={handleClearFilters}
-                                    className="w-full px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                >
-                                    Clear All Filters
-                                </button>
-                            </div>
+                            <button
+                                onClick={handleClearFilters}
+                                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap border border-transparent active:scale-95"
+                            >
+                                Clear All Filters
+                            </button>
                         </div>
                     )}
 

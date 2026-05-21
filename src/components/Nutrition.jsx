@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown, RefreshCw } from 'lucide-react';
+import { Plus, Coffee, Sun, Moon, Utensils, X, Loader2, ChevronDown, RefreshCw, Flame } from 'lucide-react';
+import clsx from 'clsx';
 import { authAPI } from '../services/api';
 import AlertContainer from './AlertContainer';
 import { useCustomAlert } from '../hooks/useCustomAlert';
@@ -816,32 +817,37 @@ const Nutrition = () => {
                         </div>
 
                         {/* Mobile: Dropdown */}
-                        <div className="lg:hidden relative dropdown-container">
-                            <button
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center justify-between px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-w-[120px]"
-                            >
-                                <span>{selectedCategory}</span>
-                                <ChevronDown className={`ml-2 h-3 w-3 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                            
-                            {/* Dropdown menu */}
-                            {isDropdownOpen && (
-                                <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 min-w-[120px]">
-                                    {['All', 'Underweight', 'Normal', 'Overweight', 'Obese'].map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => {
-                                                handleFilterChange(cat);
-                                                setIsDropdownOpen(false);
-                                            }}
-                                            className={`w-full px-3 py-1.5 text-left text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${selectedCategory === cat ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                        <div className="lg:hidden w-full sm:w-auto dropdown-container relative !overflow-visible">
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsDropdownOpen(!isDropdownOpen);
+                                    }}
+                                    className="w-full sm:w-auto flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full min-w-[120px]"
+                                >
+                                    <span className="truncate">{selectedCategory}</span>
+                                    <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {isDropdownOpen && (
+                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100 min-w-[120px]">
+                                        {['All', 'Underweight', 'Normal', 'Overweight', 'Obese'].map(cat => (
+                                            <button
+                                                key={cat}
+                                                type="button"
+                                                onClick={() => {
+                                                    handleFilterChange(cat);
+                                                    setIsDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${selectedCategory === cat ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -859,55 +865,74 @@ const Nutrition = () => {
                             No meal plans found for this category.
                         </div>
                     ) : (
-                        <div className="space-y-3 sm:space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
                             {meals.map((meal) => (
-                                <div key={meal.id} className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md hover:scale-[1.01] transition-all duration-200 ease-in-out cursor-pointer">
-                                    <div className="flex flex-col gap-3">
-                                        {/* Meal Header with Image */}
-                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                            <div className="flex items-center gap-3 flex-1">
-                                                {/* Meal Image or Icon */}
+                                <div key={meal.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
+                                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                                        {/* Image/Icon Section */}
+                                        <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                            <div className="w-full h-full relative">
                                                 {meal.image_url ? (
-                                                    <img 
-                                                        src={meal.image_url} 
-                                                        alt={meal.name} 
-                                                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover flex-shrink-0"
-                                                    />
+                                                    <img src={meal.image_url} alt={meal.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                                 ) : (
-                                                    <div className="p-2 sm:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 flex-shrink-0">
-                                                        <meal.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                        <meal.icon className="w-10 h-10 opacity-30 animate-pulse" />
                                                     </div>
                                                 )}
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">{meal.name} Plan</p>
-                                                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                        <span>{meal.type}</span>
-                                                        <span className="hidden sm:inline">•</span>
-                                                        <span>{meal.calories} kcal</span>
-                                                        <span className={`px-2 py-0.5 rounded text-xs ${
-                                                            [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-100 text-blue-800' : // Underweight (IDs 1-3)
-                                                                meal.bmiCategory === 4 ? 'bg-green-100 text-green-800' : // Normal (ID 4)
-                                                                    meal.bmiCategory === 5 ? 'bg-yellow-100 text-yellow-800' : // Overweight (ID 5)
-                                                                        [6, 7, 8].includes(meal.bmiCategory) ? 'bg-red-100 text-red-800' : // Obese (IDs 6-8)
-                                                                            'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                            {getBmiCategoryName(meal.bmiCategory)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
-                                                <button onClick={() => handleEdit(meal)} className="text-xs sm:text-sm text-primary hover:underline font-medium">Edit</button>
-                                                <button onClick={() => handleDelete(meal.id)} className="text-xs sm:text-sm text-red-500 hover:underline font-medium">Delete</button>
+                                                {/* Overlay for hover */}
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
                                             </div>
                                         </div>
-                                        
-                                        {/* Meal Description */}
-                                        {meal.description && (
-                                            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-2 sm:line-clamp-3">
-                                                {meal.description}
+
+                                        {/* Content Section */}
+                                        <div className="flex-1 flex flex-col min-w-0 justify-between">
+                                            {/* Meta and Title */}
+                                            <div>
+                                                <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                                        {meal.type}
+                                                    </span>
+                                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                    <span className="inline-flex items-center text-xs font-medium text-orange-500 dark:text-orange-400">
+                                                        <Flame className="w-3 h-3 mr-1" />
+                                                        {meal.calories} kcal
+                                                    </span>
+                                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                    <span className={clsx(
+                                                        "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                                        [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-100 text-blue-700' : 
+                                                        meal.bmiCategory === 4 ? 'bg-green-100 text-green-700' : 
+                                                        meal.bmiCategory === 5 ? 'bg-yellow-100 text-yellow-700' : 
+                                                        'bg-red-100 text-red-700'
+                                                    )}>
+                                                        {getBmiCategoryName(meal.bmiCategory)}
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{meal.name} Plan</h3>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                                                    {meal.description || 'Nutritionally balanced meal plan optimized for your fitness goals.'}
+                                                </p>
                                             </div>
-                                        )}
+
+                                            {/* Action Buttons */}
+                                            <div className="flex items-center gap-3 pt-2">
+                                                <button
+                                                    onClick={() => handleEdit(meal)}
+                                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                                >
+                                                    Edit Plan
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(meal.id)}
+                                                    className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                                    title="Delete Plan"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
