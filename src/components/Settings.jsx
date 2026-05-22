@@ -3,6 +3,7 @@ import { User, Bell, Shield, Moon, Sun, Save, Camera, Mail, Lock, AlertCircle, C
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
 import ForgotPassword from './ForgotPassword';
+import { authAPI } from '../services/api';
 
 const Settings = () => {
     const { theme, toggleTheme } = useTheme();
