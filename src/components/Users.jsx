@@ -95,6 +95,23 @@ const truncateText = (text, maxLength = 20) => {
     return text.substring(0, maxLength) + '...';
 };
 
+// Utility function to format dates as DD/MM/YY
+const formatDateToDDMMYY = (dateString, includeTime = false) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    
+    if (includeTime) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+    return `${day}/${month}/${year}`;
+};
+
 const UsersPage = () => {
     const { alerts, removeAlert, showUpdateSuccess, showCreateSuccess, showDeleteSuccess, showCreateError, showUpdateError, showDeleteError, showWarning } = useCustomAlert();
     const [users, setUsers] = useState([]);
@@ -133,6 +150,9 @@ const UsersPage = () => {
     // Password validation state
     const [passwordError, setPasswordError] = useState('');
     const [passwordMatchError, setPasswordMatchError] = useState('');
+    
+    // Age validation state
+    const [ageError, setAgeError] = useState('');
 
     // Subscribed users state
     const [subscriptions, setSubscriptions] = useState([]);
@@ -489,6 +509,7 @@ const UsersPage = () => {
             profile_image_changed: false,
             profile_image_file: null
         });
+        setAgeError('');
         setIsEditModalOpen(true);
     };
 
@@ -524,6 +545,18 @@ const UsersPage = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        
+        // Validate age
+        if (currentUser.age !== undefined && currentUser.age !== null && currentUser.age !== '') {
+            const age = parseInt(currentUser.age);
+            if (isNaN(age) || age < 1 || age > 120) {
+                setAgeError('Age must be between 1 and 120');
+                showWarning('Validation Error', 'Age must be between 1 and 120');
+                return;
+            }
+        }
+        setAgeError('');
+        
         try {
             setLoading(true);
             
@@ -581,6 +614,7 @@ const UsersPage = () => {
             const userName = currentUser.username || 'User';
             setIsEditModalOpen(false);
             setCurrentUser(null);
+            setAgeError('');
             
             // Clear cache and refresh users list from API
             await fetchAllUsers();
@@ -1228,10 +1262,10 @@ const UsersPage = () => {
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
-                                                            {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : 'N/A'}
+                                                            {formatDateToDDMMYY(subscription.start_date)}
                                                         </td>
                                                         <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
-                                                            {subscription.end_date ? new Date(subscription.end_date).toLocaleDateString() : 'N/A'}
+                                                            {formatDateToDDMMYY(subscription.end_date)}
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <StatusBadge status={subscription.status} />
@@ -1304,13 +1338,13 @@ const UsersPage = () => {
                                                     <div>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Start Date</span>
                                                         <span className="text-sm text-gray-900 dark:text-white font-medium">
-                                                            {subscription.start_date ? new Date(subscription.start_date).toLocaleDateString() : 'N/A'}
+                                                            {formatDateToDDMMYY(subscription.start_date)}
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">End Date</span>
                                                         <span className="text-sm text-gray-900 dark:text-white font-medium">
-                                                            {subscription.end_date ? new Date(subscription.end_date).toLocaleDateString() : 'N/A'}
+                                                            {formatDateToDDMMYY(subscription.end_date)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1443,7 +1477,7 @@ const UsersPage = () => {
                     <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit User</h2>
-                            <button onClick={() => setIsEditModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <button onClick={() => { setIsEditModalOpen(false); setAgeError(''); }} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1480,12 +1514,29 @@ const UsersPage = () => {
                                     <input
                                         type="number"
                                         value={currentUser.age || ''}
-                                        onChange={e => setCurrentUser({ ...currentUser, age: e.target.value ? parseInt(e.target.value) : undefined })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val === '') {
+                                                setCurrentUser({ ...currentUser, age: undefined });
+                                                setAgeError('');
+                                                return;
+                                            }
+                                            const ageNum = parseInt(val);
+                                            setCurrentUser({ ...currentUser, age: ageNum });
+                                            if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+                                                setAgeError('Age must be between 1 and 120');
+                                            } else {
+                                                setAgeError('');
+                                            }
+                                        }}
+                                        className={`w-full px-3 py-2 rounded-lg border ${ageError ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-300 dark:border-gray-600 focus:ring-primary/50'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 outline-none transition-all`}
                                         placeholder="Enter age"
                                         min="1"
                                         max="120"
                                     />
+                                    {ageError && (
+                                        <p className="text-xs text-red-500 mt-1">{ageError}</p>
+                                    )}
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
@@ -1634,7 +1685,7 @@ const UsersPage = () => {
                             <div className="flex justify-center gap-3 mt-6">
                                 <button
                                     type="button"
-                                    onClick={() => setIsEditModalOpen(false)}
+                                    onClick={() => { setIsEditModalOpen(false); setAgeError(''); }}
                                     className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                                 >
                                     Cancel
@@ -1903,7 +1954,7 @@ const UsersPage = () => {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                                         <input
                                             type="text"
-                                            value={currentSubscription.start_date ? new Date(currentSubscription.start_date).toLocaleDateString() : ''}
+                                            value={formatDateToDDMMYY(currentSubscription.start_date)}
                                             readOnly
                                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
                                             placeholder="Start date"
@@ -1915,7 +1966,7 @@ const UsersPage = () => {
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
                                         <input
                                             type="text"
-                                            value={currentSubscription.end_date ? new Date(currentSubscription.end_date).toLocaleDateString() : ''}
+                                            value={formatDateToDDMMYY(currentSubscription.end_date)}
                                             readOnly
                                             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
                                             placeholder="End date"
@@ -1941,7 +1992,7 @@ const UsersPage = () => {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Created At</label>
                                     <input
                                         type="text"
-                                        value={currentSubscription.created_at ? new Date(currentSubscription.created_at).toLocaleString() : 'N/A'}
+                                        value={formatDateToDDMMYY(currentSubscription.created_at, true)}
                                         readOnly
                                         className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
                                         placeholder="Created at"

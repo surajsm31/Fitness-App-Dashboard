@@ -10,7 +10,7 @@ const API_BASE_URL = 'https://fitness-app-backend-5l3u.onrender.com';
 const mapBmiCategoryIdToCategory = (bmiCategoryId) => {
   const categoryMap = {
     1: 'Underweight',
-    2: 'Normal', 
+    2: 'Normal',
     3: 'Overweight',
     4: 'Obese'
   };
@@ -105,19 +105,19 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (!refreshToken) {
         // No refresh token available, redirect to login
         clearAllTokens();
         window.location.href = '/login';
         return Promise.reject(error);
       }
-      
+
       if (isRefreshing) {
         // If already refreshing, wait for it to complete
         return new Promise((resolve, reject) => {
@@ -127,9 +127,9 @@ api.interceptors.response.use(
           });
         });
       }
-      
+
       isRefreshing = true;
-      
+
       try {
         // Call refresh token API
         const response = await axios.post(`${API_BASE_URL}/api/admin/refresh-token`, {
@@ -140,9 +140,9 @@ api.interceptors.response.use(
           },
           withCredentials: true,
         });
-        
+
         const { access_token, refresh_token: newRefreshToken } = response.data;
-        
+
         // Store new tokens - always update both tokens for proper rotation
         localStorage.setItem('authToken', access_token);
         if (newRefreshToken) {
@@ -151,33 +151,33 @@ api.interceptors.response.use(
           // Track when the token was refreshed
           trackTokenRefresh();
         }
-        
+
         // Update authorization header for original request
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
-        
+
         // Notify all waiting subscribers
         notifyRefreshSubscribers(access_token);
-        
+
         // Retry the original request
         return api(originalRequest);
-        
+
       } catch (refreshError) {
         // Check for specific refresh token errors
-        const errorMessage = refreshError.response?.data?.detail || 
-                           refreshError.response?.data?.message || 
-                           refreshError.message;
-        
+        const errorMessage = refreshError.response?.data?.detail ||
+          refreshError.response?.data?.message ||
+          refreshError.message;
+
         // Check if it's a refresh token not found or revoked error
-        if (errorMessage === "Refresh token not found or revoked" || 
-            errorMessage?.toLowerCase().includes('refresh token') ||
-            refreshError.response?.status === 401) {
-          
+        if (errorMessage === "Refresh token not found or revoked" ||
+          errorMessage?.toLowerCase().includes('refresh token') ||
+          refreshError.response?.status === 401) {
+
           // Clear all tokens and user data
           clearAllTokens();
-          
+
           // Store the session expired message for login page
           localStorage.setItem('sessionExpired', 'Your session has expired. Please login again.');
-          
+
           // Redirect to login page
           window.location.href = '/login';
         } else {
@@ -185,16 +185,16 @@ api.interceptors.response.use(
           clearAllTokens();
           window.location.href = '/login';
         }
-        
+
         // Notify subscribers that refresh failed
         notifyRefreshSubscribers(null);
-        
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -205,38 +205,38 @@ export const authAPI = {
     try {
       console.log('Attempting login to:', `${API_BASE_URL}/login`);
       console.log('Credentials:', { email, password: '***' });
-      
-    
+
+
       const response = await api.post('/api/admin/login', {
         email: email.trim(),
         password: password,
       });
-      
+
       console.log('Login response:', response.data);
       console.log('Login response keys:', Object.keys(response.data));
-      
+
       // Store token and user data in localStorage
       // Check different possible token field names
       const token = response.data.token || response.data.access_token || response.data.authToken;
       const refreshToken = response.data.refresh_token || response.data.refreshToken;
-      
+
       if (token) {
         localStorage.setItem('authToken', token);
         console.log('Token stored successfully:', token);
       } else {
         console.warn('No token found in login response. Available fields:', Object.keys(response.data));
       }
-      
+
       if (refreshToken) {
         localStorage.setItem('refreshToken', refreshToken);
         console.log('Refresh token stored successfully:', refreshToken);
       }
-      
+
       if (response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
         console.log('User data stored successfully');
       }
-      
+
       return response.data;
     } catch (error) {
       console.error('Login error details:', {
@@ -249,7 +249,7 @@ export const authAPI = {
           baseURL: error.config?.baseURL
         }
       });
-      
+
       // More detailed error handling
       if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
         throw { message: 'Cannot connect to server. Please check if the backend is running.' };
@@ -269,12 +269,12 @@ export const authAPI = {
   refreshToken: async () => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (!refreshToken) {
         console.log('No refresh token available');
         return false;
       }
-      
+
       console.log('Refreshing token...');
       const response = await axios.post(`${API_BASE_URL}/api/admin/refresh-token`, {
         refresh_token: refreshToken
@@ -284,9 +284,9 @@ export const authAPI = {
         },
         withCredentials: true,
       });
-      
+
       const { access_token, refresh_token: newRefreshToken } = response.data;
-      
+
       // Store new tokens - always update both tokens for proper rotation
       localStorage.setItem('authToken', access_token);
       if (newRefreshToken) {
@@ -295,22 +295,22 @@ export const authAPI = {
         // Track when the token was refreshed
         trackTokenRefresh();
       }
-      
+
       console.log('Token refreshed successfully');
       return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
-      
+
       // Check for specific refresh token errors
-      const errorMessage = error.response?.data?.detail || 
-                         error.response?.data?.message || 
-                         error.message;
-      
+      const errorMessage = error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.message;
+
       // If refresh token is invalid/expired, clear all tokens and force logout
-      if (errorMessage === "Refresh token not found or revoked" || 
-          errorMessage?.toLowerCase().includes('refresh token') ||
-          errorMessage?.toLowerCase().includes('expired') ||
-          error.response?.status === 401) {
+      if (errorMessage === "Refresh token not found or revoked" ||
+        errorMessage?.toLowerCase().includes('refresh token') ||
+        errorMessage?.toLowerCase().includes('expired') ||
+        error.response?.status === 401) {
         console.log('Refresh token invalid/revoked/expired, forcing logout');
         clearAllTokens();
         localStorage.setItem('sessionExpired', 'Your session has expired. Please login again.');
@@ -319,7 +319,7 @@ export const authAPI = {
           window.location.href = '/login';
         }, 100);
       }
-      
+
       return false;
     }
   },
@@ -350,17 +350,17 @@ export const authAPI = {
     try {
       const authToken = localStorage.getItem('authToken');
       const refreshToken = localStorage.getItem('refreshToken');
-      
+
       if (!authToken) {
         console.log('No auth token found');
         return false;
       }
-      
+
       if (!refreshToken) {
         console.log('No refresh token found');
         return false;
       }
-      
+
       // Try to make a simple API call to validate the current token
       // If it fails with 401, we'll refresh the token
       try {
@@ -393,32 +393,32 @@ export const authAPI = {
   forgotPassword: async (email) => {
     try {
       console.log('Sending forgot password request for email:', email);
-      
+
       const requestData = {
         email: email.trim()
       };
-      
+
       console.log('Forgot password request data:', JSON.stringify(requestData, null, 2));
-      
+
       const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/send`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true,
       });
-      
+
       console.log('Forgot password API response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Forgot password error:', error);
       console.error('Forgot password error response data:', error.response?.data);
       console.error('Forgot password error response status:', error.response?.status);
-      
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           error.response?.data?.error || 
-                           'Failed to send reset email';
-      
+
+      const errorMessage = error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Failed to send reset email';
+
       throw error.response?.data || { message: errorMessage };
     }
   },
@@ -429,33 +429,33 @@ export const authAPI = {
       console.log('Verifying OTP for email:', email);
       console.log('OTP value:', otp);
       console.log('OTP length:', otp.length);
-      
+
       const requestData = {
         email: email.trim(),
         otp: otp
       };
-      
+
       console.log('OTP verification request data:', JSON.stringify(requestData, null, 2));
-      
+
       const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/verify`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true,
       });
-      
+
       console.log('OTP verification API response:', response.data);
       return response.data;
     } catch (error) {
       console.error('OTP verification error:', error);
       console.error('OTP verification error response data:', error.response?.data);
       console.error('OTP verification error response status:', error.response?.status);
-      
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           error.response?.data?.error || 
-                           'Invalid OTP';
-      
+
+      const errorMessage = error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Invalid OTP';
+
       throw error.response?.data || { message: errorMessage };
     }
   },
@@ -466,22 +466,22 @@ export const authAPI = {
       console.log('Resetting password for email:', email);
       console.log('OTP:', otp);
       console.log('New password length:', newPassword.length);
-      
+
       const requestData = {
         email: email.trim(),
         otp: otp,
         new_password: newPassword
       };
-      
+
       console.log('Request data:', JSON.stringify(requestData, null, 2));
-      
+
       const response = await axios.post(`${API_BASE_URL}/api/admin/auth/forgot-password/reset`, requestData, {
         headers: {
           'Content-Type': 'application/json',
         },
         withCredentials: true,
       });
-      
+
       console.log('Password reset API response:', response.data);
       return response.data;
     } catch (error) {
@@ -489,12 +489,12 @@ export const authAPI = {
       console.error('Error response data:', error.response?.data);
       console.error('Error response status:', error.response?.status);
       console.error('Error response headers:', error.response?.headers);
-      
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           error.response?.data?.error || 
-                           'Failed to reset password';
-      
+
+      const errorMessage = error.response?.data?.detail ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Failed to reset password';
+
       throw error.response?.data || { message: errorMessage };
     }
   },
@@ -503,12 +503,12 @@ export const authAPI = {
   changePassword: async (oldPassword, newPassword) => {
     try {
       console.log('Changing password...');
-      
+
       const response = await api.put('/api/admin/auth/change-password', {
         old_password: oldPassword,
         new_password: newPassword
       });
-      
+
       console.log('Password change successful');
       return response.data;
     } catch (error) {
@@ -522,18 +522,18 @@ export const authAPI = {
     try {
       // Convert page-based to skip/limit format
       const skip = (page - 1) * pageSize;
-      
+
       const params = {
         skip: skip,
         limit: pageSize
       };
-      
+
       // Add search term if provided - use more flexible search parameter
       if (searchTerm) {
         params.q = searchTerm; // Use 'q' for query parameter which is more standard
         params.search = searchTerm; // Also include 'search' as fallback
       }
-      
+
       // Add filters if provided
       if (filters) {
         if (filters.gender && filters.gender !== 'All') {
@@ -543,12 +543,12 @@ export const authAPI = {
           params.activity_level = filters.activityLevel;
         }
       }
-      
+
       console.log('Fetching users from:', `${API_BASE_URL}/users`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}, Search: ${searchTerm}, Filters:`, filters);
       console.log('Request params:', params);
-      
+
       const response = await api.get('/api/admin/users', { params });
-      
+
       console.log('Users API response:', response.data);
       return response.data;
     } catch (error) {
@@ -561,7 +561,7 @@ export const authAPI = {
     try {
       console.log('Fetching user details for ID:', userId);
       const response = await api.get(`/api/admin/user/${userId}`);
-      
+
       console.log('User details API response:', response.data);
       return response.data;
     } catch (error) {
@@ -574,7 +574,7 @@ export const authAPI = {
     try {
       console.log('Creating new user:', userData);
       const response = await api.post('/api/admin/register-user', userData);
-      
+
       console.log('Create user API response:', response.data);
       return response.data;
     } catch (error) {
@@ -587,7 +587,7 @@ export const authAPI = {
     try {
       console.log('Deleting user with ID:', userId);
       const response = await api.delete(`/api/admin/user/${userId}`);
-      
+
       console.log('Delete user API response:', response.data);
       return response.data;
     } catch (error) {
@@ -599,10 +599,10 @@ export const authAPI = {
   updateUser: async (userId, userData) => {
     try {
       console.log('Updating user with ID:', userId, userData);
-      
+
       // Create FormData for multipart/form-data
       const formData = new FormData();
-      
+
       // Add all fields to FormData
       Object.keys(userData).forEach(key => {
         if (userData[key] !== null && userData[key] !== undefined) {
@@ -614,14 +614,14 @@ export const authAPI = {
           }
         }
       });
-      
+
       // Use the exact endpoint with multipart/form-data
       const response = await api.put(`/api/admin/update-user/${userId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       console.log('Update user API response:', response.data);
       return response.data;
     } catch (error) {
@@ -633,36 +633,36 @@ export const authAPI = {
   logout: async () => {
     try {
       console.log('Attempting logout with token revocation...');
-      
+
       // Get refresh token from localStorage (if available)
       const refreshToken = localStorage.getItem('refreshToken');
       const authToken = localStorage.getItem('authToken');
-      
+
       console.log('Logout - Auth token available:', !!authToken);
       console.log('Logout - Refresh token available:', !!refreshToken);
-      
+
       if (authToken) {
         // Make logout request with refresh token if available
         const logoutData = refreshToken ? { refresh_token: refreshToken } : {};
         const response = await api.post('/api/admin/logout', logoutData);
-        
+
         console.log('Logout API response:', response.data);
       }
-      
+
       // Clear all tokens and user data
       clearAllTokens();
-      
+
       console.log('Logout successful - all tokens cleared');
-      
+
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
-      
+
       // Even if API call fails, clear local tokens
       clearAllTokens();
-      
+
       console.log('Logout fallback - local tokens cleared');
-      
+
       return { success: true }; // Still return success for UX
     }
   },
@@ -673,25 +673,25 @@ export const authAPI = {
       // Ensure page and pageSize are valid numbers
       const validPage = Math.max(1, parseInt(page) || 1);
       const validPageSize = Math.max(1, parseInt(pageSize) || 10);
-      
+
       // Convert page-based pagination to skip/limit format
       const skip = (validPage - 1) * validPageSize;
-      
+
       console.log(`Fetching workouts - Page: ${validPage}, Size: ${validPageSize}, Skip: ${skip}`);
-      
+
       const response = await api.get('/api/admin/workouts', {
         params: {
           skip: skip,
           limit: validPageSize
         }
       });
-      
+
       console.log('Full API URL:', `/workouts?skip=${skip}&limit=${validPageSize}`);
       console.log('Base URL:', API_BASE_URL);
       console.log('Get workouts API response:', response.data);
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
-      
+
       return response.data;
     } catch (error) {
       console.error('Error fetching workouts:', error);
@@ -704,7 +704,7 @@ export const authAPI = {
     try {
       console.log('🏋️ [WORKOUT API] Creating workout with data type:', typeof workoutData);
       console.log('🏋️ [WORKOUT API] Is FormData?', workoutData instanceof FormData);
-      
+
       // Log FormData contents if it's FormData
       if (workoutData instanceof FormData) {
         console.log('🏋️ [WORKOUT API] FormData entries:');
@@ -719,7 +719,7 @@ export const authAPI = {
       } else {
         console.log('🏋️ [WORKOUT API] Workout data object:', workoutData);
       }
-      
+
       // For FormData, we need to delete the default Content-Type header
       // and let the browser set it automatically to multipart/form-data with boundary
       const apiInstance = axios.create({
@@ -731,21 +731,21 @@ export const authAPI = {
         withCredentials: true,
         mode: 'cors',
       });
-      
+
       // Add auth token to this instance
       const token = localStorage.getItem('authToken');
       if (token) {
         console.log('🏋️ [WORKOUT API] Adding auth token:', token ? 'Token present' : 'No token');
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
-      
+
       console.log('🏋️ [WORKOUT API] Making POST request to /api/admin/workouts');
       console.log('🏋️ [WORKOUT API] Request headers:', apiInstance.defaults.headers);
-      
+
       const startTime = Date.now();
       const response = await apiInstance.post('/api/admin/workouts', workoutData);
       const endTime = Date.now();
-      
+
       console.log(`🏋️ [WORKOUT API] Request completed in ${endTime - startTime}ms`);
       console.log('🏋️ [WORKOUT API] Create workout API response:', response.data);
       console.log('🏋️ [WORKOUT API] Response status:', response.status);
@@ -766,7 +766,7 @@ export const authAPI = {
   updateWorkout: async (workoutId, workoutData) => {
     try {
       console.log('Updating workout with ID:', workoutId, 'and data:', workoutData);
-      
+
       // For FormData, we need to delete the default Content-Type header
       // and let the browser set it automatically to multipart/form-data with boundary
       const apiInstance = axios.create({
@@ -778,15 +778,15 @@ export const authAPI = {
         withCredentials: true,
         mode: 'cors',
       });
-      
+
       // Add auth token to this instance
       const token = localStorage.getItem('authToken');
       if (token) {
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await apiInstance.put(`/api/admin/update-workout/${workoutId}`, workoutData);
-      
+
       console.log('Update workout API response:', response.data);
       return response.data;
     } catch (error) {
@@ -798,9 +798,9 @@ export const authAPI = {
   deleteWorkout: async (workoutId) => {
     try {
       console.log('Deleting workout with ID:', workoutId);
-      
+
       const response = await api.delete(`/api/admin/workout/${workoutId}`);
-      
+
       console.log('Delete workout API response:', response.data);
       return response.data;
     } catch (error) {
@@ -814,7 +814,7 @@ export const authAPI = {
     try {
       // Convert page-based pagination to skip/limit format
       const skip = (page - 1) * pageSize;
-      
+
       console.log('Fetching meals from:', `${API_BASE_URL}/meals`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}`);
       const response = await api.get('/api/admin/meals', {
         params: {
@@ -822,17 +822,17 @@ export const authAPI = {
           limit: pageSize
         }
       });
-      
+
       console.log('Meals API response status:', response.status);
       console.log('Meals API response data:', response.data);
-      
+
       // Extract meals array from nested response structure
       const mealsArray = response.data.meals || [];
       const pagination = response.data.pagination || {};
-      
+
       console.log('Extracted meals array length:', mealsArray.length);
       console.log('Extracted pagination:', pagination);
-      
+
       // Map API response fields to component expected format
       // API returns: id, bmi_category_id, meal_type, food_item, calories
       // Component expects: id, type, name, calories, bmiCategory, icon, image_url, description
@@ -847,10 +847,10 @@ export const authAPI = {
         image_url: meal.meal_image || null, // Map meal_image to image_url for display
         description: meal.description || ''
       }));
-      
+
       console.log('Mapped meals:', mappedMeals);
       console.log('Pagination info:', pagination);
-      
+
       return {
         meals: mappedMeals,
         pagination: pagination
@@ -867,10 +867,10 @@ export const authAPI = {
     try {
       console.log('Fetching meal with ID:', mealId);
       const response = await api.get(`/api/admin/meal/${mealId}`);
-      
+
       console.log('Get meal API response status:', response.status);
       console.log('Get meal API response data:', response.data);
-      
+
       return response.data;
     } catch (error) {
       console.error('Error fetching meal:', error);
@@ -883,10 +883,10 @@ export const authAPI = {
   createMeal: async (mealData) => {
     try {
       console.log('Creating meal with data:', mealData);
-      
+
       // Check if mealData is FormData (for image upload) or regular JSON
       const isFormData = mealData instanceof FormData;
-      
+
       let response;
       if (isFormData) {
         // For FormData, let browser set Content-Type header automatically with boundary
@@ -895,10 +895,10 @@ export const authAPI = {
         // For regular JSON data
         response = await api.post('/api/admin/meals', mealData);
       }
-      
+
       console.log('Create meal API response status:', response.status);
       console.log('Create meal API response data:', response.data);
-      
+
       return response.data;
     } catch (error) {
       console.error('Error creating meal:', error);
@@ -913,10 +913,10 @@ export const authAPI = {
   updateMeal: async (mealId, mealData) => {
     try {
       console.log('Updating meal with ID:', mealId, 'Data:', mealData);
-      
+
       // Create FormData for multipart/form-data (follow same pattern as updateUser)
       const formData = new FormData();
-      
+
       // Add all fields to FormData
       Object.keys(mealData).forEach(key => {
         if (mealData[key] !== null && mealData[key] !== undefined) {
@@ -928,19 +928,19 @@ export const authAPI = {
           }
         }
       });
-      
+
       // Use the exact endpoint with multipart/form-data
       const response = await api.put(`/api/admin/update-meal/${mealId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       console.log('Raw API response:', response);
       console.log('Response status:', response.status);
       console.log('Response data:', response.data);
       console.log('Response headers:', response.headers);
-      
+
       // Handle different response structures
       let responseData = response.data;
       if (!responseData && response.data) {
@@ -950,9 +950,9 @@ export const authAPI = {
       } else if (response.data && response.data.data) {
         responseData = response.data.data;
       }
-      
+
       console.log('Processed response data:', responseData);
-      
+
       return responseData;
     } catch (error) {
       console.error('Error updating meal:', error);
@@ -969,7 +969,7 @@ export const authAPI = {
       const response = await api.delete(`/api/admin/meal/${mealId}`);
       console.log('Delete API response status:', response.status);
       console.log('Delete API response data:', response.data);
-      
+
       return response.data;
     } catch (error) {
       console.error('Error deleting meal:', error);
@@ -984,7 +984,7 @@ export const authAPI = {
     try {
       console.log('Fetching subscription plans from:', `${API_BASE_URL}/plans`);
       const response = await api.get('/api/admin/plans');
-      
+
       console.log('Plans API response:', response.data);
       return response.data;
     } catch (error) {
@@ -997,7 +997,7 @@ export const authAPI = {
     try {
       console.log('Creating subscription plan with data:', planData);
       const response = await api.post('/api/admin/plans', planData);
-      
+
       console.log('Create plan API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1010,7 +1010,7 @@ export const authAPI = {
     try {
       console.log('Updating subscription plan with ID:', planId, 'Data:', planData);
       const response = await api.put(`/api/admin/update-plan/${planId}`, planData);
-      
+
       console.log('Update plan API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1023,7 +1023,7 @@ export const authAPI = {
     try {
       console.log('Deleting subscription plan with ID:', planId);
       const response = await api.delete(`/api/admin/delete-plan/${planId}`);
-      
+
       console.log('Delete plan API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1038,14 +1038,14 @@ export const authAPI = {
       const validPage = Math.max(1, parseInt(page) || 1);
       const validPageSize = Math.max(1, parseInt(pageSize) || 10);
       const skip = (validPage - 1) * validPageSize;
-      
+
       const response = await api.get('/api/admin/explore-activities', {
         params: {
           skip: skip,
           limit: validPageSize
         }
       });
-      
+
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Failed to fetch activities' };
@@ -1072,12 +1072,12 @@ export const authAPI = {
         withCredentials: true,
         mode: 'cors',
       });
-      
+
       const token = localStorage.getItem('authToken');
       if (token) {
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await apiInstance.post('/api/admin/explore-activities', activityData);
       return response.data;
     } catch (error) {
@@ -1096,12 +1096,12 @@ export const authAPI = {
         withCredentials: true,
         mode: 'cors',
       });
-      
+
       const token = localStorage.getItem('authToken');
       if (token) {
         apiInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await apiInstance.put(`/api/admin/explore-activities/${activityId}`, activityData);
       return response.data;
     } catch (error) {
@@ -1115,7 +1115,7 @@ export const authAPI = {
       if (token) {
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       }
-      
+
       const response = await api.delete(`/api/admin/explore-activities/${activityId}`);
       return response.data;
     } catch (error) {
@@ -1128,16 +1128,16 @@ export const authAPI = {
     try {
       // Convert page-based to skip/limit format
       const skip = (page - 1) * pageSize;
-      
+
       console.log('Fetching user subscriptions from:', `${API_BASE_URL}/user-subscriptions`, `Page: ${page}, Size: ${pageSize}, Skip: ${skip}`);
-      
+
       const response = await api.get('/api/admin/user-subscriptions', {
         params: {
           skip: skip,
           limit: pageSize
         }
       });
-      
+
       console.log('User subscriptions API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1149,11 +1149,11 @@ export const authAPI = {
   updateUserSubscription: async (subscriptionId, status) => {
     try {
       console.log('Updating subscription with ID:', subscriptionId, 'Status:', status);
-      
+
       const response = await api.put(`/api/admin/update-user-subscription/${subscriptionId}`, {
         status: status
       });
-      
+
       console.log('Update subscription API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1172,7 +1172,7 @@ export const authAPI = {
           limit: limit
         }
       });
-      
+
       console.log('BMI classifications API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1185,7 +1185,7 @@ export const authAPI = {
     try {
       console.log('Creating BMI classification with data:', bmiData);
       const response = await api.post('/api/admin/bmi-classifications', bmiData);
-      
+
       console.log('Create BMI classification API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1198,7 +1198,7 @@ export const authAPI = {
     try {
       console.log('Updating BMI classification with ID:', bmiId, 'Data:', bmiData);
       const response = await api.put(`/api/admin/update-bmi-classification/${bmiId}`, bmiData);
-      
+
       console.log('Update BMI classification API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1211,7 +1211,7 @@ export const authAPI = {
     try {
       console.log('Deleting BMI classification with ID:', bmiId);
       const response = await api.delete(`/api/admin/bmi-classification/${bmiId}`);
-      
+
       console.log('Delete BMI classification API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1225,7 +1225,7 @@ export const authAPI = {
     try {
       console.log('Fetching dashboard overview from:', `${API_BASE_URL}/dashboard/overview`);
       const response = await api.get('/api/admin/dashboard/overview');
-      
+
       console.log('Dashboard overview API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1238,7 +1238,7 @@ export const authAPI = {
     try {
       console.log('Fetching dashboard users from:', `${API_BASE_URL}/dashboard/users`);
       const response = await api.get('/api/admin/dashboard/users');
-      
+
       console.log('Dashboard users API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1251,7 +1251,7 @@ export const authAPI = {
     try {
       console.log('Fetching recent activities from:', `${API_BASE_URL}/api/admin/recent-activities`);
       const response = await api.get('/api/admin/recent-activities');
-      
+
       console.log('Recent activities API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1265,7 +1265,7 @@ export const authAPI = {
     try {
       console.log('Fetching admin profile from:', `${API_BASE_URL}/api/admin/profile`);
       const response = await api.get('/api/admin/profile');
-      
+
       console.log('Profile API response:', response.data);
       return response.data;
     } catch (error) {
@@ -1277,10 +1277,10 @@ export const authAPI = {
   updateProfile: async (profileData) => {
     try {
       console.log('Updating admin profile with data:', profileData);
-      
+
       // Create FormData for multipart/form-data
       const formData = new FormData();
-      
+
       // Add all fields to FormData according to AdminProfileUpdateSchema
       if (profileData.name !== undefined && profileData.name !== null) {
         formData.append('name', profileData.name);
@@ -1294,13 +1294,13 @@ export const authAPI = {
       if (profileData.profile_image !== undefined && profileData.profile_image !== null) {
         formData.append('profile_image', profileData.profile_image);
       }
-      
+
       const response = await api.put('/api/admin/profile', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       console.log('Update profile API response:', response.data);
       return response.data;
     } catch (error) {
