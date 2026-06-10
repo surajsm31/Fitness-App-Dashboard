@@ -4,6 +4,7 @@ import { LayoutDashboard, Users, FileText, BarChart3, Settings, LogOut, X, Activ
 import clsx from 'clsx';
 import { useTheme } from '../context/ThemeContext';
 import { useProfile } from '../context/ProfileContext';
+import FitnessAdminIcon from './FitnessAdminIcon';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
@@ -98,7 +99,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between h-16 px-6 border-b border-white/20 dark:border-white/10 flex-shrink-0">
                     <div className="flex items-center gap-2 font-black text-xl">
-                        <Activity className="w-6 h-6 text-amber-500 animate-pulse" />
+                        <FitnessAdminIcon size={26} className="text-amber-500" />
                         <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">FitTrack</span>
                     </div>
                 </div>

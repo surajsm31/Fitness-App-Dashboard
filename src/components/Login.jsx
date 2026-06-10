@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader, AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import ForgotPassword from './ForgotPassword';
-import AnimatedActivityIcon from './AnimatedActivityIcon';
+import FitnessAdminIcon from './FitnessAdminIcon';
 import { useAuth } from '../context/AuthContext';
 import { storeCredentialsInCookies, getCredentialsFromCookies, clearRememberMeCookies, areCredentialsStored } from '../utils/cookieUtils';
 
@@ -182,7 +182,7 @@ const Login = ({ loginError }) => {
                     <div className="max-w-lg xl:max-w-xl">
                         <div className="inline-flex items-center gap-4 mb-8 px-5 py-3 bg-slate-950/45 backdrop-blur-md rounded-2xl border-2 border-amber-400 shadow-xl shadow-black/40">
                             <div className="p-2 bg-amber-400 text-slate-950 rounded-xl shadow-inner">
-                                <AnimatedActivityIcon className="w-7 h-7 text-slate-950" />
+                                <FitnessAdminIcon className="w-7 h-7 text-slate-950" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase leading-none mb-1">SYSTEM PORTAL</span>
@@ -222,7 +222,7 @@ const Login = ({ loginError }) => {
                     {/* Mobile Logo - Only visible on mobile/tablet */}
                     <div className="lg:hidden flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
                         <div className="p-2 sm:p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl">
-                            <AnimatedActivityIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                            <FitnessAdminIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                         </div>
                         <span className="text-xl sm:text-2xl font-bold text-white">FitTrack Admin</span>
                     </div>
