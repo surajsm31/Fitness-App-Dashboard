@@ -230,7 +230,15 @@ const Settings = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+            <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                    <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
+                    Settings <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">& Profile</span>
+                </h1>
+                <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base font-medium">
+                    Manage your account details, notification preferences, and security settings
+                </p>
+            </div>
 
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Sidebar Navigation */}
@@ -239,10 +247,11 @@ const Settings = () => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
-                                    ? 'bg-primary text-white shadow-md'
-                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                }`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                activeTab === tab.id
+                                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold shadow-lg shadow-amber-500/20'
+                                    : 'bg-white/45 dark:bg-white/5 backdrop-blur-md text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 border border-white/20 dark:border-white/10'
+                            }`}
                         >
                             <tab.icon className="w-5 h-5" />
                             {tab.label}
@@ -251,7 +260,9 @@ const Settings = () => {
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 min-h-[500px]">
+                <div className="flex-1 bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-white/10 p-6 min-h-[500px] relative overflow-hidden">
+                    {/* Decorative top bar */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
 
                     {/* ACCOUNT SETTINGS */}
                     {activeTab === 'account' && (
@@ -292,7 +303,7 @@ const Settings = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <label className="absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full cursor-pointer hover:bg-indigo-700 transition-colors shadow-md">
+                                    <label className="absolute bottom-0 right-0 p-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 rounded-full cursor-pointer hover:from-amber-400 hover:to-orange-500 transition-all shadow-md shadow-amber-500/20">
                                         <Camera className="w-4 h-4" />
                                         <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                                     </label>
@@ -307,37 +318,37 @@ const Settings = () => {
 
                             <div className="grid gap-4 max-w-lg">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={localProfile.name || ''}
                                         onChange={handleProfileChange}
                                         disabled={profileLoading}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm disabled:opacity-50"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={localProfile.email || ''}
                                         disabled
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/20 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed text-sm"
                                         title="Email address cannot be edited"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email address cannot be edited</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
+                                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Bio</label>
                                     <textarea
                                         name="bio"
                                         value={localProfile.bio || ''}
                                         onChange={handleProfileChange}
                                         disabled={profileLoading}
                                         rows={4}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm resize-none disabled:opacity-50"
                                         placeholder="Tell us about yourself..."
                                     />
                                 </div>
@@ -355,13 +366,13 @@ const Settings = () => {
 
                             <div className="space-y-4">
                                 {Object.entries(notifications).map(([key, value]) => (
-                                    <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                    <div key={key} className="flex items-center justify-between p-4 bg-white/20 dark:bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-white dark:bg-gray-700 rounded-lg">
-                                                <Mail className="w-5 h-5 text-primary" />
+                                            <div className="p-2 bg-white/30 dark:bg-white/10 rounded-lg text-amber-500">
+                                                <Mail className="w-5 h-5 text-amber-500" />
                                             </div>
                                             <div>
-                                                <p className="font-medium text-gray-900 dark:text-white capitalize">
+                                                <p className="font-semibold text-gray-900 dark:text-white capitalize">
                                                     {key.replace(/([A-Z])/g, ' $1').trim()}
                                                 </p>
                                                 <p className="text-xs text-gray-500 dark:text-gray-400">Receive alerts via {key}</p>
@@ -374,7 +385,7 @@ const Settings = () => {
                                                 checked={value}
                                                 onChange={() => setNotifications({ ...notifications, [key]: !value })}
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                            <div className="w-11 h-6 bg-white/20 rounded-full peer dark:bg-white/5 border border-white/20 dark:border-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
                                         </label>
                                     </div>
                                 ))}
@@ -394,61 +405,61 @@ const Settings = () => {
                                 {/* Password Change Form */}
                                 <form onSubmit={handlePasswordSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                             Current Password
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Lock className="h-5 w-5 text-gray-400" />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <Lock className="h-4 w-4 text-gray-400" />
                                             </div>
                                             <input
                                                 type={showOldPassword ? "text" : "password"}
                                                 name="old_password"
                                                 value={passwordData.old_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                                 placeholder="Enter current password"
                                                 required
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowOldPassword(!showOldPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-amber-500 transition-colors"
                                             >
                                                 {showOldPassword ? (
-                                                    <EyeOff className="h-5 w-5" />
+                                                    <EyeOff className="h-4 w-4" />
                                                 ) : (
-                                                    <Eye className="h-5 w-5" />
+                                                    <Eye className="h-4 w-4" />
                                                 )}
                                             </button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                             New Password
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Lock className="h-5 w-5 text-gray-400" />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <Lock className="h-4 w-4 text-gray-400" />
                                             </div>
                                             <input
                                                 type={showNewPassword ? "text" : "password"}
                                                 name="new_password"
                                                 value={passwordData.new_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                                 placeholder="Enter new password"
                                                 required
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowNewPassword(!showNewPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-amber-500 transition-colors"
                                             >
                                                 {showNewPassword ? (
-                                                    <EyeOff className="h-5 w-5" />
+                                                    <EyeOff className="h-4 w-4" />
                                                 ) : (
-                                                    <Eye className="h-5 w-5" />
+                                                    <Eye className="h-4 w-4" />
                                                 )}
                                             </button>
                                         </div>
@@ -456,8 +467,8 @@ const Settings = () => {
                                     
                                     {/* Password Requirements */}
                                     {passwordData.new_password && (
-                                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password Requirements:</p>
+                                        <div className="bg-white/20 dark:bg-white/5 rounded-xl p-3 border border-white/10 backdrop-blur-sm">
+                                            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Password Requirements:</p>
                                             <div className="space-y-1">
                                                 <div className={`flex items-center gap-2 text-xs ${
                                                     passwordData.new_password.length >= 8 
@@ -512,31 +523,31 @@ const Settings = () => {
                                     )}
                                     
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
                                             Confirm New Password
                                         </label>
                                         <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Lock className="h-5 w-5 text-gray-400" />
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <Lock className="h-4 w-4 text-gray-400" />
                                             </div>
                                             <input
                                                 type={showConfirmPassword ? "text" : "password"}
                                                 name="confirm_password"
                                                 value={passwordData.confirm_password}
                                                 onChange={handlePasswordChange}
-                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                                className="w-full pl-10 pr-12 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                                 placeholder="Confirm new password"
                                                 required
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-primary transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-amber-500 transition-colors"
                                             >
                                                 {showConfirmPassword ? (
-                                                    <EyeOff className="h-5 w-5" />
+                                                    <EyeOff className="h-4 w-4" />
                                                 ) : (
-                                                    <Eye className="h-5 w-5" />
+                                                    <Eye className="h-4 w-4" />
                                                 )}
                                             </button>
                                         </div>
@@ -544,10 +555,10 @@ const Settings = () => {
 
                                     {/* Password Validation Message */}
                                     {passwordValidation.message && passwordData.confirm_password && (
-                                        <div className={`flex items-center gap-2 p-3 rounded-lg ${
+                                        <div className={`flex items-center gap-2 p-3 rounded-lg border backdrop-blur-sm ${
                                             passwordValidation.isValid 
-                                                ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
-                                                : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+                                                ? 'bg-green-500/10 border-green-500/20' 
+                                                : 'bg-red-500/10 border-red-500/20'
                                         }`}>
                                             {passwordValidation.isValid ? (
                                                 <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
@@ -566,14 +577,14 @@ const Settings = () => {
 
                                     {/* Error and Success Messages */}
                                     {passwordError && (
-                                        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm">
                                             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                                             <p className="text-sm text-red-600 dark:text-red-400">{passwordError}</p>
                                         </div>
                                     )}
 
                                     {passwordSuccess && (
-                                        <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                        <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg backdrop-blur-sm">
                                             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                                             <p className="text-sm text-green-600 dark:text-green-400">{passwordSuccess}</p>
                                         </div>
@@ -582,11 +593,11 @@ const Settings = () => {
                                     <button
                                         type="submit"
                                         disabled={passwordLoading || (passwordData.confirm_password && !passwordValidation.isMatching)}
-                                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {passwordLoading ? (
                                             <>
-                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
                                                 Updating Password...
                                             </>
                                         ) : (
@@ -603,18 +614,18 @@ const Settings = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowForgotPassword(true)}
-                                        className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                                        className="text-amber-600 dark:text-amber-400 hover:text-amber-500 text-sm font-bold transition-colors"
                                     >
                                         Forgot Password?
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <div className="border-t border-white/20 dark:border-white/10 pt-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="font-medium text-gray-900 dark:text-white">Two-Factor Authentication</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security.</p>
+                                        <p className="font-semibold text-gray-900 dark:text-white">Two-Factor Authentication</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security to your account.</p>
                                     </div>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -623,7 +634,7 @@ const Settings = () => {
                                             checked={security.twoFactor}
                                             onChange={() => setSecurity({ ...security, twoFactor: !security.twoFactor })}
                                         />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                                        <div className="w-11 h-6 bg-white/20 rounded-full peer dark:bg-white/5 border border-white/20 dark:border-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-amber-500"></div>
                                     </label>
                                 </div>
                             </div>
@@ -640,18 +651,20 @@ const Settings = () => {
 
                             <div className="grid grid-cols-2 gap-4 max-w-md">
                                 <button
+                                    type="button"
                                     onClick={() => theme === 'dark' && toggleTheme()}
-                                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700'}`}
+                                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all backdrop-blur-md ${theme === 'light' ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10 font-bold' : 'border-white/20 dark:border-white/10 bg-white/20 dark:bg-white/5 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400'}`}
                                 >
-                                    <div className="w-full h-24 bg-gray-100 rounded-lg border border-gray-200"></div>
-                                    <span className="font-medium text-gray-900 dark:text-white">Light Mode</span>
+                                    <div className="w-full h-24 bg-slate-100/80 rounded-lg border border-slate-300"></div>
+                                    <span className="font-bold text-gray-900 dark:text-white text-sm">Light Mode</span>
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => theme === 'light' && toggleTheme()}
-                                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-700'}`}
+                                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all backdrop-blur-md ${theme === 'dark' ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10 font-bold' : 'border-white/20 dark:border-white/10 bg-white/20 dark:bg-white/5 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400'}`}
                                 >
-                                    <div className="w-full h-24 bg-gray-800 rounded-lg border border-gray-700"></div>
-                                    <span className="font-medium text-gray-900 dark:text-white">Dark Mode</span>
+                                    <div className="w-full h-24 bg-slate-900/80 rounded-lg border border-slate-700"></div>
+                                    <span className="font-bold text-gray-900 dark:text-white text-sm">Dark Mode</span>
                                 </button>
                             </div>
                         </div>
@@ -659,16 +672,16 @@ const Settings = () => {
 
                     {/* Save Button for Forms */}
                     {activeTab === 'account' && (
-                        <div className="mt-8 flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <div className="mt-8 flex justify-end pt-6 border-t border-white/20 dark:border-white/10">
                             <button 
                                 type="submit"
                                 form="profile-form"
                                 disabled={profileLoading}
-                                className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm transition-all hover:shadow md"
+                                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-amber-500/20 transition-all active:scale-95"
                             >
                                 {profileLoading ? (
                                     <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
                                         Saving...
                                     </>
                                 ) : (
@@ -682,8 +695,8 @@ const Settings = () => {
                     )}
                     
                     {activeTab !== 'account' && activeTab !== 'appearance' && (
-                        <div className="mt-8 flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
-                            <button className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 font-medium shadow-sm transition-all hover:shadow md">
+                        <div className="mt-8 flex justify-end pt-6 border-t border-white/20 dark:border-white/10">
+                            <button className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all active:scale-95">
                                 <Save className="w-4 h-4" />
                                 Save Changes
                             </button>

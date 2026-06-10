@@ -70,7 +70,7 @@ const RecentActivities = () => {
     return (
       <div className="space-y-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-12 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
+          <div key={i} className="h-16 bg-white/10 dark:bg-slate-950/25 border border-white/5 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -78,7 +78,7 @@ const RecentActivities = () => {
 
   if (error) {
     return (
-      <div className="text-center py-4">
+      <div className="text-center py-8 bg-white/10 dark:bg-slate-950/20 border border-white/5 rounded-xl p-6">
         <p className="text-sm text-red-500 dark:text-red-400 mb-3">{error}</p>
         <div className="flex justify-center">
           <RefreshButton 
@@ -93,7 +93,7 @@ const RecentActivities = () => {
 
   if (activities.length === 0) {
     return (
-      <div className="text-center py-4">
+      <div className="text-center py-8 bg-white/10 dark:bg-slate-950/20 border border-white/5 rounded-xl p-6">
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">No recent activities</p>
         <div className="flex justify-center">
           <RefreshButton 
@@ -107,19 +107,19 @@ const RecentActivities = () => {
   }
 
   return (
-    <div className="space-y-4 h-[400px] overflow-y-auto pr-2">
+    <div className="space-y-3 h-[400px] overflow-y-auto pr-2">
       {/* Activities list */}
       {activities.map((activity, index) => (
         <div 
           key={index} 
-          className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+          className="flex items-center gap-3.5 p-3.5 bg-white/15 dark:bg-slate-950/20 border border-white/5 hover:border-white/10 hover:bg-white/25 dark:hover:bg-slate-900/35 rounded-xl transition-all duration-300 shadow-sm"
         >
-          <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-lg shadow-amber-400/50 flex-shrink-0 animate-pulse"></div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-900 dark:text-white truncate">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
               {activity.description}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">
               {activity.time}
             </p>
           </div>

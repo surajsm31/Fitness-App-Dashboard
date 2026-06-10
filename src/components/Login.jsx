@@ -153,26 +153,25 @@ const Login = ({ loginError }) => {
             {/* Full Background Image - Covers entire page */}
             <div className="absolute inset-0 overflow-hidden">
                 <img 
-                    src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" 
+                    src="/login-bg.jpg" 
                     alt="Fitness Dashboard" 
                     className="w-full h-full object-cover"
                     onError={(e) => {
                         e.target.style.display = 'none';
                     }}
                 />
-                {/* Color Overlay - Merges image with theme colors */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-primary/30 to-blue-800/35"></div>
+                {/* Subtle Color Overlay - Enhances the natural warm sunset and dark luxury gym tones without washing them out */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-600/5 via-slate-900/10 to-slate-950/45"></div>
                 
-                {/* Additional color blending for depth */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 via-transparent to-transparent"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-transparent to-indigo-600/10"></div>
+                {/* Additional color blending for depth and text contrast on the right */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-950/20 to-slate-950/45"></div>
                 
-                {/* Glow Effects - Integrated with image colors */}
+                {/* Glow Effects - Integrated with image's natural light (warm sunset & gold LED accents) */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-10 left-10 w-60 h-60 bg-blue-400/30 rounded-full blur-[80px] lg:top-20 lg:left-20 lg:w-80 lg:h-80 lg:blur-[100px]"></div>
-                    <div className="absolute bottom-10 right-10 w-72 h-72 bg-indigo-400/25 rounded-full blur-[90px] lg:bottom-20 lg:right-20 lg:w-96 lg:h-96 lg:blur-[120px]"></div>
-                    <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-primary/20 rounded-full blur-[100px] lg:top-1/2 lg:left-1/2 lg:w-[600px] lg:h-[600px] lg:blur-[150px]"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-emerald-400/15 rounded-full blur-[70px] lg:bottom-1/3 lg:right-1/3 lg:w-80 lg:h-80 lg:blur-[90px]"></div>
+                    <div className="absolute top-10 left-10 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] lg:top-20 lg:left-20 lg:w-[450px] lg:h-[450px] lg:blur-[130px]"></div>
+                    <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-orange-400/5 rounded-full blur-[100px] lg:top-1/2 lg:left-1/2 lg:w-[500px] lg:h-[500px] lg:blur-[140px]"></div>
+                    <div className="absolute bottom-10 right-10 w-72 h-72 bg-amber-600/5 rounded-full blur-[90px] lg:bottom-20 lg:right-20 lg:w-[400px] lg:h-[400px] lg:blur-[120px]"></div>
                 </div>
             </div>
 
@@ -181,33 +180,36 @@ const Login = ({ loginError }) => {
                 {/* Overlay Content */}
                 <div className="relative z-10 flex flex-col justify-center h-full px-8 xl:px-16 text-white">
                     <div className="max-w-lg xl:max-w-xl">
-                        <div className="inline-flex items-center gap-2 xl:gap-3 mb-4 xl:mb-6">
-                            <div className="p-2 xl:p-3 bg-white/10 backdrop-blur-sm rounded-xl">
-                                <AnimatedActivityIcon className="w-10 h-10 xl:w-12 xl:h-12 text-white" />
+                        <div className="inline-flex items-center gap-4 mb-8 px-5 py-3 bg-slate-950/45 backdrop-blur-md rounded-2xl border-2 border-amber-400 shadow-xl shadow-black/40">
+                            <div className="p-2 bg-amber-400 text-slate-950 rounded-xl shadow-inner">
+                                <AnimatedActivityIcon className="w-7 h-7 text-slate-950" />
                             </div>
-                            <span className="text-lg xl:text-xl font-semibold tracking-wide">FitTrack Admin</span>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase leading-none mb-1">SYSTEM PORTAL</span>
+                                <span className="text-lg xl:text-xl font-black tracking-wide text-white leading-none">FitTrack Admin</span>
+                            </div>
                         </div>
                         
-                        <h1 className="text-3xl sm:text-4xl xl:text-5xl font-bold mb-3 xl:mb-4 leading-tight">
-                            Empowering Personal Fitness
+                        <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold mb-3 xl:mb-4 leading-tight tracking-tight drop-shadow-md text-white">
+                            Empowering <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-300 bg-clip-text text-transparent">Personal Fitness</span>
                         </h1>
-                        <p className="text-lg xl:text-xl text-gray-200 mb-8 xl:mb-12 leading-relaxed">
-                            The industry's leading admin platform for tracking and optimization
+                        <p className="text-base sm:text-lg xl:text-xl text-gray-200 mb-8 xl:mb-12 leading-relaxed drop-shadow-sm font-medium">
+                            The industry's leading admin platform for tracking and optimization.
                         </p>
 
                         {/* Stats Section */}
                         <div className="flex gap-6 xl:gap-12">
                             <div>
-                                <div className="text-2xl xl:text-4xl font-bold mb-1">95%</div>
-                                <div className="text-gray-300 text-xs xl:text-sm">User Engagement</div>
+                                <div className="text-2xl xl:text-4xl font-extrabold mb-1 text-amber-400">95%</div>
+                                <div className="text-gray-300 text-xs xl:text-sm font-medium">User Engagement</div>
                             </div>
                             <div>
-                                <div className="text-2xl xl:text-4xl font-bold mb-1">500+</div>
-                                <div className="text-gray-300 text-xs xl:text-sm">Workout Plans</div>
+                                <div className="text-2xl xl:text-4xl font-extrabold mb-1 text-amber-400">500+</div>
+                                <div className="text-gray-300 text-xs xl:text-sm font-medium">Workout Plans</div>
                             </div>
                             <div>
-                                <div className="text-2xl xl:text-4xl font-bold mb-1">10K+</div>
-                                <div className="text-gray-300 text-xs xl:text-sm">Active Users</div>
+                                <div className="text-2xl xl:text-4xl font-extrabold mb-1 text-amber-400">10K+</div>
+                                <div className="text-gray-300 text-xs xl:text-sm font-medium">Active Users</div>
                             </div>
                         </div>
                     </div>
@@ -219,17 +221,17 @@ const Login = ({ loginError }) => {
                 <div className="w-full max-w-sm sm:max-w-md p-4 sm:p-6 lg:p-8 lg:px-12">
                     {/* Mobile Logo - Only visible on mobile/tablet */}
                     <div className="lg:hidden flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-                        <div className="p-2 sm:p-3 bg-gradient-to-br from-primary to-indigo-700 rounded-xl">
+                        <div className="p-2 sm:p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl">
                             <AnimatedActivityIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                         </div>
                         <span className="text-xl sm:text-2xl font-bold text-white">FitTrack Admin</span>
                     </div>
 
                     {/* Glassmorphism Card */}
-                    <div className="bg-white/5 backdrop-blur-3xl rounded-2xl shadow-xl shadow-black/20 p-4 sm:p-6 lg:p-8 border border-white/10">
+                    <div className="bg-slate-950/35 backdrop-blur-3xl rounded-2xl shadow-2xl shadow-black/40 p-4 sm:p-6 lg:p-8 border border-white/10">
                         <div className="mb-6 sm:mb-8">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Sign in</h1>
-                            <p className="text-gray-200 text-sm sm:text-base">Enter your credentials to access the dashboard</p>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2 tracking-tight">Sign in</h1>
+                            <p className="text-gray-300 text-sm sm:text-base">Enter your credentials to access the dashboard</p>
                         </div>
 
                         {/* Error Display */}
@@ -250,40 +252,40 @@ const Login = ({ loginError }) => {
 
                         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-200">Email Address</label>
+                                <label className="text-sm font-medium text-gray-300">Email Address</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300 group-focus-within:text-white transition-colors" />
+                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-focus-within:text-amber-400 transition-colors" />
                                     </div>
                                     <input
                                         type="email"
                                         required
                                         value={credentials.email}
                                         onChange={e => setCredentials({ ...credentials, email: e.target.value })}
-                                        className="block w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
+                                        className="block w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all text-sm sm:text-base"
                                         placeholder="Enter Your Email"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-200">Password</label>
+                                <label className="text-sm font-medium text-gray-300">Password</label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300 group-focus-within:text-white transition-colors" />
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-focus-within:text-amber-400 transition-colors" />
                                     </div>
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         required
                                         value={credentials.password}
                                         onChange={e => setCredentials({ ...credentials, password: e.target.value })}
-                                        className="block w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-white/30 transition-all text-sm sm:text-base"
+                                        className="block w-full pl-9 sm:pl-10 pr-10 sm:pr-12 py-2 sm:py-3 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all text-sm sm:text-base"
                                         placeholder="Enter your password"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center text-gray-300 hover:text-white transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center text-gray-400 hover:text-amber-400 transition-colors"
                                     >
                                         {showPassword ? (
                                             <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -295,19 +297,19 @@ const Login = ({ loginError }) => {
                             </div>
 
                             <div className="flex items-center justify-between text-xs sm:text-sm">
-                                <label className="flex items-center text-gray-200 cursor-pointer">
+                                <label className="flex items-center text-gray-300 cursor-pointer">
                                     <input 
                                         type="checkbox" 
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="mr-1.5 sm:mr-2 rounded border-white/20 bg-white/5 text-primary focus:ring-white/20" 
+                                        className="mr-1.5 sm:mr-2 rounded border-white/20 bg-white/5 text-amber-500 focus:ring-amber-500/20" 
                                     />
                                     <span className="text-xs sm:text-sm">Remember me</span>
                                 </label>
                                 <button
                                     type="button"
                                     onClick={() => setShowForgotPassword(true)}
-                                    className="text-blue-200 hover:text-blue-100 font-medium transition-colors text-xs sm:text-sm"
+                                    className="text-amber-300 hover:text-amber-200 font-medium transition-colors text-xs sm:text-sm"
                                 >
                                     Forgot Password?
                                 </button>
@@ -316,12 +318,12 @@ const Login = ({ loginError }) => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-400/20 hover:shadow-blue-500/30 disabled:opacity-70 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
+                                className="w-full flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:via-orange-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/10 hover:shadow-amber-500/25 disabled:opacity-70 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
                             >
                                 {isLoading ? (
                                     <>
-                                        <Loader className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                                        <span className="text-xs sm:text-sm">Signing in...</span>
+                                        <Loader className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-slate-950" />
+                                        <span className="text-xs sm:text-sm text-slate-950">Signing in...</span>
                                     </>
                                 ) : (
                                     <>
@@ -390,7 +392,7 @@ const Login = ({ loginError }) => {
                             </button>
                             <button
                                 onClick={handlePermissionDialogConfirm}
-                                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 rounded-lg transition-colors"
+                                className="flex-1 px-4 py-2 text-sm font-semibold text-slate-950 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 rounded-lg transition-colors"
                             >
                                 {permissionDialogType === 'store' ? 'Confirm' : permissionDialogType === 'update' ? 'Update' : 'Remove'}
                             </button>

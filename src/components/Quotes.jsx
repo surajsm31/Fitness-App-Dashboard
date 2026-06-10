@@ -164,17 +164,17 @@ const Quotes = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                            <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-                            Fitness Quotes
+                        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                            <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
+                            Fitness <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Quotes</span>
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
+                        <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base font-medium">
                             Manage your collection of motivational fitness quotes
                         </p>
                     </div>
                     <button
                         onClick={() => setIsAddingQuote(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30 w-full sm:w-auto justify-center"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg transition-all shadow-md shadow-amber-500/20 w-full sm:w-auto justify-center"
                     >
                         <Plus className="w-5 h-5" />
                         Add Quote
@@ -215,28 +215,32 @@ const Quotes = () => {
             {/* Loading State */}
             {loading && (
                 <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
                     <span className="ml-3 text-gray-600 dark:text-gray-400">Loading quotes...</span>
                 </div>
             )}
 
             {/* Add Quote Modal */}
             {isAddingQuote && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         {/* Close Button */}
                         <button
                             onClick={() => {
                                 setIsAddingQuote(false);
                                 setNewQuote({ text: '', author: '', category: '' });
                             }}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors rounded-lg hover:bg-white/10"
+                            style={{ zIndex: 12 }}
                         >
                             <X className="w-5 h-5" />
                         </button>
                         
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8">
-                            Add New Quote
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8 pt-1">
+                            Add New <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Quote</span>
                         </h2>
                         
                         <div className="space-y-4 sm:space-y-6">
@@ -247,7 +251,7 @@ const Quotes = () => {
                                 <textarea
                                     value={newQuote.text}
                                     onChange={(e) => setNewQuote({ ...newQuote, text: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white resize-none text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none resize-none text-sm"
                                     rows={4}
                                     placeholder="Enter the quote text..."
                                 />
@@ -260,7 +264,7 @@ const Quotes = () => {
                                     type="text"
                                     value={newQuote.author}
                                     onChange={(e) => setNewQuote({ ...newQuote, author: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                     placeholder="Enter the author name..."
                                 />
                             </div>
@@ -272,7 +276,7 @@ const Quotes = () => {
                                     type="text"
                                     value={newQuote.category}
                                     onChange={(e) => setNewQuote({ ...newQuote, category: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                     placeholder="Enter category (e.g., Motivation, Fitness, Success)..."
                                 />
                             </div>
@@ -285,14 +289,14 @@ const Quotes = () => {
                                     setIsAddingQuote(false);
                                     setNewQuote({ text: '', author: '', category: '' });
                                 }}
-                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors order-2 sm:order-1"
+                                className="px-4 py-2 border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all order-2 sm:order-1"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleAddQuote}
                                 disabled={!newQuote.text.trim()}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                             >
                                 <Save className="w-4 h-4" />
                                 Save Quote
@@ -318,24 +322,27 @@ const Quotes = () => {
                         return filteredQuotes.map((quote) => (
                             <div
                                 key={quote.id}
-                                className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow relative group"
+                                className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-lg p-4 sm:p-6 border border-white/20 dark:border-white/10 hover:shadow-xl hover:border-amber-500/30 transition-all relative group overflow-hidden"
                             >
-                                <div className="absolute top-3 sm:top-4 right-3 sm:right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                {/* Decorative top bar */}
+                                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                                
+                                <div className="absolute top-3 sm:top-4 right-3 sm:right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-20">
                                     <button
                                         onClick={() => setEditingQuote(quote)}
-                                        className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/70 transition-colors"
+                                        className="p-1.5 sm:p-2 bg-blue-500/10 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-600 text-blue-600 dark:text-blue-400 hover:text-slate-950 rounded-lg transition-all"
                                     >
                                         <Edit2 className="w-3 h-3 sm:w-4 sm:h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteQuote(quote.id)}
-                                        className="p-1.5 sm:p-2 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/70 transition-colors"
+                                        className="p-1.5 sm:p-2 bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white rounded-lg transition-all"
                                     >
                                         <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                                     </button>
                                 </div>
                                 
-                                <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-3 sm:mb-4 opacity-50" />
+                                <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500 mb-3 sm:mb-4 opacity-50" />
                                 <blockquote className="text-gray-700 dark:text-gray-300 italic mb-3 sm:mb-4 min-h-[50px] sm:min-h-[60px] text-sm sm:text-base">
                                     "{quote.text}"
                                 </blockquote>
@@ -343,8 +350,8 @@ const Quotes = () => {
                                     — {quote.author || 'Unknown'}
                                 </cite>
                                 {quote.category && (
-                                    <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                                        <Tag className="w-3 h-3" />
+                                    <div className="flex items-center gap-1.5 text-xs text-amber-600/80 dark:text-amber-400/80">
+                                        <Tag className="w-3 h-3 text-amber-500" />
                                         <span>{quote.category}</span>
                                     </div>
                                 )}
@@ -356,17 +363,23 @@ const Quotes = () => {
 
             {/* Edit Quote Modal */}
             {editingQuote && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Edit Quote</h3>
-                            <button
-                                onClick={() => setEditingQuote(null)}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setEditingQuote(null)}
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors rounded-lg hover:bg-white/10"
+                            style={{ zIndex: 12 }}
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8 pt-1">
+                            Edit <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Quote</span>
+                        </h2>
+                        
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -375,7 +388,7 @@ const Quotes = () => {
                                 <textarea
                                     value={editingQuote.text}
                                     onChange={(e) => setEditingQuote({ ...editingQuote, text: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white resize-none text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none resize-none text-sm"
                                     rows={3}
                                 />
                             </div>
@@ -387,7 +400,7 @@ const Quotes = () => {
                                     type="text"
                                     value={editingQuote.author || ''}
                                     onChange={(e) => setEditingQuote({ ...editingQuote, author: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                 />
                             </div>
                             <div>
@@ -398,24 +411,24 @@ const Quotes = () => {
                                     type="text"
                                     value={editingQuote.category || ''}
                                     onChange={(e) => setEditingQuote({ ...editingQuote, category: e.target.value })}
-                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                     placeholder="Enter category (e.g., Motivation, Fitness, Success)..."
                                 />
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-3">
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => setEditingQuote(null)}
+                                    className="px-4 py-2 border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all w-full sm:w-auto order-2 sm:order-1"
+                                >
+                                    Cancel
+                                </button>
                                 <button
                                     onClick={handleUpdateQuote}
                                     disabled={!editingQuote.text.trim()}
-                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto order-1 sm:order-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     Update Quote
-                                </button>
-                                <button
-                                    onClick={() => setEditingQuote(null)}
-                                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors w-full sm:w-auto"
-                                >
-                                    Cancel
                                 </button>
                             </div>
                         </div>
@@ -429,7 +442,7 @@ const Quotes = () => {
                     <button
                         onClick={() => paginate(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="p-2 rounded-lg bg-white/30 dark:bg-white/10 border border-white/20 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/50 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                         <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
                     </button>
@@ -438,10 +451,10 @@ const Quotes = () => {
                         <button
                             key={index + 1}
                             onClick={() => paginate(index + 1)}
-                            className={`px-2 sm:px-3 py-1 rounded-lg transition-colors text-sm ${
+                            className={`px-2 sm:px-3 py-1 rounded-lg transition-all text-sm ${
                                 currentPage === index + 1
-                                    ? 'bg-primary text-white'
-                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold shadow-md shadow-amber-500/10'
+                                    : 'bg-white/30 dark:bg-white/10 text-gray-600 dark:text-gray-400 border border-white/20 dark:border-white/10 hover:bg-white/50 dark:hover:bg-white/15'
                             }`}
                         >
                             {index + 1}
@@ -451,7 +464,7 @@ const Quotes = () => {
                     <button
                         onClick={() => paginate(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                        className="p-2 rounded-lg bg-white/30 dark:bg-white/10 border border-white/20 dark:border-white/10 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/50 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
                     >
                         <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
                     </button>
@@ -468,7 +481,7 @@ const Quotes = () => {
                     </p>
                     <button
                         onClick={() => setIsAddingQuote(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors mx-auto"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg transition-all shadow-md shadow-amber-500/20 mx-auto"
                     >
                         <Plus className="w-5 h-5" />
                         Add Your First Quote

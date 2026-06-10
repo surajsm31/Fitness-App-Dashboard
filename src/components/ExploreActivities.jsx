@@ -534,12 +534,14 @@ const ExploreActivities = () => {
     };
 
     return (
-        <div className="space-y-6 relative">
+        <div className="space-y-6 relative z-10">
             {/* Custom Alert Container */}
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Explore Activities</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight animate-in fade-in slide-in-from-left-2">
+                    Explore <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Activities</span>
+                </h1>
                 
                 {/* Search Bar and Filters */}
                 <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
@@ -549,7 +551,7 @@ const ExploreActivities = () => {
                             placeholder="Search activities..."
                             value={searchTerm}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full lg:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            className="w-full lg:w-64 pl-10 pr-4 py-2 border border-white/20 dark:border-white/10 rounded-xl bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 text-sm transition-all"
                         />
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
@@ -557,7 +559,7 @@ const ExploreActivities = () => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleFilterToggle}
-                            className={`p-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                            className={`p-2 border rounded-xl transition-all duration-200 backdrop-blur-md ${showFilters ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold shadow-lg shadow-amber-500/20' : 'bg-white/45 dark:bg-white/5 border-white/20 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400'}`}
                         >
                             <Filter className="h-5 w-5" />
                         </button>
@@ -576,7 +578,7 @@ const ExploreActivities = () => {
                                 setVideoDimensions({ width: 0, height: 0 });
                                 setIsEditModalOpen(true);
                             }}
-                            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 transition-all text-sm whitespace-nowrap"
                         >
                             + Add Activity
                         </button>
@@ -586,7 +588,7 @@ const ExploreActivities = () => {
 
             {/* Filter Bar */}
             {showFilters && (
-                <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                <div className="flex flex-col gap-3 sm:gap-4 bg-white/45 dark:bg-white/5 backdrop-blur-md p-3 sm:p-4 rounded-xl shadow-lg border border-white/20 dark:border-white/10 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
                     <div className="w-full max-w-full dropdown-container relative !overflow-visible">
                         <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Activity Type</label>
                         <div className="relative w-full">
@@ -595,7 +597,7 @@ const ExploreActivities = () => {
                                 onClick={() => {
                                     setIsDropdownOpen(!isDropdownOpen);
                                 }}
-                                className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:ring-2 focus:ring-amber-500/30 transition-all outline-none truncate max-w-full"
                             >
                                 <span className="truncate">
                                     {filters.activityType === 'All' 
@@ -607,14 +609,14 @@ const ExploreActivities = () => {
                             </button>
                             
                             {isDropdownOpen && (
-                                <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                <div className="absolute left-0 right-0 mt-1 bg-white/90 dark:bg-slate-950/80 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             handleFilterChange({ ...filters, activityType: 'All' });
                                             setIsDropdownOpen(false);
                                         }}
-                                        className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                        className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 transition-colors ${filters.activityType === 'All' ? 'bg-amber-500/10 font-semibold text-amber-600 dark:text-amber-400' : ''}`}
                                     >
                                         All Activity Types
                                     </button>
@@ -626,7 +628,7 @@ const ExploreActivities = () => {
                                                 handleFilterChange({ ...filters, activityType: type.value });
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === type.value ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 transition-colors ${filters.activityType === type.value ? 'bg-amber-500/10 font-semibold text-amber-600 dark:text-amber-400' : ''}`}
                                         >
                                             {type.label}
                                         </button>
@@ -638,7 +640,7 @@ const ExploreActivities = () => {
                     
                     <button
                         onClick={handleClearFilters}
-                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap border border-transparent active:scale-95"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap active:scale-95"
                     >
                         Clear All Filters
                     </button>
@@ -649,7 +651,7 @@ const ExploreActivities = () => {
             {/* Loading State */}
             {loading && (
                 <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
                     <span className="ml-2 text-gray-600 dark:text-gray-400">Loading activities...</span>
                 </div>
             )}
@@ -674,11 +676,14 @@ const ExploreActivities = () => {
             {!loading && !error && (
                 <div className="grid grid-cols-1 gap-4">
                     {activities.map((activity) => (
-                        <div key={activity.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
+                        <div key={activity.id} className="group bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 dark:border-white/10 p-3 sm:p-4 transition-all duration-300 hover:shadow-xl hover:border-amber-500/30 relative overflow-hidden">
+                            {/* Hover accent top bar */}
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                            
                             {/* Mobile: Stack layout, Desktop: Side-by-side */}
-                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 relative z-10">
                                 {/* Image/Video Section */}
-                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50/50 dark:bg-slate-900/30 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300 border border-white/10 dark:border-white/5">
                                     <div className="w-full h-full relative">
                                         {activity.image ? (
                                             <img src={activity.image} alt={activity.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -699,16 +704,16 @@ const ExploreActivities = () => {
                                     {/* Title and Meta */}
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold tracking-wide uppercase">
                                                 {activityTypes.find(t => t.value === (activity.type?.toLowerCase() || ''))?.label || activity.type}
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <span className="inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                <Clock className="w-3 h-3 mr-1" />
+                                                <Clock className="w-3 h-3 mr-1 text-amber-500" />
                                                 {activity.duration}
                                             </span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{activity.title}</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-amber-500 transition-colors duration-300">{activity.title}</h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
                                             {activity.description}
                                         </p>
@@ -718,13 +723,13 @@ const ExploreActivities = () => {
                                     <div className="flex items-center gap-3 pt-2">
                                         <button
                                             onClick={() => handleEditClick(activity)}
-                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg hover:bg-amber-500 hover:text-slate-950 dark:hover:bg-amber-500 dark:hover:text-slate-950 transition-all duration-300"
                                         >
                                             Edit Details
                                         </button>
                                         <button
                                             onClick={() => handleDelete(activity.id)}
-                                            className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                            className="p-2 text-red-500 bg-red-50/50 dark:bg-red-900/20 border border-red-200/20 dark:border-red-800/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
                                             title="Delete Activity"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -752,7 +757,7 @@ const ExploreActivities = () => {
 
             {/* Pagination Controls */}
             {!loading && !error && pagination.totalItems > 0 && (
-                <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                <div className="border-t border-white/20 dark:border-white/10 px-6 py-4">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                             {pagination.totalItems > 0 ? (
@@ -768,7 +773,7 @@ const ExploreActivities = () => {
                             <button 
                                 onClick={handlePrevPage}
                                 disabled={!pagination.hasPrev}
-                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-3 py-1 text-sm border border-white/20 dark:border-white/10 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-all"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -783,7 +788,7 @@ const ExploreActivities = () => {
                             <button 
                                 onClick={handleNextPage}
                                 disabled={!pagination.hasNext}
-                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-3 py-1 text-sm border border-white/20 dark:border-white/10 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-all"
                             >
                                 Next
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -797,24 +802,30 @@ const ExploreActivities = () => {
 
             {/* Edit/Add Modal */}
             {isEditModalOpen && currentActivity && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         <button
-                            onClick={() => setIsEditModalOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 z-10"
+                            onClick={() => {
+                                setIsEditModalOpen(false);
+                                setValidationErrors({});
+                            }}
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors rounded-lg z-10"
                         >
                             <X className="w-5 h-5" />
                         </button>
                         
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8">
-                            {activities.find(a => a.id === currentActivity.id) ? 'Edit Activity' : 'Add Activity'}
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8">
+                            {activities.find(a => a.id === currentActivity.id) ? 'Edit' : 'Add'} <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Activity</span>
                         </h2>
                         <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
                             {/* Activity Image Upload */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Activity Image</label>
+                                <label className="block text-sm font-medium text-amber-600 dark:text-amber-400 font-semibold mb-2">Activity Image</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 w-full max-w-full"
+                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-white/25 dark:border-white/10 bg-white/25 dark:bg-slate-900/40 backdrop-blur-sm w-full max-w-full"
                                          style={{ 
                                              height: imageDimensions.height ? `${imageDimensions.height}px` : '160px',
                                              maxWidth: '100%'
@@ -840,7 +851,7 @@ const ExploreActivities = () => {
                                         type="file"
                                         accept="image/jpg,image/jpeg,image/png"
                                         onChange={handleImageUpload}
-                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950 hover:file:from-amber-400 hover:file:to-orange-500 file:cursor-pointer cursor-pointer"
                                     />
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">JPG, JPEG, PNG up to 10MB</p>
                                     {validationErrors.image && (
@@ -851,9 +862,9 @@ const ExploreActivities = () => {
 
                             {/* Activity Video Upload */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Activity Video</label>
+                                <label className="block text-sm font-medium text-amber-600 dark:text-amber-400 font-semibold mb-2">Activity Video</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 w-full max-w-full"
+                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-white/25 dark:border-white/10 bg-white/25 dark:bg-slate-900/40 backdrop-blur-sm w-full max-w-full"
                                          style={{ 
                                              height: videoDimensions.height ? `${videoDimensions.height}px` : '160px',
                                              maxWidth: '100%'
@@ -879,7 +890,7 @@ const ExploreActivities = () => {
                                         type="file"
                                         accept="video/mp4,video/avi,video/mov,video/mkv"
                                         onChange={handleVideoUpload}
-                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950 hover:file:from-amber-400 hover:file:to-orange-500 file:cursor-pointer cursor-pointer"
                                     />
                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">MP4, AVI, MOV, MKV up to 35MB</p>
                                     {validationErrors.video && (
@@ -895,8 +906,8 @@ const ExploreActivities = () => {
                                     type="text"
                                     value={currentActivity.activity_name}
                                     onChange={e => setCurrentActivity({ ...currentActivity, activity_name: e.target.value })}
-                                    className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                        validationErrors.activity_name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                    className={`w-full px-3 py-2 rounded-lg border bg-white/45 dark:bg-white/5 backdrop-blur-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${
+                                        validationErrors.activity_name ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                     }`}
                                     required
                                 />
@@ -911,8 +922,8 @@ const ExploreActivities = () => {
                                 <textarea
                                     value={currentActivity.description}
                                     onChange={e => setCurrentActivity({ ...currentActivity, description: e.target.value })}
-                                    className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                        validationErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                    className={`w-full px-3 py-2 rounded-lg border bg-white/45 dark:bg-white/5 backdrop-blur-md text-gray-900 dark:text-white resize-none ${
+                                        validationErrors.description ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                     }`}
                                     rows="3"
                                     required
@@ -929,10 +940,10 @@ const ExploreActivities = () => {
                                     <select
                                         value={currentActivity.activity_type || ''}
                                         onChange={e => setCurrentActivity({ ...currentActivity, activity_type: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all cursor-pointer"
                                     >
-                                        <option value="" disabled>Select Activity Type</option>
-                                        {activityTypes.filter(t => t.value !== 'All').map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                                        <option value="" disabled className="bg-slate-900 text-white">Select Activity Type</option>
+                                        {activityTypes.filter(t => t.value !== 'All').map(t => <option key={t.value} value={t.value} className="bg-slate-900 text-white">{t.label}</option>)}
                                     </select>
                                     {validationErrors.activity_type && (
                                         <p className="mt-1 text-xs text-red-500">{validationErrors.activity_type}</p>
@@ -944,8 +955,8 @@ const ExploreActivities = () => {
                                         type="text"
                                         value={currentActivity.duration}
                                         onChange={e => setCurrentActivity({ ...currentActivity, duration: e.target.value })}
-                                        className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                            validationErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                        className={`w-full px-3 py-2 rounded-lg border bg-white/45 dark:bg-white/5 backdrop-blur-md text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${
+                                            validationErrors.duration ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                         }`}
                                         placeholder="e.g., 30 minutes, 1 hour"
                                         required
@@ -964,14 +975,14 @@ const ExploreActivities = () => {
                                         setIsEditModalOpen(false);
                                         setValidationErrors({});
                                     }}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg order-2 sm:order-1"
+                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all order-2 sm:order-1"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                                    className="w-full sm:w-auto px-5 py-2 text-sm font-bold text-slate-950 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 rounded-lg shadow-md shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2 transition-all"
                                 >
                                     {isSubmitting ? 'Saving...' : 'Save Activity'}
                                 </button>
@@ -983,31 +994,34 @@ const ExploreActivities = () => {
 
             {/* Custom Delete Confirmation Modal */}
             {deleteModalOpen && activityToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fade-in">
-                    <div className="bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl border border-white/10 dark:border-gray-700/10 rounded-2xl max-w-md w-full p-6 shadow-2xl transform transition-all duration-300 scale-100 animate-slide-up">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-md w-full p-6 shadow-2xl border border-white/20 dark:border-white/10 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         <div className="text-center">
                             {/* Warning Icon */}
-                            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100/40 dark:bg-red-900/30 backdrop-blur-sm mb-6 animate-pulse">
-                                <svg className="h-8 w-8 text-red-600 dark:text-red-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-500/10 dark:bg-red-900/30 border border-red-500/20 mb-4">
+                                <svg className="h-6 w-6 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                 </svg>
                             </div>
                             
                             {/* Title */}
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                                Delete Activity
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">
+                                Delete <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Activity</span>
                             </h3>
                             
                             {/* Activity Name */}
-                            <div className="bg-gray-50/30 dark:bg-gray-700/30 backdrop-blur-sm rounded-lg px-4 py-3 mb-4 border border-gray-200/20 dark:border-gray-600/20">
-                                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Activity to delete:</p>
-                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            <div className="bg-white/20 dark:bg-white/5 border border-white/10 backdrop-blur-sm rounded-lg px-4 py-3 mb-4">
+                                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">Activity to delete:</p>
+                                <p className="text-base font-bold text-gray-950 dark:text-white truncate">
                                     {activityToDelete.title || 'Unknown Activity'}
                                 </p>
                             </div>
                             
                             {/* Warning Message */}
-                            <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
                                 Are you sure you want to delete this activity? This action cannot be undone and all associated data will be permanently removed.
                             </p>
                             
@@ -1015,15 +1029,15 @@ const ExploreActivities = () => {
                             <div className="flex gap-3">
                                 <button
                                     onClick={cancelDelete}
-                                    className="flex-1 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100/30 dark:bg-gray-700/30 backdrop-blur-sm rounded-lg hover:bg-gray-200/40 dark:hover:bg-gray-600/40 transition-all duration-200 transform hover:scale-105 border border-gray-200/20 dark:border-gray-600/20"
+                                    className="flex-1 px-4 py-2.5 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmDelete}
-                                    className="flex-1 px-4 py-3 text-sm font-medium text-white bg-red-600/40 backdrop-blur-sm rounded-lg hover:bg-red-700/50 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-red-500/25 border border-red-500/20"
+                                    className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all shadow-md shadow-red-500/20"
                                 >
-                                    Delete Activity
+                                    Delete
                                 </button>
                             </div>
                         </div>

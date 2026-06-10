@@ -345,6 +345,7 @@ const Workouts = () => {
 
     const validateForm = () => {
         const errors = {};
+        const isEdit = workouts.some(w => w.id === currentWorkout?.id);
         
         if (!currentWorkout.title?.toString().trim()) {
             errors.title = 'Title is required';
@@ -533,18 +534,26 @@ const Workouts = () => {
             {/* Custom Alert Container */}
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"> Workouts</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                        <Dumbbell className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" />
+                        Fitness <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Workouts</span>
+                    </h1>
+                    <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm sm:text-base font-medium">
+                        Manage your collection of gym and home workouts
+                    </p>
+                </div>
                 
                 {/* Search Bar and Filters */}
-                <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                    <div className="relative flex-1 lg:flex-initial">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:flex-initial">
                         <input
                             type="text"
                             placeholder="Search workouts..."
                             value={searchTerm}
                             onChange={(e) => handleSearchChange(e.target.value)}
-                            className="w-full lg:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-white/20 dark:border-white/10 rounded-xl bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 text-sm"
                         />
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                     </div>
@@ -552,7 +561,7 @@ const Workouts = () => {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleFilterToggle}
-                            className={`p-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                            className={`p-2 border rounded-xl transition-colors backdrop-blur-md ${showFilters ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold shadow-lg shadow-amber-500/20' : 'bg-white/45 dark:bg-white/5 border-white/20 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400'}`}
                         >
                             <Filter className="h-5 w-5" />
                         </button>
@@ -572,7 +581,7 @@ const Workouts = () => {
                                 });
                                 setIsEditModalOpen(true);
                             }}
-                            className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 text-sm whitespace-nowrap w-full sm:w-auto justify-center"
                         >
                             + Add Workout
                         </button>
@@ -582,10 +591,10 @@ const Workouts = () => {
 
             {/* Filter Bar */}
             {showFilters && (
-                <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                <div className="relative z-20 flex flex-col gap-3 sm:gap-4 bg-white/45 dark:bg-white/5 backdrop-blur-md p-3 sm:p-4 rounded-xl shadow-lg border border-white/20 dark:border-white/10 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
                         <div className="w-full max-w-full dropdown-container relative !overflow-visible">
-                            <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Activity Type</label>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Activity Type</label>
                             <div className="relative w-full">
                                 <button
                                     type="button"
@@ -593,21 +602,21 @@ const Workouts = () => {
                                         setIsActivityTypeDropdownOpen(!isActivityTypeDropdownOpen);
                                         setIsWorkoutCategoryDropdownOpen(false);
                                     }}
-                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:ring-2 focus:ring-amber-500/30 transition-all outline-none truncate max-w-full"
                                 >
                                     <span className="truncate">{filters.activityType === 'All' ? 'All Activity Types' : filters.activityType}</span>
                                     <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isActivityTypeDropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
                                 
                                 {isActivityTypeDropdownOpen && (
-                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                    <div className="absolute left-0 right-0 mt-1 bg-white/95 dark:bg-slate-900/95 border border-white/20 dark:border-white/10 rounded-lg shadow-xl z-50 overflow-hidden py-1 backdrop-blur-lg animate-in fade-in slide-in-from-top-1 duration-100">
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 handleFilterChange({ ...filters, activityType: 'All' });
                                                 setIsActivityTypeDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-colors ${filters.activityType === 'All' ? 'bg-amber-500/20 font-bold text-amber-600 dark:text-amber-400' : ''}`}
                                         >
                                             All Activity Types
                                         </button>
@@ -619,7 +628,7 @@ const Workouts = () => {
                                                     handleFilterChange({ ...filters, activityType: type });
                                                     setIsActivityTypeDropdownOpen(false);
                                                 }}
-                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.activityType === type ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-colors ${filters.activityType === type ? 'bg-amber-500/20 font-bold text-amber-600 dark:text-amber-400' : ''}`}
                                             >
                                                 {type}
                                             </button>
@@ -629,7 +638,7 @@ const Workouts = () => {
                             </div>
                         </div>
                         <div className="w-full max-w-full dropdown-container relative !overflow-visible">
-                            <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Workout Category</label>
+                            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1 ml-1">Workout Category</label>
                             <div className="relative w-full">
                                 <button
                                     type="button"
@@ -637,21 +646,21 @@ const Workouts = () => {
                                         setIsWorkoutCategoryDropdownOpen(!isWorkoutCategoryDropdownOpen);
                                         setIsActivityTypeDropdownOpen(false);
                                     }}
-                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full"
+                                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:ring-2 focus:ring-amber-500/30 transition-all outline-none truncate max-w-full"
                                 >
                                     <span className="truncate">{filters.workoutCategory === 'All' ? 'All Categories' : filters.workoutCategory}</span>
                                     <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isWorkoutCategoryDropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
                                 
                                 {isWorkoutCategoryDropdownOpen && (
-                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                                    <div className="absolute left-0 right-0 mt-1 bg-white/95 dark:bg-slate-900/95 border border-white/20 dark:border-white/10 rounded-lg shadow-xl z-50 overflow-hidden py-1 backdrop-blur-lg animate-in fade-in slide-in-from-top-1 duration-100">
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 handleFilterChange({ ...filters, workoutCategory: 'All' });
                                                 setIsWorkoutCategoryDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.workoutCategory === 'All' ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                            className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-colors ${filters.workoutCategory === 'All' ? 'bg-amber-500/20 font-bold text-amber-600 dark:text-amber-400' : ''}`}
                                         >
                                             All Categories
                                         </button>
@@ -663,7 +672,7 @@ const Workouts = () => {
                                                     handleFilterChange({ ...filters, workoutCategory: category });
                                                     setIsWorkoutCategoryDropdownOpen(false);
                                                 }}
-                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${filters.workoutCategory === category ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-colors ${filters.workoutCategory === category ? 'bg-amber-500/20 font-bold text-amber-600 dark:text-amber-400' : ''}`}
                                             >
                                                 {category}
                                             </button>
@@ -676,7 +685,7 @@ const Workouts = () => {
                     
                     <button
                         onClick={handleClearFilters}
-                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-all whitespace-nowrap border border-transparent active:scale-95"
+                        className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all border border-white/20 dark:border-white/10 active:scale-95 shadow-md"
                     >
                         Clear All Filters
                     </button>
@@ -686,21 +695,21 @@ const Workouts = () => {
             {/* Loading State */}
             {loading && (
                 <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    <span className="ml-2 text-gray-600 dark:text-gray-400">Loading workouts...</span>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+                    <span className="ml-2 text-gray-700 dark:text-gray-300 font-medium">Loading workouts...</span>
                 </div>
             )}
 
             {/* Error State */}
             {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/50 rounded-xl p-4 backdrop-blur-md animate-in fade-in">
                     <div className="flex items-center">
                         <Flame className="w-5 h-5 text-red-500 mr-2" />
-                        <span className="text-red-700 dark:text-red-300">{error}</span>
+                        <span className="text-red-700 dark:text-red-300 font-semibold">{error}</span>
                     </div>
                     <button
-                        onClick={fetchWorkouts}
-                        className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
+                        onClick={fetchAllWorkouts}
+                        className="mt-3 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 text-white rounded-lg text-sm shadow-md shadow-red-500/10 transition-all font-semibold"
                     >
                         Retry
                     </button>
@@ -711,11 +720,17 @@ const Workouts = () => {
             {!loading && !error && (
                 <div className="grid grid-cols-1 gap-4">
                     {workouts.map((workout) => (
-                        <div key={workout.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
+                        <div 
+                            key={workout.id} 
+                            className="group bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 dark:border-white/10 p-3 sm:p-4 transition-all duration-300 hover:shadow-xl hover:border-amber-500/30 relative overflow-hidden"
+                        >
+                            {/* Decorative top bar */}
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                            
                             {/* Mobile: Stack layout, Desktop: Side-by-side */}
                             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                                 {/* Image/Video Section */}
-                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                <div className="w-full sm:w-48 h-48 sm:h-32 bg-white/10 dark:bg-slate-950/20 border border-white/10 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
                                     <div className="w-full h-full relative">
                                         {workout.image ? (
                                             <img src={workout.image} alt={workout.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -736,41 +751,41 @@ const Workouts = () => {
                                     {/* Title and Meta */}
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold tracking-wide uppercase">
                                                 {workout.type}
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <span className="inline-flex items-center text-xs font-medium text-gray-500 dark:text-gray-400">
-                                                <Clock className="w-3 h-3 mr-1" />
+                                                <Clock className="w-3 h-3 mr-1 text-amber-500" />
                                                 {workout.duration}
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <span className="inline-flex items-center text-xs font-medium text-orange-500 dark:text-orange-400">
-                                                <Flame className="w-3 h-3 mr-1" />
+                                                <Flame className="w-3 h-3 mr-1 text-orange-500" />
                                                 {workout.calories} kcal
                                             </span>
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <span className={clsx(
-                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                workout.difficulty?.toLowerCase() === 'beginner' ? 'bg-green-100 text-green-700' :
-                                                workout.difficulty?.toLowerCase() === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                                'bg-red-100 text-red-700'
+                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase backdrop-blur-sm",
+                                                workout.difficulty?.toLowerCase() === 'beginner' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' :
+                                                workout.difficulty?.toLowerCase() === 'intermediate' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20' :
+                                                'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
                                             )}>
                                                 {workout.difficulty}
                                             </span>
                                             {/* Workout Category Badge */}
                                             <span className="text-gray-300 dark:text-gray-600">•</span>
                                             <span className={clsx(
-                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                workout.category?.toLowerCase() === 'loose' ? 'bg-blue-100 text-blue-700' :
-                                                workout.category?.toLowerCase() === 'maintain' ? 'bg-indigo-100 text-indigo-700' :
-                                                workout.category?.toLowerCase() === 'gain' ? 'bg-purple-100 text-purple-700' :
-                                                'bg-gray-100 text-gray-700'
+                                                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase backdrop-blur-sm",
+                                                workout.category?.toLowerCase() === 'loose' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' :
+                                                workout.category?.toLowerCase() === 'maintain' ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' :
+                                                workout.category?.toLowerCase() === 'gain' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20' :
+                                                'bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20'
                                             )}>
                                                 {workout.category}
                                             </span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{workout.title}</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-amber-500 transition-colors duration-300">{workout.title}</h3>
                                         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
                                             {workout.description}
                                         </p>
@@ -780,13 +795,13 @@ const Workouts = () => {
                                     <div className="flex items-center gap-3 pt-2">
                                         <button
                                             onClick={() => handleEditClick(workout)}
-                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                            className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/20 dark:bg-white/5 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-600 hover:text-slate-950 dark:hover:text-slate-950 transition-all duration-300 border border-white/20 dark:border-white/10 rounded-lg shadow-sm"
                                         >
                                             Edit Details
                                         </button>
                                         <button
                                             onClick={() => handleDelete(workout.id)}
-                                            className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                            className="p-2 text-red-500 bg-red-500/10 dark:bg-red-500/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
                                             title="Delete Workout"
                                         >
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -803,23 +818,23 @@ const Workouts = () => {
 
             {/* Empty State */}
             {!loading && !error && workouts.length === 0 && (
-                <div className="text-center py-12">
-                    <Dumbbell className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No workouts found</h3>
-                    <p className="text-gray-500 dark:text-gray-400">
-                        {filters.workoutCategory === 'All' ? 'Start by adding your first workout.' : `No workouts found in ${filters.workoutCategory} category.`}
+                <div className="text-center py-16 bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-2xl p-6">
+                    <Dumbbell className="w-16 h-16 text-gray-450 dark:text-gray-500 mx-auto mb-4 animate-pulse" />
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">No workouts found</h3>
+                    <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                        {filters.workoutCategory === 'All' ? 'Start by adding your first workout.' : `No workouts found in the "${filters.workoutCategory}" category.`}
                     </p>
                 </div>
             )}
 
             {/* Pagination Controls */}
             {!loading && !error && pagination.totalItems > 0 && (
-                <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                <div className="px-6 py-4 mt-6 bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-2xl shadow-lg">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
                             {pagination.totalItems > 0 ? (
                                 <span>
-                                    Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1} to {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} of {pagination.totalItems} workouts
+                                    Showing <span className="text-gray-900 dark:text-white font-bold">{((pagination.currentPage - 1) * pagination.pageSize) + 1}</span> to <span className="text-gray-900 dark:text-white font-bold">{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)}</span> of <span className="text-gray-900 dark:text-white font-bold">{pagination.totalItems}</span> workouts
                                 </span>
                             ) : (
                                 <span>No workouts found</span>
@@ -830,7 +845,7 @@ const Workouts = () => {
                             <button 
                                 onClick={handlePrevPage}
                                 disabled={!pagination.hasPrev}
-                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-3 py-1.5 text-sm border border-white/20 dark:border-white/10 rounded-lg bg-white/30 dark:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/50 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -838,14 +853,14 @@ const Workouts = () => {
                                 Previous
                             </button>
                             
-                            <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
+                            <span className="px-3 py-1 text-sm font-semibold text-gray-600 dark:text-gray-400 bg-white/15 dark:bg-white/5 border border-white/10 rounded-lg px-3 py-1.5">
                                 Page {pagination.currentPage} of {pagination.totalPages}
                             </span>
                             
                             <button 
                                 onClick={handleNextPage}
                                 disabled={!pagination.hasNext}
-                                className="px-3 py-1 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-3 py-1.5 text-sm border border-white/20 dark:border-white/10 rounded-lg bg-white/30 dark:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/50 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors flex items-center gap-1"
                             >
                                 Next
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -859,25 +874,29 @@ const Workouts = () => {
 
             {/* Edit/Add Modal */}
             {isEditModalOpen && currentWorkout && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         {/* Close Button */}
                         <button
                             onClick={() => setIsEditModalOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors rounded-lg hover:bg-white/10"
+                            style={{ zIndex: 12 }}
                         >
                             <X className="w-5 h-5" />
                         </button>
                         
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8">
-                            {workouts.find(w => w.id === currentWorkout.id) ? 'Edit Workout' : 'Add Workout'}
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4 sm:mb-6 pr-8 pt-1">
+                            {workouts.some(w => w.id === currentWorkout.id) ? 'Edit' : 'Add'} <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Workout</span>
                         </h2>
                         <form onSubmit={handleSave} className="space-y-4 sm:space-y-6">
                             {/* Workout Image Upload */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Workout Image</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                                    <div className="relative mx-auto rounded-xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/20 dark:bg-white/5 backdrop-blur-sm"
                                          style={{ 
                                              width: imageDimensions.width ? `${Math.min(imageDimensions.width, window.innerWidth > 640 ? 600 : window.innerWidth - 32)}px` : '100%',
                                              height: imageDimensions.height ? `${imageDimensions.height}px` : '160px',
@@ -887,12 +906,12 @@ const Workouts = () => {
                                             <img 
                                                 src={currentWorkout.workout_image_url} 
                                                 alt="Workout preview" 
-                                                className="w-full h-full object-contain" 
+                                                className="w-full h-full object-contain animate-in fade-in" 
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400" style={{ minHeight: '160px' }}>
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400" style={{ minHeight: '160px' }}>
                                                 <div className="text-center">
-                                                    <Dumbbell className="w-8 h-8 opacity-50 mx-auto mb-2" />
+                                                    <Dumbbell className="w-8 h-8 opacity-50 mx-auto mb-2 text-amber-500" />
                                                     <span className="text-xs">No image selected</span>
                                                 </div>
                                             </div>
@@ -906,12 +925,12 @@ const Workouts = () => {
                                             className="block w-full text-sm text-gray-500
                                                 file:mr-4 file:py-2 file:px-4
                                                 file:rounded-full file:border-0
-                                                file:text-sm file:font-semibold
-                                                file:bg-primary file:text-white
-                                                hover:file:bg-indigo-700
+                                                file:text-sm file:font-bold file:cursor-pointer cursor-pointer
+                                                file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950
+                                                hover:file:from-amber-400 hover:file:to-orange-500
                                             "
                                         />
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">JPG, JPEG, PNG up to 10MB</p>
+                                        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">JPG, JPEG, PNG up to 10MB</p>
                                         {validationErrors.workout_image_url && (
                                             <p className="mt-1 text-xs text-red-500">{validationErrors.workout_image_url}</p>
                                         )}
@@ -923,7 +942,7 @@ const Workouts = () => {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Workout Video</label>
                                 <div className="mt-1 flex flex-col gap-4">
-                                    <div className="relative mx-auto rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                                    <div className="relative mx-auto rounded-xl overflow-hidden border border-white/20 dark:border-white/10 bg-white/20 dark:bg-white/5 backdrop-blur-sm"
                                          style={{ 
                                              width: videoDimensions.width ? `${Math.min(videoDimensions.width, window.innerWidth > 640 ? 600 : window.innerWidth - 32)}px` : '100%',
                                              height: videoDimensions.height ? `${videoDimensions.height}px` : '160px',
@@ -932,13 +951,13 @@ const Workouts = () => {
                                         {currentWorkout.workout_video_url ? (
                                             <video 
                                                 src={currentWorkout.workout_video_url} 
-                                                className="w-full h-full object-contain" 
+                                                className="w-full h-full object-contain animate-in fade-in" 
                                                 controls
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400" style={{ minHeight: '160px' }}>
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400" style={{ minHeight: '160px' }}>
                                                 <div className="text-center">
-                                                    <Play className="w-8 h-8 opacity-50 mx-auto mb-2" />
+                                                    <Play className="w-8 h-8 opacity-50 mx-auto mb-2 text-amber-500" />
                                                     <span className="text-xs">No video selected</span>
                                                 </div>
                                             </div>
@@ -952,12 +971,12 @@ const Workouts = () => {
                                             className="block w-full text-sm text-gray-500
                                                 file:mr-4 file:py-2 file:px-4
                                                 file:rounded-full file:border-0
-                                                file:text-sm file:font-semibold
-                                                file:bg-primary file:text-white
-                                                hover:file:bg-indigo-700
+                                                file:text-sm file:font-bold file:cursor-pointer cursor-pointer
+                                                file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950
+                                                hover:file:from-amber-400 hover:file:to-orange-500
                                             "
                                         />
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">MP4, AVI, MOV, MKV up to 30-35MB</p>
+                                        <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">MP4, AVI, MOV, MKV up to 30-35MB</p>
                                         {validationErrors.workout_video_url && (
                                             <p className="mt-1 text-xs text-red-500">{validationErrors.workout_video_url}</p>
                                         )}
@@ -972,8 +991,8 @@ const Workouts = () => {
                                     type="text"
                                     value={currentWorkout.title}
                                     onChange={e => setCurrentWorkout({ ...currentWorkout, title: e.target.value })}
-                                    className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                        validationErrors.title ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                    className={`w-full px-3 py-2 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm ${
+                                        validationErrors.title ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                     }`}
                                     required
                                 />
@@ -988,8 +1007,8 @@ const Workouts = () => {
                                 <textarea
                                     value={currentWorkout.description}
                                     onChange={e => setCurrentWorkout({ ...currentWorkout, description: e.target.value })}
-                                    className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                        validationErrors.description ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                    className={`w-full px-3 py-2 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm resize-none ${
+                                        validationErrors.description ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                     }`}
                                     rows="3"
                                     required
@@ -1006,10 +1025,12 @@ const Workouts = () => {
                                     <select
                                         value={currentWorkout.category || ''}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, category: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all text-sm"
                                     >
-                                        <option value="" disabled>Select Category</option>
-                                        {workoutCategories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+                                        <option value="" disabled className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Select Category</option>
+                                        {workoutCategories.filter(c => c !== 'All').map(c => (
+                                            <option key={c} value={c} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">{c}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -1018,8 +1039,8 @@ const Workouts = () => {
                                         type="number"
                                         value={currentWorkout.duration}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, duration: e.target.value })}
-                                        className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                            validationErrors.duration ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                        className={`w-full px-3 py-2 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm ${
+                                            validationErrors.duration ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                         }`}
                                         required
                                     />
@@ -1035,11 +1056,11 @@ const Workouts = () => {
                                 <select
                                     value={currentWorkout.workout_type || ''}
                                     onChange={e => setCurrentWorkout({ ...currentWorkout, workout_type: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all text-sm"
                                 >
-                                    <option value="" disabled>Select workout type</option>
-                                    <option value="Gym">GYM</option>
-                                    <option value="Home">Home</option>
+                                    <option value="" disabled className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Select workout type</option>
+                                    <option value="Gym" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">GYM</option>
+                                    <option value="Home" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Home</option>
                                 </select>
                             </div>
 
@@ -1051,8 +1072,8 @@ const Workouts = () => {
                                         type="number"
                                         value={currentWorkout.calories}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, calories: e.target.value })}
-                                        className={`w-full px-3 py-2 rounded-lg border bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                                            validationErrors.calories ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                                        className={`w-full px-3 py-2 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm ${
+                                            validationErrors.calories ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'
                                         }`}
                                         required
                                     />
@@ -1065,12 +1086,12 @@ const Workouts = () => {
                                     <select
                                         value={currentWorkout.difficulty || ''}
                                         onChange={e => setCurrentWorkout({ ...currentWorkout, difficulty: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                        className="w-full px-3 py-2 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all text-sm"
                                     >
-                                        <option value="" disabled>Select Difficulty Level</option>
-                                        <option value="beginner">Beginner</option>
-                                        <option value="intermediate">Intermediate</option>
-                                        <option value="advanced">Advanced</option>
+                                        <option value="" disabled className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Select Difficulty Level</option>
+                                        <option value="beginner" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Beginner</option>
+                                        <option value="intermediate" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Intermediate</option>
+                                        <option value="advanced" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Advanced</option>
                                     </select>
                                 </div>
                             </div>
@@ -1083,14 +1104,14 @@ const Workouts = () => {
                                         setIsEditModalOpen(false);
                                         setValidationErrors({});
                                     }}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg order-2 sm:order-1"
+                                    className="w-full sm:w-auto px-4 py-2 border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all order-2 sm:order-1 font-semibold"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
+                                    className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                                 >
                                     {isSubmitting ? 'Saving...' : 'Save Workout'}
                                 </button>

@@ -775,7 +775,7 @@ const UsersPage = () => {
             {!loading && !error && (
                 <>
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
+                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">User <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Management</span></h1>
                         <div className="flex w-full sm:w-auto gap-4">
                             <div className="relative flex-1 sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -784,7 +784,7 @@ const UsersPage = () => {
                                     placeholder="Search users..."
                                     value={searchTerm}
                                     onChange={(e) => handleSearchChange(e.target.value)}
-                                    className="w-full pl-10 pr-10 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                                    className="w-full pl-10 pr-10 py-2 border border-white/20 dark:border-white/10 rounded-xl bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:text-white placeholder-gray-400 text-sm"
                                 />
                                 {searchTerm && (
                                     <button
@@ -798,13 +798,13 @@ const UsersPage = () => {
                             </div>
                             <button
                                 onClick={handleFilterToggle}
-                                className={`p-2 border rounded-lg transition-colors ${showFilters ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                className={`p-2 border rounded-xl transition-colors backdrop-blur-md ${showFilters ? 'bg-amber-500 text-slate-950 border-amber-500 font-bold' : 'bg-white/45 dark:bg-white/5 border-white/20 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400'}`}
                             >
                                 <Filter className="h-5 w-5" />
                             </button>
                             <button 
                                 onClick={() => setIsCreateModalOpen(true)}
-                                className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700"
+                                className="bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold px-5 py-2 rounded-xl hover:from-amber-400 hover:to-orange-500 shadow-lg shadow-amber-500/20 transition-all"
                             >
                                 Add User
                             </button>
@@ -813,7 +813,7 @@ const UsersPage = () => {
 
                     {/* Filter Bar */}
                     {showFilters && (
-                        <div className="flex flex-col gap-3 sm:gap-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
+                        <div className="flex flex-col gap-3 sm:gap-4 bg-white/45 dark:bg-white/5 backdrop-blur-md p-3 sm:p-4 rounded-xl shadow-lg border border-white/20 dark:border-white/10 animate-in fade-in slide-in-from-top-2 w-full max-w-full overflow-visible">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-full">
                                 <div className="w-full max-w-full dropdown-container relative !overflow-visible">
                                     <label className="block text-xs font-medium text-gray-500 mb-1 ml-1">Gender</label>
@@ -911,24 +911,26 @@ const UsersPage = () => {
                         </div>
                     )}
 
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-white/10 overflow-hidden relative">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
                         {/* Desktop Table View */}
                         <div className="hidden lg:block overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                <thead className="bg-white/20 dark:bg-white/5 border-b border-white/20 dark:border-white/10">
                                     <tr>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Gender</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Age</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">BMI</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Activity Level</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">User</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Gender</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Age</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">BMI</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Activity Level</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="divide-y divide-white/10 dark:divide-white/5">
                                     {users.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center py-8 text-gray-500">
+                                            <td colSpan="6" className="text-center py-8 text-gray-500 dark:text-gray-400">
                                                 {searchTerm || (filters.gender !== 'All' || filters.activityLevel !== 'All') 
                                                     ? 'No users found matching your search or filters.' 
                                                     : 'No users found.'}
@@ -936,7 +938,7 @@ const UsersPage = () => {
                                         </tr>
                                     ) : (
                                         users.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <tr key={user.id} className="hover:bg-white/20 dark:hover:bg-white/5 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-8 h-8 rounded-full overflow-hidden">
@@ -949,7 +951,7 @@ const UsersPage = () => {
                                                                     onError={(e) => console.log('Basic img failed:', user.profile_image)}
                                                                 />
                                                             ) : (
-                                                                <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300">
+                                                                <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-amber-600 dark:text-amber-400">
                                                                     {user.username?.charAt(0)?.toUpperCase() || 'U'}
                                                                 </div>
                                                             )}
@@ -996,7 +998,7 @@ const UsersPage = () => {
                                                             
                                                             {isDropdownOpen === user.id && (
                                                                 <div 
-                                                                    className="absolute right-0 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10"
+                                                                    className="absolute right-0 w-32 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-xl border border-white/20 dark:border-white/10 z-10"
                                                                     style={{
                                                                         top: dropdownPosition.top,
                                                                         bottom: dropdownPosition.bottom
@@ -1040,7 +1042,7 @@ const UsersPage = () => {
                                 </div>
                             ) : (
                                 users.map((user) => (
-                                    <div key={user.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                    <div key={user.id} className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/20 dark:border-white/10 shadow-lg transition-all duration-200 hover:scale-[1.01]">
                                         {/* User Header */}
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -1052,7 +1054,7 @@ const UsersPage = () => {
                                                             className="w-full h-full rounded-full object-cover"
                                                         />
                                                     ) : (
-                                                        <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 text-xs">
+                                                        <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-amber-600 dark:text-amber-400 text-xs">
                                                             {user.username?.charAt(0)?.toUpperCase() || 'U'}
                                                         </div>
                                                     )}
@@ -1087,7 +1089,7 @@ const UsersPage = () => {
                                                     
                                                     {isDropdownOpen === user.id && (
                                                         <div 
-                                                            className="absolute right-0 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20"
+                                                            className="absolute right-0 w-32 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-xl shadow-xl border border-white/20 dark:border-white/10 z-20"
                                                             style={{
                                                                 top: dropdownPosition.top,
                                                                 bottom: dropdownPosition.bottom
@@ -1139,7 +1141,7 @@ const UsersPage = () => {
                                 ))
                             )}
                         </div>
-                        <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                        <div className="border-t border-white/20 dark:border-white/10 px-6 py-4">
                             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {pagination.totalItems > 0 ? (
@@ -1191,10 +1193,12 @@ const UsersPage = () => {
                     </div>
 
                     {/* Subscribed Users Table */}
-                    <div id="subscription-section" className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mt-6">
-                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Subscribed Users</h2>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Users with subscription plans</p>
+                    <div id="subscription-section" className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-white/10 overflow-hidden mt-6 relative">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        <div className="px-6 py-4 border-b border-white/20 dark:border-white/10">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Subscribed <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Users</span></h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Users with active subscription plans</p>
                         </div>
                         
                         {/* Loading State */}
@@ -1222,18 +1226,18 @@ const UsersPage = () => {
                                 {/* Desktop Table View */}
                                 <div className="hidden lg:block overflow-x-auto">
                                     <table className="w-full text-left">
-                                        <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                                        <thead className="bg-white/20 dark:bg-white/5 border-b border-white/20 dark:border-white/10">
                                             <tr>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Sr No</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Username</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Date</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">End Date</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Sr No</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Username</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Plan</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Start Date</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">End Date</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Status</th>
+                                                <th className="px-6 py-4 text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <tbody className="divide-y divide-white/10 dark:divide-white/5">
                                             {subscriptions.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="7" className="text-center py-8 text-gray-500">
@@ -1242,13 +1246,13 @@ const UsersPage = () => {
                                                 </tr>
                                             ) : (
                                                 subscriptions.map((subscription, index) => (
-                                                    <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                                    <tr key={subscription.id} className="hover:bg-white/20 dark:hover:bg-white/5 transition-colors">
                                                         <td className="px-6 py-4 text-gray-500 dark:text-gray-400 text-sm">
                                                             {(subscriptionsPagination.currentPage - 1) * subscriptionsPagination.pageSize + index + 1}
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300">
+                                                                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-amber-600 dark:text-amber-400">
                                                                     {subscription.username?.charAt(0)?.toUpperCase() || 'U'}
                                                                 </div>
                                                                 <div>
@@ -1257,7 +1261,7 @@ const UsersPage = () => {
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                                                                 {subscription.plan_name || 'N/A'}
                                                             </span>
                                                         </td>
@@ -1296,16 +1300,16 @@ const UsersPage = () => {
                                         </div>
                                     ) : (
                                         subscriptions.map((subscription, index) => (
-                                            <div key={subscription.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                            <div key={subscription.id} className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/20 dark:border-white/10 shadow-lg transition-all duration-200 hover:scale-[1.01]">
                                                 {/* Subscription Header */}
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center font-bold text-purple-600 dark:text-purple-300 flex-shrink-0 text-xs">
+                                                        <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center font-bold text-amber-600 dark:text-amber-400 flex-shrink-0 text-xs">
                                                             {subscription.username?.charAt(0)?.toUpperCase() || 'U'}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">{subscription.username || 'N/A'}</h3>
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300">
                                                                 {truncateText(subscription.plan_name, 20)}
                                                             </span>
                                                         </div>
@@ -1313,7 +1317,7 @@ const UsersPage = () => {
                                                     <div className="flex gap-1 flex-shrink-0 ml-2">
                                                         <button
                                                             onClick={() => handleEditSubscription(subscription)}
-                                                            className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            className="p-1.5 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors rounded-lg hover:bg-amber-500/10 dark:hover:bg-amber-500/20"
                                                             title="Edit Subscription"
                                                         >
                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1354,7 +1358,7 @@ const UsersPage = () => {
                                 </div>
                                 
                                 {/* Pagination */}
-                                <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                                <div className="border-t border-white/20 dark:border-white/10 px-6 py-4">
                                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                                         <div className="text-sm text-gray-500 dark:text-gray-400">
                                             {subscriptionsPagination.totalItems > 0 ? (
@@ -1411,58 +1415,62 @@ const UsersPage = () => {
 
             {/* User Details Modal */}
             {isHistoryModalOpen && currentUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-lg w-full p-6 shadow-xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-lg w-full p-6 shadow-2xl border border-white/20 dark:border-white/10 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{currentUser.username}'s Details</h2>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                                    {currentUser.username}'s <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Details</span>
+                                </h2>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">User Information</p>
                             </div>
-                            <button onClick={() => setIsHistoryModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <button onClick={() => setIsHistoryModalOpen(false)} className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Email</label>
-                                    <p className="text-sm text-gray-900 dark:text-white">{currentUser.email || 'N/A'}</p>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Email</label>
+                                    <p className="text-sm text-gray-900 dark:text-white break-all">{currentUser.email || 'N/A'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Gender</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Gender</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.gender || 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Age</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Age</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.age || 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">BMI</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">BMI</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.bmi || 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Weight</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Weight</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.weight ? `${currentUser.weight} kg` : 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Height</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Height</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.height ? `${currentUser.height} cm` : 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Weight Goal</label>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Weight Goal</label>
                                     <p className="text-sm text-gray-900 dark:text-white">{currentUser.weight_goal ? `${currentUser.weight_goal} kg` : 'Not Set'}</p>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500">Activity Level</label>
-                                    <p className="text-sm text-gray-900 dark:text-white">{currentUser.activity_level || 'Not Set'}</p>
+                                <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/10 backdrop-blur-sm">
+                                    <label className="text-xs font-semibold text-amber-600 dark:text-amber-400 block mb-1">Activity Level</label>
+                                    <p className="text-sm text-gray-900 dark:text-white capitalize">{currentUser.activity_level || 'Not Set'}</p>
                                 </div>
                             </div>
                         </div>
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={() => setIsHistoryModalOpen(false)}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
+                                className="px-5 py-2 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                             >
                                 Close
                             </button>
@@ -1473,11 +1481,13 @@ const UsersPage = () => {
 
             {/* Edit User Modal */}
             {isEditModalOpen && currentUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-md w-full p-6 shadow-2xl border border-white/20 dark:border-white/10 max-h-[90vh] overflow-y-auto custom-scrollbar animate-in zoom-in-95 duration-200 relative overflow-hidden">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit User</h2>
-                            <button onClick={() => { setIsEditModalOpen(false); setAgeError(''); }} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white">Edit <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">User</span></h2>
+                            <button onClick={() => { setIsEditModalOpen(false); setAgeError(''); }} className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1489,7 +1499,7 @@ const UsersPage = () => {
                                         type="email"
                                         value={currentUser.email || ''}
                                         readOnly
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/10 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed outline-none"
                                         placeholder="Email address"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email cannot be edited</p>
@@ -1500,12 +1510,12 @@ const UsersPage = () => {
                                     <select
                                         value={currentUser.gender || ''}
                                         onChange={e => setCurrentUser({ ...currentUser, gender: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all cursor-pointer"
                                     >
-                                        <option value="">Select Gender</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
+                                        <option value="" className="bg-white dark:bg-slate-900">Select Gender</option>
+                                        <option value="Male" className="bg-white dark:bg-slate-900">Male</option>
+                                        <option value="Female" className="bg-white dark:bg-slate-900">Female</option>
+                                        <option value="Other" className="bg-white dark:bg-slate-900">Other</option>
                                     </select>
                                 </div>
                                 
@@ -1529,7 +1539,7 @@ const UsersPage = () => {
                                                 setAgeError('');
                                             }
                                         }}
-                                        className={`w-full px-3 py-2 rounded-lg border ${ageError ? 'border-red-500 focus:ring-red-500/50' : 'border-gray-300 dark:border-gray-600 focus:ring-primary/50'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 outline-none transition-all`}
+                                        className={`w-full px-3 py-2 border rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none ${ageError ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'}`}
                                         placeholder="Enter age"
                                         min="1"
                                         max="120"
@@ -1550,7 +1560,7 @@ const UsersPage = () => {
                                                 const updatedUser = { ...currentUser, weight: newWeight };
                                                 setCurrentUser(updatedUser);
                                             }}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                             placeholder="Weight"
                                             step="0.1"
                                             min="1"
@@ -1567,7 +1577,7 @@ const UsersPage = () => {
                                                 const updatedUser = { ...currentUser, height: newHeight };
                                                 setCurrentUser(updatedUser);
                                             }}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                             placeholder="Height"
                                             step="0.1"
                                             min="1"
@@ -1581,7 +1591,7 @@ const UsersPage = () => {
                                         type="text"
                                         value={calculateBMI(currentUser.weight, currentUser.height) || ''}
                                         readOnly
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white cursor-not-allowed"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/10 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed outline-none"
                                         placeholder="Calculated automatically"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Calculated automatically from weight and height</p>
@@ -1593,7 +1603,7 @@ const UsersPage = () => {
                                         type="number"
                                         value={currentUser.weight_goal || ''}
                                         onChange={e => setCurrentUser({ ...currentUser, weight_goal: e.target.value ? parseFloat(e.target.value) : undefined })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                         placeholder="Weight goal"
                                         step="0.1"
                                         min="1"
@@ -1605,12 +1615,12 @@ const UsersPage = () => {
                                     <select
                                         value={currentUser.activity_level || ''}
                                         onChange={e => setCurrentUser({ ...currentUser, activity_level: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all cursor-pointer"
                                     >
-                                        <option value="">Select Activity Level</option>
-                                        <option value="beginner">Beginner</option>
-                                        <option value="intermediate">Intermediate</option>
-                                        <option value="advanced">Advanced</option>
+                                        <option value="" className="bg-white dark:bg-slate-900">Select Activity Level</option>
+                                        <option value="beginner" className="bg-white dark:bg-slate-900">Beginner</option>
+                                        <option value="intermediate" className="bg-white dark:bg-slate-900">Intermediate</option>
+                                        <option value="advanced" className="bg-white dark:bg-slate-900">Advanced</option>
                                     </select>
                                 </div>
                                 
@@ -1632,7 +1642,7 @@ const UsersPage = () => {
                                                 });
                                             }
                                         }}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-indigo-700"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950 hover:file:from-amber-400 hover:file:to-orange-500 file:cursor-pointer cursor-pointer"
                                     />
                                     
                                     {/* Show existing or preview image */}
@@ -1645,7 +1655,7 @@ const UsersPage = () => {
                                                 <img 
                                                     src={currentUser.profile_image} 
                                                     alt="Profile preview" 
-                                                    className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                                                    className="w-20 h-20 rounded-full object-cover border-2 border-white/20 dark:border-white/10 shadow-md"
                                                     onLoad={() => console.log('Image loaded successfully:', currentUser.profile_image)}
                                                     onError={(e) => {
                                                         console.log('Image failed to load:', currentUser.profile_image);
@@ -1655,28 +1665,25 @@ const UsersPage = () => {
                                                     }}
                                                     crossOrigin="anonymous"
                                                 />
-                                                <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center absolute top-0 left-0" style={{display: 'none'}}>
+                                                <div className="w-20 h-20 rounded-full bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 flex items-center justify-center absolute top-0 left-0" style={{display: 'none'}}>
                                                     <User className="w-8 h-8 text-gray-400" />
                                                 </div>
                                             </div>
                                             {currentUser.profile_image_changed && (
-                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1 text-center">Click Save to upload new image</p>
+                                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 text-center font-semibold animate-pulse">Click Save to upload new image</p>
                                             )}
                                             
                                             {/* Debug info */}
-                                            <p className="text-xs text-gray-400 mt-2 truncate text-center" title={currentUser.profile_image}>
+                                            <p className="text-xs text-gray-400/60 mt-2 truncate text-center max-w-[200px]" title={currentUser.profile_image}>
                                                 URL: {currentUser.profile_image}
                                             </p>
                                         </div>
                                     ) : (
                                         <div className="mt-3 flex flex-col items-center">
                                             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 text-center">No profile image</p>
-                                            <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                                            <div className="w-20 h-20 rounded-full bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 flex items-center justify-center">
                                                 <User className="w-8 h-8 text-gray-400" />
                                             </div>
-                                            {/* <p className="text-xs text-gray-400 mt-2 text-center">
-                                                Debug: profile_image = {String(currentUser.profile_image)}
-                                            </p> */}
                                         </div>
                                     )}
                                 </div>
@@ -1686,14 +1693,14 @@ const UsersPage = () => {
                                 <button
                                     type="button"
                                     onClick={() => { setIsEditModalOpen(false); setAgeError(''); }}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                    className="px-4 py-2 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg disabled:opacity-50"
+                                    className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-5 py-2 rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? 'Saving...' : 'Save Changes'}
                                 </button>
@@ -1705,18 +1712,20 @@ const UsersPage = () => {
 
             {/* Create User Modal */}
             {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-md w-full p-6 shadow-2xl border border-white/20 dark:border-white/10 animate-in zoom-in-95 duration-200 relative overflow-hidden">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create New User</h2>
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white">Create New <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">User</span></h2>
                             <button onClick={() => {
-                            setIsCreateModalOpen(false);
-                            setCreateUser({ username: '', email: '', password: '', confirmPassword: '' });
-                            setPasswordError('');
-                            setPasswordMatchError('');
-                            setShowPassword(false);
-                            setShowConfirmPassword(false);
-                        }} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                                setIsCreateModalOpen(false);
+                                setCreateUser({ username: '', email: '', password: '', confirmPassword: '' });
+                                setPasswordError('');
+                                setPasswordMatchError('');
+                                setShowPassword(false);
+                                setShowConfirmPassword(false);
+                            }} className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1727,7 +1736,7 @@ const UsersPage = () => {
                                     type="text"
                                     value={createUser.username}
                                     onChange={e => setCreateUser({ ...createUser, username: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                    className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                     placeholder="Enter username"
                                     required
                                 />
@@ -1738,7 +1747,7 @@ const UsersPage = () => {
                                     type="email"
                                     value={createUser.email}
                                     onChange={e => setCreateUser({ ...createUser, email: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                    className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                     placeholder="Enter email address"
                                     required
                                 />
@@ -1761,14 +1770,14 @@ const UsersPage = () => {
                                                 setPasswordMatchError('');
                                             }
                                         }}
-                                        className={`w-full px-3 py-2 pr-10 rounded-lg border ${passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all`}
+                                        className={`w-full px-3 py-2 pr-10 border rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none ${passwordError ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'}`}
                                         placeholder="Enter password"
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
@@ -1776,7 +1785,7 @@ const UsersPage = () => {
                                 
                                 {/* Password Requirements - Checkbox Style */}
                                 {createUser.password && (
-                                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600 mt-2">
+                                    <div className="bg-white/20 dark:bg-white/5 rounded-lg p-3 border border-white/20 dark:border-white/10 mt-2 backdrop-blur-md">
                                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password Requirements:</p>
                                         <div className="space-y-1">
                                             <div className={`flex items-center gap-2 text-xs ${
@@ -1862,14 +1871,14 @@ const UsersPage = () => {
                                                 setPasswordMatchError('');
                                             }
                                         }}
-                                        className={`w-full px-3 py-2 pr-10 rounded-lg border ${passwordMatchError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all`}
+                                        className={`w-full px-3 py-2 pr-10 border rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none ${passwordMatchError ? 'border-red-500/60 focus:ring-red-500/30' : 'border-white/20 dark:border-white/10'}`}
                                         placeholder="Confirm password"
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
                                     >
                                         {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
@@ -1892,14 +1901,14 @@ const UsersPage = () => {
                                         setShowPassword(false);
                                         setShowConfirmPassword(false);
                                     }}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                    className="px-4 py-2 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg disabled:opacity-50"
+                                    className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-5 py-2 rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? 'Creating...' : 'Create User'}
                                 </button>

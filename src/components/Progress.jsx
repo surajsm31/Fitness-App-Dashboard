@@ -14,11 +14,11 @@ const monthlyData = [
 const Progress = () => {
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Your Progress</h1>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">Your <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Progress</span></h1>
 
             {/* Achievement Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-6 text-white shadow-lg">
+                <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl p-6 text-white shadow-lg hover:scale-[1.02] transition-all duration-300 border border-amber-300/30">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="font-medium opacity-90">Current Streak</p>
@@ -30,7 +30,7 @@ const Progress = () => {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl p-6 text-white shadow-lg">
+                <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:scale-[1.02] transition-all duration-300 border border-orange-300/30">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="font-medium opacity-90">Total Workouts</p>
@@ -42,7 +42,7 @@ const Progress = () => {
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl p-6 text-white shadow-lg">
+                <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-xl p-6 text-white shadow-lg hover:scale-[1.02] transition-all duration-300 border border-amber-300/30">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="font-medium opacity-90">Weight Lost</p>
@@ -56,27 +56,27 @@ const Progress = () => {
             </div>
 
             {/* Detailed Chart */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Weight vs Body Fat %</h3>
+            <div className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl p-6 shadow-lg border border-white/20 dark:border-white/10">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Weight vs <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Body Fat %</span></h3>
                 <div className="h-[350px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={monthlyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorFat" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280' }} dy={10} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280' }} />
                             <CartesianGrid vertical={false} stroke="#E5E7EB" strokeDasharray="3 3" />
-                            <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                            <Area type="monotone" dataKey="weight" stroke="#4F46E5" fillOpacity={1} fill="url(#colorWeight)" />
-                            <Area type="monotone" dataKey="bodyFat" stroke="#10B981" fillOpacity={1} fill="url(#colorFat)" />
+                            <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)' }} />
+                            <Area type="monotone" dataKey="weight" stroke="#f59e0b" fillOpacity={1} fill="url(#colorWeight)" />
+                            <Area type="monotone" dataKey="bodyFat" stroke="#f97316" fillOpacity={1} fill="url(#colorFat)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>

@@ -90,16 +90,16 @@ const Sidebar = ({ isOpen, onClose }) => {
             {/* Sidebar */}
             <aside
                 className={clsx(
-                    "fixed top-0 left-0 z-30 h-full w-64 border-r border-gray-200/50 dark:border-gray-700/50 transition-transform duration-300 ease-in-out lg:translate-x-0",
-                    "bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-2xl lg:shadow-none flex flex-col",
+                    "fixed top-0 left-0 z-30 h-full w-64 border-r border-white/20 dark:border-white/10 transition-transform duration-300 ease-in-out lg:translate-x-0",
+                    "bg-white/45 dark:bg-slate-950/35 backdrop-blur-md shadow-2xl lg:shadow-none flex flex-col",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200/50 dark:border-gray-700/50 flex-shrink-0">
-                    <div className="flex items-center gap-2 font-bold text-xl bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                        <Activity className="w-6 h-6 text-primary" />
-                        <span>FitTrack</span>
+                <div className="flex items-center justify-between h-16 px-6 border-b border-white/20 dark:border-white/10 flex-shrink-0">
+                    <div className="flex items-center gap-2 font-black text-xl">
+                        <Activity className="w-6 h-6 text-amber-500 animate-pulse" />
+                        <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">FitTrack</span>
                     </div>
                 </div>
 
@@ -121,22 +121,22 @@ const Sidebar = ({ isOpen, onClose }) => {
                                         className={clsx(
                                             "relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group overflow-hidden",
                                             item.dropdownItems.some(d => d.path === location.pathname)
-                                                ? "text-white shadow-lg shadow-indigo-500/30"
-                                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100"
+                                                ? "text-slate-950 font-bold shadow-lg shadow-amber-500/10"
+                                                : "text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400"
                                         )}
                                     >
                                         {item.dropdownItems.some(d => d.path === location.pathname) && (
-                                            <div className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl" />
+                                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl" />
                                         )}
-                                        <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", item.dropdownItems.some(d => d.path === location.pathname) ? "text-white" : "")} />
+                                        <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", item.dropdownItems.some(d => d.path === location.pathname) ? "text-slate-950" : "")} />
                                         <span className="relative z-10 flex-1 text-left">{item.label}</span>
-                                        <ChevronDown className={clsx("w-4 h-4 relative z-10 transition-transform", dropdownOpen === item.label ? "rotate-180" : "", item.dropdownItems.some(d => d.path === location.pathname) ? "text-white" : "")} />
+                                        <ChevronDown className={clsx("w-4 h-4 relative z-10 transition-transform", dropdownOpen === item.label ? "rotate-180" : "", item.dropdownItems.some(d => d.path === location.pathname) ? "text-slate-950" : "")} />
                                     </button>
                                     
                                     {/* Dropdown menu */}
                                     {dropdownOpen === item.label && (
                                         <div 
-                                            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+                                            className="absolute top-full left-0 right-0 mt-1 bg-white/90 dark:bg-slate-950/80 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-xl shadow-xl z-50 overflow-hidden"
                                         >
                                             {item.dropdownItems.map((dropdownItem) => (
                                                 <NavLink
@@ -147,14 +147,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                                                         setDropdownOpen(null);
                                                     }}
                                                     className={({ isActive }) => clsx(
-                                                        "w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors",
+                                                        "w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-colors",
                                                         isActive
-                                                            ? "bg-primary text-white"
-                                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                            ? "bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950"
+                                                            : "text-gray-700 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400"
                                                     )}
                                                 >
-                                                    <dropdownItem.icon className="w-4 h-4" />
-                                                    <span>{dropdownItem.label}</span>
+                                                    <dropdownItem.icon className="w-4 h-4 relative z-10" />
+                                                    <span className="relative z-10">{dropdownItem.label}</span>
                                                 </NavLink>
                                             ))}
                                         </div>
@@ -168,16 +168,16 @@ const Sidebar = ({ isOpen, onClose }) => {
                                     className={({ isActive }) => clsx(
                                         "relative w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group overflow-hidden",
                                         isActive
-                                            ? "text-white shadow-lg shadow-indigo-500/30"
-                                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-50/80 dark:hover:bg-gray-800/80 hover:text-gray-900 dark:hover:text-gray-100"
+                                            ? "text-slate-950 font-bold shadow-lg shadow-amber-500/10"
+                                            : "text-gray-600 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400"
                                     )}
                                 >
                                     {({ isActive }) => (
                                         <>
                                             {isActive && (
-                                                <div className="absolute inset-0 bg-gradient-to-r from-primary to-indigo-600 rounded-xl" />
+                                                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl" />
                                             )}
-                                            <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", isActive ? "text-white" : "")} />
+                                            <item.icon className={clsx("w-5 h-5 relative z-10 transition-transform group-hover:scale-110", isActive ? "text-slate-950" : "")} />
                                             <span className="relative z-10">{item.label}</span>
                                         </>
                                     )}
@@ -188,11 +188,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </nav>
 
                 {/* Profile Section - Fixed at bottom */}
-                <div className="flex-shrink-0 p-4 border-t border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-t from-white/50 to-transparent dark:from-gray-900/50">
+                <div className="flex-shrink-0 p-4 border-t border-white/20 dark:border-white/10 bg-gradient-to-t from-white/10 to-transparent dark:from-white/5">
                     <NavLink 
                         to="/settings"
                         onClick={onClose}
-                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-colors cursor-pointer group"
                     >
                         <div className="relative">
                             {profile.profile_image ? (
@@ -202,17 +202,17 @@ const Sidebar = ({ isOpen, onClose }) => {
                                     className="w-10 h-10 rounded-full object-cover shadow-md ring-2 ring-white dark:ring-gray-800"
                                 />
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white dark:ring-gray-800">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-white dark:ring-gray-800">
                                     {getInitials(profile.name)}
                                 </div>
                             )}
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-purple-500 opacity-0 group-hover:opacity-75 transition duration-200 blur-sm"></div>
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 opacity-0 group-hover:opacity-75 transition duration-200 blur-sm"></div>
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                 {profileLoading ? 'Loading...' : (profile.name || 'Admin')}
                             </p>
-                            <p className="text-xs text-primary dark:text-indigo-400 font-medium truncate">
+                            <p className="text-xs text-amber-600 dark:text-amber-400 font-bold truncate">
                                 {profileLoading ? 'Loading...' : 'Administrator'}
                             </p>
                         </div>

@@ -319,10 +319,10 @@ const BmiClass = () => {
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">BMI Classifications</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">BMI <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Classifications</span></h1>
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+                    className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all text-sm sm:text-base"
                 >
                     <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">Add Classification</span>
@@ -347,75 +347,47 @@ const BmiClass = () => {
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs sm:text-sm"
+                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all text-xs sm:text-sm outline-none"
                     />
                 </div>
-                <div className="relative" ref={filterRef}>
+                <div className="relative z-20" ref={filterRef}>
                     <button 
                         onClick={() => setShowFilter(!showFilter)}
-                        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-xs sm:text-sm"
+                        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/20 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all text-xs sm:text-sm backdrop-blur-md outline-none"
                     >
                         <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Filter</span>
                         {filterRange !== 'all' && (
-                            <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                            <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
                         )}
                     </button>
                     
                     {/* Filter Dropdown */}
                     {showFilter && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
-                            <div className="p-2">
-                                <button
-                                    onClick={() => { setFilterRange('all'); setShowFilter(false); }}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        filterRange === 'all' 
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
-                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    All Classifications
-                                </button>
-                                <button
-                                    onClick={() => { setFilterRange('underweight'); setShowFilter(false); }}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        filterRange === 'underweight' 
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
-                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    Underweight (&lt;18.5)
-                                </button>
-                                <button
-                                    onClick={() => { setFilterRange('normal'); setShowFilter(false); }}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        filterRange === 'normal' 
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
-                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    Normal Weight (18.5-24.9)
-                                </button>
-                                <button
-                                    onClick={() => { setFilterRange('overweight'); setShowFilter(false); }}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        filterRange === 'overweight' 
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
-                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    Overweight (25-29.9)
-                                </button>
-                                <button
-                                    onClick={() => { setFilterRange('obese'); setShowFilter(false); }}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                                        filterRange === 'obese' 
-                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' 
-                                            : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                                    }`}
-                                >
-                                    Obese (≥30)
-                                </button>
+                        <div className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-lg shadow-lg z-30 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100">
+                            <div className="p-1.5 space-y-0.5">
+                                {[
+                                    { value: 'all', label: 'All Classifications' },
+                                    { value: 'underweight', label: 'Underweight (<18.5)' },
+                                    { value: 'normal', label: 'Normal Weight (18.5-24.9)' },
+                                    { value: 'overweight', label: 'Overweight (25-29.9)' },
+                                    { value: 'obese', label: 'Obese (≥30)' }
+                                ].map(item => (
+                                    <button
+                                        key={item.value}
+                                        type="button"
+                                        onClick={() => { setFilterRange(item.value); setShowFilter(false); }}
+                                        className={`w-full text-left px-3 py-2 rounded-md text-xs sm:text-sm transition-colors ${
+                                            filterRange === item.value 
+                                                ? 'bg-amber-500/20 dark:bg-amber-500/30 font-bold text-amber-600 dark:text-amber-400' 
+                                                : 'hover:bg-amber-500/10 dark:hover:bg-amber-500/20 text-gray-700 dark:text-gray-300'
+                                        }`}
+                                    >
+                                        {item.value === 'underweight' ? <>Underweight (&lt;18.5)</> :
+                                         item.value === 'obese' ? <>Obese (&ge;30)</> :
+                                         item.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
@@ -435,16 +407,23 @@ const BmiClass = () => {
 
             {/* Add/Edit Modal */}
             {(isAdding || editingId) && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-2xl transition-all">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="relative w-full max-w-md transform overflow-hidden bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {isAdding ? 'Add New Classification' : 'Edit Classification'}
+                        <div className="flex items-center justify-between border-b border-white/20 dark:border-white/10 px-6 py-4 pt-5">
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white">
+                                {isAdding ? (
+                                    <>Add New <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Classification</span></>
+                                ) : (
+                                    <>Edit <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Classification</span></>
+                                )}
                             </h3>
                             <button
                                 onClick={handleCancel}
-                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -462,7 +441,7 @@ const BmiClass = () => {
                                         name="category_name"
                                         value={formData.category_name}
                                         onChange={handleInputChange}
-                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                         placeholder="e.g., Normal Weight"
                                     />
                                 </div>
@@ -477,7 +456,7 @@ const BmiClass = () => {
                                             name="min_bmi"
                                             value={formData.min_bmi}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                             placeholder="18.5"
                                         />
                                     </div>
@@ -491,7 +470,7 @@ const BmiClass = () => {
                                             name="max_bmi"
                                             value={formData.max_bmi}
                                             onChange={handleInputChange}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                             placeholder="24.9"
                                         />
                                     </div>
@@ -500,17 +479,17 @@ const BmiClass = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+                        <div className="flex justify-end gap-3 border-t border-white/20 dark:border-white/10 px-6 py-4">
                             <button
                                 onClick={handleCancel}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                             >
                                 <X className="w-4 h-4" />
                                 Cancel
                             </button>
                             <button
                                 onClick={isAdding ? handleAdd : handleUpdate}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold rounded-lg shadow-md shadow-amber-500/20 transition-all"
                             >
                                 <Save className="w-4 h-4" />
                                 {isAdding ? 'Save' : 'Update'}
@@ -521,11 +500,13 @@ const BmiClass = () => {
             )}
 
             {/* BMI Classes Table */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white/45 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-xl shadow-sm overflow-hidden relative">
+                {/* Decorative top bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mx-auto mb-4"></div>
                             <p className="text-gray-500 dark:text-gray-400">Loading BMI classifications...</p>
                         </div>
                     </div>
@@ -534,7 +515,7 @@ const BmiClass = () => {
                         {/* Desktop Table View */}
                         <div className="hidden lg:block overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                <thead className="bg-white/20 dark:bg-white/5 border-b border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-200">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                             Name
@@ -553,7 +534,7 @@ const BmiClass = () => {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody className="divide-y divide-white/20 dark:divide-white/10">
                                     {filteredClasses.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
@@ -562,7 +543,7 @@ const BmiClass = () => {
                                         </tr>
                                     ) : (
                                         filteredClasses.map((bmi) => (
-                                            <tr key={bmi.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                                            <tr key={bmi.id} className="hover:bg-white/30 dark:hover:bg-white/5 transition-all">
                                                 <td className="px-4 py-4 whitespace-nowrap">
                                                     <div className="flex items-center gap-2">
                                                         <div
@@ -575,7 +556,7 @@ const BmiClass = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 whitespace-nowrap">
-                                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
                                                         {bmi.classification}
                                                     </span>
                                                 </td>
@@ -626,7 +607,7 @@ const BmiClass = () => {
                                 </div>
                             ) : (
                                 filteredClasses.map((bmi) => (
-                                    <div key={bmi.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                                    <div key={bmi.id} className="bg-white/20 dark:bg-white/5 rounded-lg p-4 border border-white/20 dark:border-white/10">
                                         {/* Classification Header */}
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -636,7 +617,7 @@ const BmiClass = () => {
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="font-semibold text-gray-900 dark:text-white text-base truncate">{bmi.name}</h3>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                    <p className="text-xs text-gray-700 dark:text-gray-400 truncate">
                                                         {bmi.classification}
                                                     </p>
                                                 </div>
@@ -688,7 +669,7 @@ const BmiClass = () => {
 
             {/* Pagination Controls */}
             {pagination.total_pages > 1 && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 shadow-sm border border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white/45 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 shadow-sm gap-3 sm:gap-0 mt-4">
                     <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                         Showing {((pagination.current_page - 1) * pagination.page_size) + 1} to{' '}
                         {Math.min(pagination.current_page * pagination.page_size, pagination.total_items)} of{' '}
@@ -698,7 +679,7 @@ const BmiClass = () => {
                         <button
                             onClick={() => handlePageChange(pagination.current_page - 1)}
                             disabled={!pagination.has_prev}
-                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             Previous
                         </button>
@@ -708,7 +689,7 @@ const BmiClass = () => {
                         <button
                             onClick={() => handlePageChange(pagination.current_page + 1)}
                             disabled={!pagination.has_next}
-                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="px-2 sm:px-3 py-1 text-xs sm:text-sm border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             Next
                         </button>

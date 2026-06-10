@@ -168,10 +168,12 @@ const Subscriptions = () => {
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Subscription Plans</h1>
+                <h1 className="text-2xl font-black text-gray-900 dark:text-white">
+                    Subscription <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Plans</span>
+                </h1>
                 <button
                     onClick={() => openModal()}
-                    className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 flex items-center gap-2"
+                    className="bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold px-5 py-2 rounded-xl hover:from-amber-400 hover:to-orange-500 flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all"
                 >
                     <Plus className="w-5 h-5" />
                     New Plan
@@ -213,8 +215,8 @@ const Subscriptions = () => {
             {!loading && !error && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {plans.map((plan) => (
-                        <div key={plan.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden relative group">
-                            <div className="p-6 bg-gray-50 dark:bg-gray-700/30 border-b border-gray-200 dark:border-gray-700 text-center">
+                        <div key={plan.id} className="bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-lg border border-white/20 dark:border-white/10 flex flex-col overflow-hidden relative group transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
+                            <div className="p-6 bg-white/20 dark:bg-white/5 border-b border-white/20 dark:border-white/10 text-center">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">{plan.name}</h3>
                                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -232,7 +234,7 @@ const Subscriptions = () => {
                             </div>
                             <div className="p-6 flex-1 flex flex-col">
                                 {/* Description Section */}
-                                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <div className="mb-4 p-3 bg-amber-500/10 dark:bg-amber-500/10 rounded-lg border border-amber-200/30 dark:border-amber-500/20">
                                     <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{plan.description}</p>
                                 </div>
                                 
@@ -245,23 +247,23 @@ const Subscriptions = () => {
                                         </li>
                                     ))}
                                 </ul>
-                                <div className="flex gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <div className="flex gap-3 mt-auto pt-4 border-t border-white/20 dark:border-white/10">
                                     <button
                                         onClick={() => openModal(plan)}
-                                        className="flex-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
+                                        className="flex-1 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/30 dark:bg-white/10 rounded-lg hover:bg-white/50 dark:hover:bg-white/15 flex items-center justify-center gap-2 backdrop-blur-sm transition-all"
                                     >
                                         <Edit2 className="w-4 h-4" /> Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(plan.id)}
-                                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                        className="p-2 text-red-500 hover:bg-red-500/10 dark:hover:bg-red-500/20 rounded-lg transition-colors"
                                     >
                                         <Trash2 className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
                             {/* Decorative top bar */}
-                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-purple-500 animate-in fade-in slide-in-from-top-1"></div>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1"></div>
                         </div>
                     ))}
                 </div>
@@ -270,12 +272,19 @@ const Subscriptions = () => {
             {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-xl border border-gray-100 dark:border-gray-700">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
                         <div className="flex justify-between items-center mb-6 p-6 pb-0">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                                {currentPlan ? 'Edit Plan' : 'Create New Plan'}
+                            <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                                {currentPlan ? (
+                                    <>Edit <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Plan</span></>
+                                ) : (
+                                    <>Create New <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Plan</span></>
+                                )}
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -289,7 +298,7 @@ const Subscriptions = () => {
                                         required
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                         placeholder="e.g. Premium Plan"
                                     />
                                 </div>
@@ -300,7 +309,7 @@ const Subscriptions = () => {
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
                                         rows={2}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none resize-none"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none resize-none"
                                         placeholder="Describe the subscription plan..."
                                     />
                                 </div>
@@ -314,7 +323,7 @@ const Subscriptions = () => {
                                             required
                                             value={formData.price}
                                             onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none"
                                             placeholder="29.99"
                                         />
                                     </div>
@@ -323,11 +332,11 @@ const Subscriptions = () => {
                                         <select
                                             value={formData.duration_days}
                                             onChange={e => setFormData({ ...formData, duration_days: parseInt(e.target.value) })}
-                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none"
+                                            className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all cursor-pointer"
                                         >
-                                            <option value={30}>30 Days</option>
-                                            <option value={90}>90 Days</option>
-                                            <option value={365}>365 Days</option>
+                                            <option value={30} className="bg-white dark:bg-slate-900">30 Days</option>
+                                            <option value={90} className="bg-white dark:bg-slate-900">90 Days</option>
+                                            <option value={365} className="bg-white dark:bg-slate-900">365 Days</option>
                                         </select>
                                     </div>
                                 </div>
@@ -340,35 +349,35 @@ const Subscriptions = () => {
                                         value={formData.features}
                                         onChange={e => setFormData({ ...formData, features: e.target.value })}
                                         rows={5}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary outline-none resize-none"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none resize-none"
                                         placeholder="Personalized workouts&#10;Nutrition plans&#10;Progress tracking&#10;Priority support"
                                     />
                                 </div>
                                 
                                 <div>
-                                    <label className="flex items-center space-x-2">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={formData.is_active}
                                             onChange={e => setFormData({ ...formData, is_active: e.target.checked })}
-                                            className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                            className="w-4 h-4 text-amber-500 border-white/20 dark:border-white/10 rounded bg-white/45 dark:bg-white/5 focus:ring-amber-500/30 cursor-pointer"
                                         />
                                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Active</span>
                                     </label>
                                 </div>
                             </div>
                             
-                            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-white/20 dark:border-white/10">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-lg bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-indigo-700 rounded-lg shadow-sm shadow-indigo-500/30 transition-all"
+                                    className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-5 py-2 rounded-lg shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {currentPlan ? 'Update Plan' : 'Create Plan'}
                                 </button>

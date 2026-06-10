@@ -54,7 +54,7 @@ const Header = ({ onMenuClick, onLogout }) => {
     };
 
     return (
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-x-4 border-b border-gray-200/50 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 transition-all duration-300">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-x-4 border-b border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 backdrop-blur-md px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 transition-all duration-300">
             <button
                 type="button"
                 className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-200 lg:hidden hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-lg transition-colors"
@@ -150,7 +150,7 @@ const Header = ({ onMenuClick, onLogout }) => {
                             to="/settings"
                             className="flex items-center relative group cursor-pointer"
                         >
-                            <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-purple-500 blur opacity-0 group-hover:opacity-75 transition duration-200"></span>
+                            <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 blur opacity-0 group-hover:opacity-75 transition duration-200"></span>
                             {profile.profile_image ? (
                                 <img
                                     className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gray-50 object-cover border-2 border-white dark:border-gray-800 shadow-md"
@@ -158,7 +158,7 @@ const Header = ({ onMenuClick, onLogout }) => {
                                     alt={profile.name || 'Admin'}
                                 />
                             ) : (
-                                <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md">
+                                <div className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-md">
                                     <span className="text-sm font-semibold text-white">
                                         {getInitials(profile.name)}
                                     </span>
@@ -167,7 +167,7 @@ const Header = ({ onMenuClick, onLogout }) => {
                         </Link>
                         <button
                             onClick={onLogout}
-                            className="p-2 text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="p-2 text-gray-600 dark:text-gray-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 transition-all duration-200 rounded-lg"
                             title="Logout"
                         >
                             <LogOut className="h-5 w-5 stroke-2" />

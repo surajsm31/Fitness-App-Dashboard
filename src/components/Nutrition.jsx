@@ -155,8 +155,10 @@ const Nutrition = () => {
     // Reusable Nutrition Chart Component
     const NutritionChart = memo(({ data, bmiCategory }) => {
         return (
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-3 sm:p-4 lg:p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="text-sm sm:text-base lg:text-base font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-white/45 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 lg:p-4 shadow-sm relative overflow-hidden">
+                {/* Decorative top bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                <h3 className="text-sm sm:text-base lg:text-base font-bold text-gray-900 dark:text-white mb-2 pt-1">
                     Nutrition Distribution
                     {bmiCategory && (
                         <span className="text-xs sm:text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
@@ -705,11 +707,11 @@ const Nutrition = () => {
             <AlertContainer alerts={alerts} onRemoveAlert={removeAlert} />
             
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Admin Nutrition</h1>
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">Admin <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Nutrition</span></h1>
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                     <button
                         onClick={handleAdd}
-                        className="flex items-center gap-2 bg-primary text-white px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors w-full sm:w-auto justify-center"
+                        className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-3 sm:px-4 py-2 rounded-lg text-sm transition-all shadow-md shadow-amber-500/20 w-full sm:w-auto justify-center"
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">Create Meal Plan</span>
@@ -718,7 +720,7 @@ const Nutrition = () => {
                     <button
                         onClick={fetchAllMeals}
                         disabled={loading}
-                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 border border-white/20 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium bg-white/20 dark:bg-white/5 hover:bg-white/30 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-colors w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                         <span className="hidden sm:inline">Refresh</span>
@@ -728,30 +730,32 @@ const Nutrition = () => {
             </div>
 
             {/* BMI Calculator Section */}
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-3 sm:p-4 lg:p-4 text-white shadow-lg">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4">
+            <div className="bg-white/45 dark:bg-white/5 border border-white/20 dark:border-white/10 backdrop-blur-md rounded-xl p-3 sm:p-4 lg:p-4 text-gray-900 dark:text-white shadow-md relative overflow-hidden">
+                {/* Decorative top bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4 pt-1">
                     <div className="w-full lg:w-auto">
-                        <h2 className="text-lg sm:text-xl lg:text-xl font-bold mb-1">BMI Smart Planner</h2>
-                        <p className="opacity-90 text-xs sm:text-sm lg:text-sm max-w-full lg:max-w-md">Enter user details to filter nutrition plans specifically tailored for their BMI category.</p>
+                        <h2 className="text-lg sm:text-xl lg:text-xl font-black mb-1 text-gray-900 dark:text-white">BMI Smart <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Planner</span></h2>
+                        <p className="text-gray-700 dark:text-gray-200 text-xs sm:text-sm lg:text-sm max-w-full lg:max-w-md font-medium">Enter user details to filter nutrition plans specifically tailored for their BMI category.</p>
 
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-3 mt-2 sm:mt-3 lg:mt-3">
                             <div className="flex-1 sm:flex-none">
-                                <label className="block text-xs sm:text-sm font-medium mb-1 opacity-80">Height (cm)</label>
+                                <label className="block text-xs sm:text-sm font-bold mb-1 text-gray-800 dark:text-gray-200">Height (cm)</label>
                                 <input
                                     type="number"
                                     value={bmiInputs.height}
                                     onChange={e => setBmiInputs({ ...bmiInputs, height: e.target.value })}
-                                    className="px-3 py-1.5 sm:py-2 rounded-lg text-gray-900 w-full sm:w-28 lg:w-32 focus:outline-none"
+                                    className="px-3 py-1.5 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none w-full sm:w-28 lg:w-32 text-sm"
                                     placeholder="175"
                                 />
                             </div>
                             <div className="flex-1 sm:flex-none">
-                                <label className="block text-xs sm:text-sm font-medium mb-1 opacity-80">Weight (kg)</label>
+                                <label className="block text-xs sm:text-sm font-bold mb-1 text-gray-800 dark:text-gray-200">Weight (kg)</label>
                                 <input
                                     type="number"
                                     value={bmiInputs.weight}
                                     onChange={e => setBmiInputs({ ...bmiInputs, weight: e.target.value })}
-                                    className="px-3 py-1.5 sm:py-2 rounded-lg text-gray-900 w-full sm:w-28 lg:w-32 focus:outline-none"
+                                    className="px-3 py-1.5 sm:py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none w-full sm:w-28 lg:w-32 text-sm"
                                     placeholder="70"
                                 />
                             </div>
@@ -759,7 +763,7 @@ const Nutrition = () => {
                                 <button
                                     onClick={calculateBMI}
                                     disabled={bmiCalculating}
-                                    className="bg-white text-indigo-600 px-3 sm:px-4 lg:px-5 py-1.5 sm:py-2 rounded-lg font-bold hover:bg-gray-100 transition-colors w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                                    className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold px-3 sm:px-4 lg:px-5 py-1.5 sm:py-2 rounded-lg transition-all shadow-md shadow-amber-500/20 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
                                 >
                                     {bmiCalculating ? (
                                         <>
@@ -775,10 +779,10 @@ const Nutrition = () => {
                     </div>
 
                     {bmiResult && (
-                        <div className="bg-white/20 backdrop-blur-md p-3 sm:p-4 lg:p-4 rounded-xl border border-white/30 text-center w-full lg:w-auto lg:min-w-[180px]">
-                            <p className="text-xs sm:text-sm font-medium opacity-90">Calculated BMI</p>
-                            <p className="text-2xl sm:text-3xl lg:text-3xl font-bold my-1 lg:my-2">{bmiResult.bmi}</p>
-                            <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 bg-white text-indigo-600 rounded-full text-xs sm:text-sm font-bold">
+                        <div className="bg-white/30 dark:bg-white/5 backdrop-blur-md p-3 sm:p-4 lg:p-4 rounded-xl border border-white/20 dark:border-white/10 text-center w-full lg:w-auto lg:min-w-[180px] shadow-sm">
+                            <p className="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-200">Calculated BMI</p>
+                            <p className="text-2xl sm:text-3xl lg:text-3xl font-bold my-1 lg:my-2 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">{bmiResult.bmi}</p>
+                            <span className="inline-block px-2 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 rounded-full text-xs sm:text-sm font-bold shadow-sm">
                                 {bmiResult.category}
                             </span>
                         </div>
@@ -799,7 +803,7 @@ const Nutrition = () => {
                 {/* Meals List - Full Width */}
                 <div className="w-full space-y-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-1">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
                             {selectedCategory === 'All' ? 'All Plans' : `Plans for ${selectedCategory}`}
                         </h3>
                         
@@ -809,7 +813,11 @@ const Nutrition = () => {
                                 <button
                                     key={cat}
                                     onClick={() => handleFilterChange(cat)}
-                                    className={`px-2 sm:px-3 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${selectedCategory === cat ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-bold' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                    className={`px-3 py-1 text-xs rounded-full transition-all duration-300 whitespace-nowrap backdrop-blur-md ${
+                                        selectedCategory === cat 
+                                            ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold shadow-md shadow-amber-500/10' 
+                                            : 'text-gray-700 dark:text-gray-400 bg-white/20 dark:bg-white/5 border border-white/10 dark:border-white/10 hover:bg-white/45 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
+                                    }`}
                                 >
                                     {cat}
                                 </button>
@@ -824,14 +832,14 @@ const Nutrition = () => {
                                     onClick={() => {
                                         setIsDropdownOpen(!isDropdownOpen);
                                     }}
-                                    className="w-full sm:w-auto flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 transition-all outline-none truncate max-w-full min-w-[120px]"
+                                    className="w-full sm:w-auto flex items-center justify-between text-left text-xs sm:text-sm p-2 sm:p-2.5 pr-8 sm:pr-10 rounded-lg border border-white/20 dark:border-white/10 bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all outline-none truncate max-w-full min-w-[120px]"
                                 >
                                     <span className="truncate">{selectedCategory}</span>
                                     <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                                 </button>
                                 
                                 {isDropdownOpen && (
-                                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100 min-w-[120px]">
+                                    <div className="absolute left-0 right-0 mt-1 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-lg shadow-lg z-50 overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-100 min-w-[120px]">
                                         {['All', 'Underweight', 'Normal', 'Overweight', 'Obese'].map(cat => (
                                             <button
                                                 key={cat}
@@ -840,7 +848,7 @@ const Nutrition = () => {
                                                     handleFilterChange(cat);
                                                     setIsDropdownOpen(false);
                                                 }}
-                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${selectedCategory === cat ? 'bg-primary/10 font-semibold text-primary dark:text-primary' : ''}`}
+                                                className={`w-full text-left px-3 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 hover:text-amber-600 dark:hover:text-amber-400 transition-colors ${selectedCategory === cat ? 'bg-amber-500/20 dark:bg-amber-500/30 font-bold text-amber-600 dark:text-amber-400' : ''}`}
                                             >
                                                 {cat}
                                             </button>
@@ -867,16 +875,18 @@ const Nutrition = () => {
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
                             {meals.map((meal) => (
-                                <div key={meal.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20">
-                                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+                                <div key={meal.id} className="group bg-white/45 dark:bg-white/5 backdrop-blur-md rounded-2xl shadow-sm border border-white/20 dark:border-white/10 p-3 sm:p-4 transition-all duration-300 hover:shadow-md hover:border-amber-500/30 relative overflow-hidden">
+                                    {/* Decorative top bar */}
+                                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+                                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-1">
                                         {/* Image/Icon Section */}
-                                        <div className="w-full sm:w-48 h-48 sm:h-32 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
+                                        <div className="w-full sm:w-48 h-48 sm:h-32 bg-white/20 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-xl overflow-hidden flex-shrink-0 relative group-hover:shadow-inner transition-all duration-300">
                                             <div className="w-full h-full relative">
                                                 {meal.image_url ? (
                                                     <img src={meal.image_url} alt={meal.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                        <meal.icon className="w-10 h-10 opacity-30 animate-pulse" />
+                                                        <meal.icon className="w-10 h-10 opacity-30 animate-pulse text-amber-500" />
                                                     </div>
                                                 )}
                                                 {/* Overlay for hover */}
@@ -889,26 +899,26 @@ const Nutrition = () => {
                                             {/* Meta and Title */}
                                             <div>
                                                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tracking-wide uppercase">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold tracking-wide uppercase">
                                                         {meal.type}
                                                     </span>
-                                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                    <span className="text-gray-300 dark:text-gray-500">•</span>
                                                     <span className="inline-flex items-center text-xs font-medium text-orange-500 dark:text-orange-400">
                                                         <Flame className="w-3 h-3 mr-1" />
                                                         {meal.calories} kcal
                                                     </span>
-                                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                    <span className="text-gray-300 dark:text-gray-500">•</span>
                                                     <span className={clsx(
                                                         "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                        [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-100 text-blue-700' : 
-                                                        meal.bmiCategory === 4 ? 'bg-green-100 text-green-700' : 
-                                                        meal.bmiCategory === 5 ? 'bg-yellow-100 text-yellow-700' : 
-                                                        'bg-red-100 text-red-700'
+                                                        [1, 2, 3].includes(meal.bmiCategory) ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 
+                                                        meal.bmiCategory === 4 ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 
+                                                        meal.bmiCategory === 5 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 
+                                                        'bg-red-500/10 text-red-600 dark:text-red-400'
                                                     )}>
                                                         {getBmiCategoryName(meal.bmiCategory)}
                                                     </span>
                                                 </div>
-                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary transition-colors duration-300">{meal.name} Plan</h3>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-amber-500 transition-colors duration-300">{meal.name} Plan</h3>
                                                 <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4 leading-relaxed">
                                                     {meal.description || 'Nutritionally balanced meal plan optimized for your fitness goals.'}
                                                 </p>
@@ -918,13 +928,13 @@ const Nutrition = () => {
                                             <div className="flex items-center gap-3 pt-2">
                                                 <button
                                                     onClick={() => handleEdit(meal)}
-                                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary transition-all duration-300 border border-gray-100 dark:border-gray-700"
+                                                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/30 dark:bg-white/10 rounded-lg hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-600 hover:text-slate-950 hover:border-transparent transition-all duration-300 border border-white/20 dark:border-white/10"
                                                 >
                                                     Edit Plan
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(meal.id)}
-                                                    className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                                                    className="p-2 text-red-500 hover:bg-red-500/15 dark:hover:bg-red-500/20 rounded-lg transition-all duration-300 border border-transparent hover:border-red-500/30"
                                                     title="Delete Plan"
                                                 >
                                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -965,10 +975,10 @@ const Nutrition = () => {
                                 type="button"
                                 onClick={handlePrevPage}
                                 disabled={!pagination.hasPrev || paginationLoading}
-                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-colors ${
+                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all ${
                                     pagination.hasPrev && !paginationLoading
-                                        ? 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                                        ? 'bg-white/30 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/15 border border-white/20 dark:border-white/10'
+                                        : 'bg-gray-100/50 dark:bg-gray-800/20 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200/50 dark:border-gray-750'
                                 }`}
                             >
                                 {paginationLoading ? '...' : 'Previous'}
@@ -994,12 +1004,12 @@ const Nutrition = () => {
                                             type="button"
                                             onClick={() => handlePageChange(pageNum)}
                                             disabled={paginationLoading}
-                                            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-colors ${
+                                            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all ${
                                                 pageNum === pagination.currentPage
-                                                    ? 'bg-indigo-600 text-white'
+                                                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold shadow-md shadow-amber-500/10'
                                                     : paginationLoading
-                                                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700'
-                                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+                                                        ? 'bg-gray-100/50 dark:bg-gray-800/20 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200/50 dark:border-gray-750'
+                                                        : 'bg-white/30 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/15 border border-white/20 dark:border-white/10'
                                             }`}
                                         >
                                             {paginationLoading && pageNum === pagination.currentPage ? '...' : pageNum}
@@ -1011,10 +1021,10 @@ const Nutrition = () => {
                                 type="button"
                                 onClick={handleNextPage}
                                 disabled={!pagination.hasNext || paginationLoading}
-                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-colors flex items-center gap-2 ${
+                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-lg transition-all flex items-center gap-2 ${
                                     pagination.hasNext && !paginationLoading
-                                        ? 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
-                                        : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700'
+                                        ? 'bg-white/30 dark:bg-white/10 text-gray-700 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-white/15 border border-white/20 dark:border-white/10'
+                                        : 'bg-gray-100/50 dark:bg-gray-800/20 text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200/50 dark:border-gray-750'
                                 }`}
                             >
                                 {paginationLoading ? (
@@ -1030,13 +1040,20 @@ const Nutrition = () => {
 
             {/* Edit Modal */}
             {isModalOpen && currentMeal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-xl">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                                {currentMeal.id ? 'Edit Meal Plan' : 'New Meal Plan'}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200">
+                    <div className="bg-white/45 dark:bg-slate-950/35 backdrop-blur-md rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto custom-scrollbar p-4 sm:p-6 shadow-2xl border border-white/20 dark:border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Decorative top bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 animate-in fade-in slide-in-from-top-1 z-10"></div>
+                        
+                        <div className="flex justify-between items-center mb-4 pt-1">
+                            <h2 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white">
+                                {currentMeal.id ? (
+                                    <>Edit <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Meal Plan</span></>
+                                ) : (
+                                    <>New <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 bg-clip-text text-transparent">Meal Plan</span></>
+                                )}
                             </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 p-1">
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors p-1">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1047,7 +1064,7 @@ const Nutrition = () => {
                                     type="text"
                                     value={currentMeal.name}
                                     onChange={e => setCurrentMeal({ ...currentMeal, name: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                     required
                                 />
                             </div>
@@ -1061,9 +1078,9 @@ const Nutrition = () => {
                                             const icon = iconOptions.find(opt => opt.label === type)?.icon || Utensils;
                                             setCurrentMeal({ ...currentMeal, type, icon });
                                         }}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all outline-none text-sm"
                                     >
-                                        {iconOptions.map(opt => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
+                                        {iconOptions.map(opt => <option key={opt.label} value={opt.label} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">{opt.label}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -1071,16 +1088,16 @@ const Nutrition = () => {
                                     <select
                                         value={currentMeal.bmiCategory}
                                         onChange={e => setCurrentMeal({ ...currentMeal, bmiCategory: parseInt(e.target.value) })}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-slate-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all outline-none text-sm"
                                     >
-                                        <option value={1}>ID 1 - Severe Thinness</option>
-                                        <option value={2}>ID 2 - Moderate Thinness</option>
-                                        <option value={3}>ID 3 - Mild Thinness</option>
-                                        <option value={4}>ID 4 - Normal</option>
-                                        <option value={5}>ID 5 - Overweight</option>
-                                        <option value={6}>ID 6 - Obese Class I</option>
-                                        <option value={7}>ID 7 - Obese Class II</option>
-                                        <option value={8}>ID 8 - Obese Class III</option>
+                                        <option value={1} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 1 - Severe Thinness</option>
+                                        <option value={2} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 2 - Moderate Thinness</option>
+                                        <option value={3} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 3 - Mild Thinness</option>
+                                        <option value={4} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 4 - Normal</option>
+                                        <option value={5} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 5 - Overweight</option>
+                                        <option value={6} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 6 - Obese Class I</option>
+                                        <option value={7} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 7 - Obese Class II</option>
+                                        <option value={8} className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">ID 8 - Obese Class III</option>
                                     </select>
                                 </div>
                             </div>
@@ -1090,7 +1107,7 @@ const Nutrition = () => {
                                     type="number"
                                     value={currentMeal.calories}
                                     onChange={e => setCurrentMeal({ ...currentMeal, calories: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                                    className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm"
                                     required
                                 />
                             </div>
@@ -1099,7 +1116,7 @@ const Nutrition = () => {
                                 <textarea
                                     value={currentMeal.description || ''}
                                     onChange={e => setCurrentMeal({ ...currentMeal, description: e.target.value })}
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm resize-none"
+                                    className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 dark:text-white placeholder-gray-400 transition-all outline-none text-sm resize-none"
                                     rows={3}
                                     placeholder="Enter meal description (optional)..."
                                 />
@@ -1122,14 +1139,14 @@ const Nutrition = () => {
                                                 reader.readAsDataURL(file);
                                             }
                                         }}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                                        className="w-full px-3 py-2 border border-white/20 dark:border-white/10 rounded-lg bg-white/45 dark:bg-white/5 text-gray-900 dark:text-white text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-bold file:bg-gradient-to-r file:from-amber-500 file:to-orange-600 file:text-slate-950 hover:file:from-amber-400 hover:file:to-orange-500 cursor-pointer"
                                     />
                                     {currentMeal.imagePreview && (
                                         <div className="relative">
                                             <img 
                                                 src={currentMeal.imagePreview} 
                                                 alt="Meal preview" 
-                                                className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                                                className="w-full h-32 object-cover rounded-lg border border-white/20 dark:border-white/10"
                                             />
                                             <button
                                                 type="button"
@@ -1147,7 +1164,7 @@ const Nutrition = () => {
                                             <img 
                                                 src={currentMeal.image_url} 
                                                 alt="Current meal image" 
-                                                className="w-full h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600"
+                                                className="w-full h-32 object-cover rounded-lg border border-white/20 dark:border-white/10"
                                             />
                                             <button
                                                 type="button"
@@ -1162,7 +1179,7 @@ const Nutrition = () => {
                                     )}
                                 </div>
                             </div>
-                            <button type="submit" className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-indigo-700 mt-2 flex items-center justify-center gap-2 disabled:opacity-50 text-sm" disabled={submitLoading}>
+                            <button type="submit" className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-bold py-2 rounded-lg mt-2 flex items-center justify-center gap-2 disabled:opacity-50 text-sm shadow-md shadow-amber-500/20 transition-all" disabled={submitLoading}>
                                 {submitLoading ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />

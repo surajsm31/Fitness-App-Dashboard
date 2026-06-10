@@ -27,10 +27,10 @@ const StatsCard = ({ title, value, icon, color, unit }) => {
     const Icon = iconMap[icon];
 
     return (
-        <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="rounded-xl bg-white/45 dark:bg-white/5 backdrop-blur-md p-6 shadow-lg border border-white/20 dark:border-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">{title}</p>
                     <div className="flex items-baseline gap-1 mt-1">
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{value}</h3>
                         {unit && <span className="text-sm text-gray-500 dark:text-gray-400">{unit}</span>}

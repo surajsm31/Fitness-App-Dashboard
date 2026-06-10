@@ -30,13 +30,13 @@ const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onCl
     return (
         <div
             ref={dropdownRef}
-            className="fixed left-1 right-1 top-12 xs:left-0 xs:right-0 xs:top-11 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-[calc(100vw-0.5rem)] xs:w-[calc(100vw-0.25rem)] sm:w-80 md:w-96 lg:w-[28rem] xl:w-[32rem] bg-white dark:bg-gray-800 rounded-xl shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-gray-100 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-3rem)] xs:max-h-[calc(100vh-2.5rem)] sm:max-h-[32rem]"
+            className="fixed left-1 right-1 top-12 xs:left-0 xs:right-0 xs:top-11 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 w-[calc(100vw-0.5rem)] xs:w-[calc(100vw-0.25rem)] sm:w-80 md:w-96 lg:w-[28rem] xl:w-[32rem] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl z-50 overflow-hidden border border-white/20 dark:border-white/10 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-3rem)] xs:max-h-[calc(100vh-2.5rem)] sm:max-h-[32rem] focus:outline-none"
         >
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-700/30 backdrop-blur-sm">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            <div className="px-4 py-3 border-b border-gray-100/50 dark:border-gray-700/50 flex justify-between items-center bg-gray-50/50 dark:bg-gray-700/30 backdrop-blur-sm">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
                     Notifications
                     {notifications.filter(n => !n.is_read).length > 0 && (
-                        <span className="ml-2 bg-primary/10 text-primary text-xs py-0.5 px-2 rounded-full">
+                        <span className="ml-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold py-0.5 px-2.5 rounded-full">
                             {notifications.filter(n => !n.is_read).length} New
                         </span>
                     )}
@@ -49,7 +49,7 @@ const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onCl
                                 console.log('Current notifications:', notifications);
                                 onMarkAllAsRead();
                             }}
-                            className="text-xs font-medium text-primary hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors px-2 py-1 rounded-md hover:bg-white/20 dark:hover:bg-white/5"
                             title="Mark all as read"
                         >
                             Mark all as read
@@ -102,7 +102,7 @@ const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onCl
                                                         e.stopPropagation();
                                                         onMarkRead(notification.id);
                                                     }}
-                                                    className="text-[11px] xs:text-[10px] sm:text-xs text-primary hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
+                                                    className="text-[11px] xs:text-[10px] sm:text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-bold transition-colors"
                                                 >
                                                     Mark as read
                                                 </button>
@@ -116,7 +116,7 @@ const NotificationDropdown = ({ notifications, onMarkRead, onMarkAllAsRead, onCl
                                             e.stopPropagation();
                                             onMarkRead(notification.id);
                                         }}
-                                        className="opacity-75 hover:opacity-100 absolute top-1.5 xs:top-1.5 sm:top-2.5 right-1.5 xs:right-1.5 sm:right-2.5 text-primary hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 transition-all p-0.5 xs:p-1 bg-white dark:bg-gray-800 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md"
+                                        className="opacity-75 hover:opacity-100 absolute top-1.5 xs:top-1.5 sm:top-2.5 right-1.5 xs:right-1.5 sm:right-2.5 text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-all p-0.5 xs:p-1 bg-white dark:bg-gray-800 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md"
                                         title="Mark as read"
                                     >
                                         <Check className="w-2 h-2 xs:w-3 xs:h-3 sm:w-3 sm:h-3" />
