@@ -117,7 +117,9 @@ const Header = ({ onMenuClick, onLogout }) => {
                                 unreadCount > 0 ? 'group-hover:animate-swing' : ''
                             } ${isLoading ? 'animate-pulse' : ''}`} aria-hidden="true" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-0.5 xs:top-0.5 sm:top-1 right-0.5 xs:right-0.5 sm:right-1.5 lg:right-2.5 block h-1.5 w-1.5 xs:h-1.5 xs:w-1.5 rounded-full bg-red-500 ring-1 ring-white dark:ring-gray-900 animate-pulse" />
+                                <span className="absolute -top-0.5 -right-0.5 sm:top-0 sm:right-0.5 lg:top-1 lg:right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-orange-500 px-1 text-[10px] font-black text-white ring-1 ring-white dark:ring-gray-900 animate-pulse">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
                             )}
                             {isLoading && (
                                 <span className="absolute top-0.5 xs:top-0.5 sm:top-1 right-0.5 xs:right-0.5 sm:right-1.5 lg:right-2.5 block h-1.5 w-1.5 xs:h-1.5 xs:w-1.5 rounded-full bg-gray-400 ring-1 ring-white dark:ring-gray-900 animate-ping" />
